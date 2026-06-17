@@ -1,0 +1,45 @@
+# ===== Visual Studio =====
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+Debug/
+Release/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.appx
+*.appxbundle
+*.appxupload
+
+# ===== Visual Studio Code =====
+.vscode/
+
+# ===== JetBrains Rider =====
+.idea/
+*.sln.iml
+
+# ===== C# / .NET =====
+*.cache
+*.nupkg
+packages/
+*.dotCover
+
+# ===== WPF =====
+*.g.cs
+*.g.i.cs
+*.baml
+*_wpftmp.csproj
+
+# ===== OS junk =====
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.temp
