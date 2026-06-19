@@ -29,7 +29,10 @@ x86/
 *.cache
 *.nupkg
 packages/
+.nuget/
 *.dotCover
+tmp/
+/publish/output/
 
 # ===== WPF =====
 *.g.cs
