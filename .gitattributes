@@ -2,13 +2,16 @@
 * text=auto
 
 # C# source
-*.cs text diff=csharp
-*.csproj text merge=union
-*.sln text merge=union
-*.xaml text
-*.config text
-*.xml text
-*.json text
+*.cs text eol=crlf diff=csharp
+*.csproj text eol=crlf merge=union
+*.sln text eol=crlf merge=union
+*.slnx text eol=crlf merge=union
+*.xaml text eol=crlf
+*.config text eol=crlf
+*.xml text eol=crlf
+*.json text eol=crlf
+*.ps1 text eol=crlf
+*.md text eol=crlf
 
 # ===== Binary files =====
 *.png binary
