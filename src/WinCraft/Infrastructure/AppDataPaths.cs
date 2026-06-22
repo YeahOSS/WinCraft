@@ -31,5 +31,10 @@ namespace WinCraft.Infrastructure
         /// Log file output directory.
         /// </summary>
         public static readonly string Logs = Path.Combine(Root, "Logs");
+
+        /// <summary>
+        /// Crash dump output directory.
+        /// </summary>
+        public static readonly string Dumps = Path.Combine(Root, "Dumps");
     }
 }

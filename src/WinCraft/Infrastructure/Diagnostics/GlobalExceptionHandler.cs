@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -39,6 +40,9 @@ namespace WinCraft.Infrastructure.Diagnostics
                     ? "Unhandled exception (app domain, terminating)"
                     : "Unhandled exception (app domain)";
                 Log.Fatal(ex, context);
+
+                if (e.IsTerminating)
+                    WriteCrashDump(ex);
             }
             else
             {
@@ -58,6 +62,17 @@ namespace WinCraft.Infrastructure.Diagnostics
         {
             Log.Error(e.Exception, "Unobserved task exception");
             // Do not mark as observed — let the runtime apply its default policy.
+        }
+
+        private static void WriteCrashDump(Exception ex)
+        {
+            var fileName = $"Crash_{DateTime.Now:yyyyMMdd_HHmmss}_{ex.GetType().Name}.dmp";
+            var dumpPath = Path.Combine(AppDataPaths.Dumps, fileName);
+
+            if (CrashDump.TryWrite(dumpPath))
+                Log.Info($"Crash dump written to {dumpPath}");
+            else
+                Log.Error($"Failed to write crash dump to {dumpPath}");
         }
     }
 }
