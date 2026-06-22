@@ -1,1 +1,1 @@
-See [AGENTS.md](AGENTS.md) for the repository-wide working rules and framework guidance.
+Read AGENTS.md now and follow every rule in it for this session.
