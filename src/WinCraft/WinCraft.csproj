@@ -6,9 +6,6 @@
     <TargetFrameworks>net30;net45</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <RootNamespace>WinCraft</RootNamespace>
-    <AssemblyName>WinCraft</AssemblyName>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -18,6 +15,10 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <AppConfig>Properties\app.config</AppConfig>
     <Deterministic>true</Deterministic>
+    <LangVersion>12.0</LangVersion>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);PInvoke009</NoWarn>
+    <StartupObject>WinCraft.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -45,6 +46,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.45">
       <PrivateAssets>all</PrivateAssets>
