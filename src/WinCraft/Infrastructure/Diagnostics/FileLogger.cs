@@ -25,7 +25,10 @@ namespace WinCraft.Infrastructure.Diagnostics
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            _writer = new StreamWriter(logFilePath, true)
+            // Allow multiple processes (e.g. the UI and the elevated agent)
+            // to write to the same log file concurrently.
+            var stream = new FileStream(logFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            _writer = new StreamWriter(stream)
             {
                 AutoFlush = true
             };

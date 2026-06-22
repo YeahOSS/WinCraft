@@ -3,6 +3,7 @@
 ## Document Map
 - `AGENTS.md`: collaboration, implementation, compatibility, naming, and documentation rules.
 - `docs/source-layout.md`: code placement and directory boundaries.
+- `docs/elevated-agent-ipc.md`: dual-process architecture and IPC design rationale.
 - `publish/README.md`: build and release workflow details.
 
 ## Working Rules
