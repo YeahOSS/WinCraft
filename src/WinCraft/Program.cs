@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using WinCraft.Infrastructure;
+using WinCraft.Infrastructure.Diagnostics;
 
 namespace WinCraft
 {
@@ -12,7 +13,11 @@ namespace WinCraft
         [STAThread]
         static void Main(string[] args)
         {
+            Log.Initialize(FileLogger.CreateDefault());
+
+            GlobalExceptionHandler.Register();
             var app = new App();
+            GlobalExceptionHandler.RegisterDispatcher(app.Dispatcher);
             app.InitializeComponent();
             app.MainWindow = new MainWindow();
 
