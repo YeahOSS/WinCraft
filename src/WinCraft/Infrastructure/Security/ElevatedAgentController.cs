@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 using WinCraft.Infrastructure.Diagnostics;
 using WinCraft.Infrastructure.Ipc;
 
@@ -20,6 +22,7 @@ namespace WinCraft.Infrastructure.Security
         private readonly bool _attachOnly;
         private readonly bool _ownsAgentProcess;
         private Process _agentProcess;
+        private int? _agentProcessId;
         private SafeFileHandle _pipeHandle;
         private bool _agentRunning;
         private bool _agentConnected;
@@ -43,19 +46,15 @@ namespace WinCraft.Infrastructure.Security
 
             if (attachedAgentPid.HasValue)
             {
-                try
-                {
-                    _agentProcess = Process.GetProcessById(attachedAgentPid.Value);
-                    _agentRunning = !_agentProcess.HasExited;
-                }
-                catch (ArgumentException)
+                _agentProcessId = attachedAgentPid.Value;
+                _agentRunning = ProcessMightBeRunning(attachedAgentPid.Value);
+                if (!_agentRunning)
                 {
                     // The advertised host may have exited before the UI finished
                     // starting. Leave the controller unattached so the caller can
                     // surface a normal "host unavailable" failure instead of
                     // crashing during startup.
-                    _agentProcess = null;
-                    _agentRunning = false;
+                    _agentProcessId = null;
                 }
             }
         }
@@ -165,7 +164,7 @@ namespace WinCraft.Infrastructure.Security
                         // Best-effort shutdown only.
                     }
 
-                    if (_agentProcess != null && !_agentProcess.HasExited)
+                    if (_agentProcess != null && IsAgentProcessHandleRunning())
                     {
                         try
                         {
@@ -190,15 +189,16 @@ namespace WinCraft.Infrastructure.Security
 
         private bool EnsureAgentRunning()
         {
-            if (_agentRunning && _agentConnected && _agentProcess != null && !_agentProcess.HasExited)
+            if (_agentRunning && _agentConnected && IsAgentProcessRunning())
                 return true;
 
-            if (!_agentRunning || _agentProcess == null || _agentProcess.HasExited)
+            if (!_agentRunning || !IsAgentProcessRunning())
             {
                 _agentConnected = false;
                 _agentRunning = false;
                 _agentProcess?.Dispose();
                 _agentProcess = null;
+                _agentProcessId = null;
 
                 if (_attachOnly)
                     throw new InvalidOperationException("The attached elevated host is no longer running.");
@@ -224,6 +224,7 @@ namespace WinCraft.Infrastructure.Security
                 }
 
                 _agentRunning = true;
+                _agentProcessId = _agentProcess.Id;
                 Log.Info($"Elevated agent launched (pid={_agentProcess.Id}, pipe={_pipeName}).");
             }
 
@@ -242,7 +243,7 @@ namespace WinCraft.Infrastructure.Security
                 }
                 catch (TimeoutException)
                 {
-                    if (_agentProcess != null && _agentProcess.HasExited)
+                    if (!IsAgentProcessRunning())
                     {
                         Log.Warn("Elevated agent process exited while waiting for connection.");
                         throw;
@@ -264,10 +265,10 @@ namespace WinCraft.Infrastructure.Security
             if (!PInvoke.GetNamedPipeClientProcessId(_pipeHandle, out uint connectedProcessId))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
-            if (_agentProcess == null || connectedProcessId != _agentProcess.Id)
+            if (!_agentProcessId.HasValue || connectedProcessId != _agentProcessId.Value)
             {
                 Log.Warn(
-                    $"Pipe connected by unexpected process (expected={_agentProcess?.Id}, actual={connectedProcessId}).");
+                    $"Pipe connected by unexpected process (expected={_agentProcessId?.ToString() ?? "unknown"}, actual={connectedProcessId}).");
                 ResetRunningState();
                 throw new InvalidOperationException(
                     "The elevated agent pipe was connected by an unexpected process.");
@@ -281,7 +282,7 @@ namespace WinCraft.Infrastructure.Security
 
         private void TryShutdownAgent()
         {
-            if (!_agentRunning || _agentProcess == null || _agentProcess.HasExited)
+            if (!_agentRunning || !IsAgentProcessRunning())
                 return;
 
             if (!_agentConnected && !TryReconnectToRunningAgent())
@@ -311,7 +312,7 @@ namespace WinCraft.Infrastructure.Security
 
         private bool TryReconnectToRunningAgent()
         {
-            if (_agentProcess == null || _agentProcess.HasExited)
+            if (!IsAgentProcessRunning())
                 return false;
 
             try
@@ -324,7 +325,7 @@ namespace WinCraft.Infrastructure.Security
                 if (!PInvoke.GetNamedPipeClientProcessId(_pipeHandle, out uint connectedProcessId))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (connectedProcessId != _agentProcess.Id)
+                if (!_agentProcessId.HasValue || connectedProcessId != _agentProcessId.Value)
                     throw new InvalidOperationException(
                         "The elevated agent pipe was connected by an unexpected process.");
 
@@ -368,6 +369,59 @@ namespace WinCraft.Infrastructure.Security
             _state = AgentConnectionState.Idle;
             _pipeHandle?.Dispose();
             _pipeHandle = null;
+        }
+
+        private bool IsAgentProcessRunning()
+        {
+            if (!_agentRunning || !_agentProcessId.HasValue)
+                return false;
+
+            if (_agentProcess == null)
+                return ProcessMightBeRunning(_agentProcessId.Value);
+
+            return IsAgentProcessHandleRunning();
+        }
+
+        private bool IsAgentProcessHandleRunning()
+        {
+            if (_agentProcess == null)
+                return false;
+
+            try
+            {
+                return !_agentProcess.HasExited;
+            }
+            catch (Win32Exception exception)
+            {
+                Log.Debug(
+                    $"Unable to query elevated agent process state (pid={_agentProcessId?.ToString() ?? "unknown"}): {exception.Message}");
+                return _agentProcessId.HasValue && ProcessMightBeRunning(_agentProcessId.Value);
+            }
+            catch (InvalidOperationException)
+            {
+                return _agentProcessId.HasValue && ProcessMightBeRunning(_agentProcessId.Value);
+            }
+        }
+
+        private static bool ProcessMightBeRunning(int processId)
+        {
+            if (processId <= 0)
+                return false;
+
+            using var processHandle = PInvoke.OpenProcess_SafeHandle(
+                PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE,
+                false,
+                (uint)processId);
+
+            if (processHandle != null && !processHandle.IsInvalid)
+            {
+                // OpenProcess can succeed for an exited process object while handles still exist.
+                var waitResult = PInvoke.WaitForSingleObject(processHandle, 0);
+                return waitResult == WAIT_EVENT.WAIT_TIMEOUT;
+            }
+
+            var errorCode = Marshal.GetLastWin32Error();
+            return errorCode == (int)WIN32_ERROR.ERROR_ACCESS_DENIED;
         }
     }
 }

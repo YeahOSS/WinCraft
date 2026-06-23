@@ -25,6 +25,7 @@ SECURITY_IMPERSONATION_LEVEL
 TOKEN_PRIVILEGES_ATTRIBUTES
 PROCESS_ACCESS_RIGHTS
 OpenProcess
+WaitForSingleObject
 LookupPrivilegeValue
 AdjustTokenPrivileges
 SetLastError
