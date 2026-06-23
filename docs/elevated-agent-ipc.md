@@ -12,6 +12,7 @@ Every privileged request declares one explicit level:
 
 - `Standard`
 - `Administrator`
+- `System`
 - `TrustedInstaller`
 
 The UI must not guess, retry, or silently promote a request. Product code picks
@@ -81,9 +82,15 @@ would not create a lower-privilege UI. `Administrator` requests execute locally;
   explicitly started WinCraft elevated
 - connects as the named pipe client
 - executes `Administrator` requests locally
+- upgrades individual `System` requests through a one-shot SYSTEM process
 - upgrades individual `TrustedInstaller` requests through the TI hop
 
-### TrustedInstaller hop
+### SYSTEM and TrustedInstaller hops
+
+For one `System` request, the privileged host duplicates the active-session
+`winlogon.exe` token, starts a temporary SYSTEM execute process, runs the
+operation, returns the result through a dedicated pipe, and lets that process
+exit.
 
 The host does not stay in the `TrustedInstaller` context.
 For one TI request it does this:
@@ -119,7 +126,8 @@ Adding a new privileged operation still means:
 
 1. add an operation name in `ElevatedOperations`
 2. add the handler in `ElevatedOperationExecutor`
-3. choose the required `PrivilegeLevel` at the call site
+3. choose the required `PrivilegeLevel` or registry privilege policy at the
+   call site
 
 ## Identity Validation
 

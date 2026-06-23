@@ -15,6 +15,7 @@ namespace WinCraft.Infrastructure.Security
         public const string TrustedInstallerHopFailed = "trusted_installer_hop_failed";
         public const string TrustedInstallerServiceFailed = "trusted_installer_service_failed";
         public const string UnexpectedRequestId = "unexpected_request_id";
+        public const string RegistryAccessDenied = "registry_access_denied";
         public const string RegistryWriteFailed = "registry_write_failed";
         public const string RegistryDeleteFailed = "registry_delete_failed";
         public const string UnsupportedOperation = "unsupported_operation";

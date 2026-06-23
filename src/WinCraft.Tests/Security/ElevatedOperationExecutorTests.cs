@@ -81,6 +81,28 @@ namespace WinCraft.Tests.Security
         }
 
         [Test]
+        public void Execute_SystemPrivilegeLevel_UsesSystemExecutor()
+        {
+            var request = new ElevatedCommandRequest
+            {
+                OperationName = ElevatedOperations.Ping,
+                PrivilegeLevel = PrivilegeLevel.System,
+                RequestId = "req-system"
+            };
+
+            var result = ElevatedOperationExecutor.Execute(
+                request,
+                systemRequest => CommandResult.Success(systemRequest.RequestId),
+                trustedInstallerRequest => CommandResult.Failure(
+                    "wrong_route",
+                    "TrustedInstaller should not be used.",
+                    trustedInstallerRequest.RequestId));
+
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.RequestId, Is.EqualTo("req-system"));
+        }
+
+        [Test]
         public void ExecuteLocal_NullRequest_ReturnsInvalidRequest()
         {
             var result = ElevatedOperationExecutor.ExecuteLocal(null);

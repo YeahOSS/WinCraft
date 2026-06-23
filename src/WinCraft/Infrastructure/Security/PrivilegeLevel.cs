@@ -7,6 +7,7 @@ namespace WinCraft.Infrastructure.Security
     {
         Standard,
         Administrator,
+        System,
         TrustedInstaller
     }
 }

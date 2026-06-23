@@ -21,6 +21,12 @@ namespace WinCraft
             Log.Initialize(FileLogger.CreateDefault());
             GlobalExceptionHandler.Register();
 
+            if (CommandLineArguments.Contains(args, ElevatedAgentArguments.SystemExecuteMode))
+            {
+                Environment.ExitCode = SystemPrivilegeBridge.RunSystemExecute(args);
+                return;
+            }
+
             if (CommandLineArguments.Contains(args, ElevatedAgentArguments.TrustedInstallerExecuteMode))
             {
                 Environment.ExitCode = TrustedInstallerBridge.RunTrustedInstallerExecute(args);

@@ -5,6 +5,8 @@ namespace WinCraft.Infrastructure.Security
     /// </summary>
     internal sealed class PrivilegeExecutionResult
     {
+        private static readonly PrivilegeLevel[] EmptyAttemptedPrivilegeLevels = new PrivilegeLevel[0];
+
         public PrivilegeExecutionStatus Status { get; private set; }
 
         public bool Succeeded
@@ -15,6 +17,10 @@ namespace WinCraft.Infrastructure.Security
         public string ErrorCode { get; private set; }
 
         public string ErrorMessage { get; private set; }
+
+        public PrivilegeLevel? EffectivePrivilegeLevel { get; private set; }
+
+        public PrivilegeLevel[] AttemptedPrivilegeLevels { get; private set; } = EmptyAttemptedPrivilegeLevels;
 
         public static PrivilegeExecutionResult Success()
         {
@@ -49,6 +55,15 @@ namespace WinCraft.Infrastructure.Security
                 ErrorCode = errorCode,
                 ErrorMessage = errorMessage
             };
+        }
+
+        internal PrivilegeExecutionResult WithPrivilegeDetails(
+            PrivilegeLevel? effectivePrivilegeLevel,
+            PrivilegeLevel[] attemptedPrivilegeLevels)
+        {
+            EffectivePrivilegeLevel = effectivePrivilegeLevel;
+            AttemptedPrivilegeLevels = attemptedPrivilegeLevels ?? EmptyAttemptedPrivilegeLevels;
+            return this;
         }
     }
 }

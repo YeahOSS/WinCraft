@@ -15,6 +15,7 @@ any WPF window is created.
 
 `Program` is responsible for process-mode routing:
 
+- SYSTEM helper modes
 - TrustedInstaller helper modes
 - elevated agent mode
 - elevated bootstrap mode

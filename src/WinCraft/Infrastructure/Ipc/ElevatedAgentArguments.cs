@@ -7,6 +7,7 @@ namespace WinCraft.Infrastructure.Ipc
     {
         public const string ElevatedAgentMode = "--elevated-agent";
         public const string AttachElevatedAgentMode = "--attach-elevated-agent";
+        public const string SystemExecuteMode = "--system-execute";
         public const string TrustedInstallerHopMode = "--trusted-installer-hop";
         public const string TrustedInstallerExecuteMode = "--trusted-installer-execute";
         public const string PipeName = "--pipe-name";

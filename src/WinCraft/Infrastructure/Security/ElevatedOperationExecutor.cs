@@ -19,10 +19,30 @@ namespace WinCraft.Infrastructure.Security
                     request?.RequestId);
             }
 
+            return Execute(
+                request,
+                SystemPrivilegeBridge.Execute,
+                TrustedInstallerBridge.Execute);
+        }
+
+        internal static CommandResult Execute(
+            ElevatedCommandRequest request,
+            Func<ElevatedCommandRequest, CommandResult> systemExecutor,
+            Func<ElevatedCommandRequest, CommandResult> trustedInstallerExecutor)
+        {
+            if (request == null || string.IsNullOrEmpty(request.OperationName))
+            {
+                return CommandResult.Failure(
+                    PrivilegeErrorCodes.InvalidRequest,
+                    "The elevated request is missing an operation name.",
+                    request?.RequestId);
+            }
+
             return request.PrivilegeLevel switch
             {
                 PrivilegeLevel.Administrator => ExecuteLocal(request),
-                PrivilegeLevel.TrustedInstaller => TrustedInstallerBridge.Execute(request),
+                PrivilegeLevel.System => systemExecutor(request),
+                PrivilegeLevel.TrustedInstaller => trustedInstallerExecutor(request),
                 _ => CommandResult.Failure(
                     PrivilegeErrorCodes.PrivilegeLevelRequired,
                     "The privileged host cannot execute a standard-level request.",
@@ -66,10 +86,23 @@ namespace WinCraft.Infrastructure.Security
                 operation(request);
                 return CommandResult.Success(command.RequestId);
             }
+            catch (Exception exception) when (IsPermissionFailure(exception))
+            {
+                return CommandResult.Failure(PrivilegeErrorCodes.RegistryAccessDenied, exception.Message, command.RequestId);
+            }
             catch (Exception exception)
             {
                 return CommandResult.Failure(errorCode, exception.Message, command.RequestId);
             }
+        }
+
+        internal static bool IsPermissionFailure(Exception exception)
+        {
+            return exception is UnauthorizedAccessException
+                || exception is System.Security.SecurityException
+                || exception is System.ComponentModel.Win32Exception win32Exception
+                    && (win32Exception.NativeErrorCode == (int)Windows.Win32.Foundation.WIN32_ERROR.ERROR_ACCESS_DENIED
+                        || win32Exception.NativeErrorCode == (int)Windows.Win32.Foundation.WIN32_ERROR.ERROR_PRIVILEGE_NOT_HELD);
         }
     }
 }
