@@ -12,8 +12,9 @@ dotnet build src/WinCraft.Tests/WinCraft.Tests.csproj
 src/WinCraft.Tests/bin/Debug/net45/WinCraft.Tests.exe
 ```
 
-The test runner writes results to ignored `src/TestResult.xml` by default
-unless `--result` is supplied.
+The test runner writes results next to the test executable by default, for
+example `src/WinCraft.Tests/bin/Debug/net45/TestResult.xml`. Supply `--result`
+to override the output path.
 
 ## Scope
 

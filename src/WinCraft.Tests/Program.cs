@@ -52,26 +52,7 @@ namespace WinCraft.Tests
 
         private static string GetDefaultResultPath()
         {
-            var sourceDirectory = TryGetSourceDirectory();
-            var resultDirectory = sourceDirectory == null
-                ? AppDomain.CurrentDomain.BaseDirectory
-                : sourceDirectory.FullName;
-
-            return Path.Combine(resultDirectory, "TestResult.xml");
-        }
-
-        private static DirectoryInfo TryGetSourceDirectory()
-        {
-            var directory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            while (directory != null)
-            {
-                if (string.Equals(directory.Name, "src", StringComparison.OrdinalIgnoreCase))
-                    return directory;
-
-                directory = directory.Parent;
-            }
-
-            return null;
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestResult.xml");
         }
     }
 }
