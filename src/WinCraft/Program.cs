@@ -39,13 +39,21 @@ namespace WinCraft
                 return;
             }
 
-            if (ProcessElevation.IsCurrentProcessElevated())
+            var startupMode = SelectStartupProcessMode(ProcessElevation.GetCurrentProcessElevationState());
+            if (startupMode == StartupProcessMode.ElevatedBootstrap)
             {
                 RunElevatedBootstrap(args);
                 return;
             }
 
             RunUserInterface(args);
+        }
+
+        internal static StartupProcessMode SelectStartupProcessMode(ProcessElevationState elevationState)
+        {
+            return elevationState == ProcessElevationState.SplitTokenElevated
+                ? StartupProcessMode.ElevatedBootstrap
+                : StartupProcessMode.UserInterface;
         }
 
         private static void RunUserInterface(string[] args)

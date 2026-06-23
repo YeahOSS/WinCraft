@@ -56,6 +56,15 @@ The user sees UAC once for that session.
 This keeps drag-and-drop and shell integration available without paying a
 second UAC prompt later in the session.
 
+### Built-in Administrator
+
+When WinCraft starts under a non split-token administrator account, such as the
+built-in Administrator account with Admin Approval Mode disabled, it keeps the
+current process as the UI process. Explorer already runs with equivalent
+administrator capability in this model, so relaunching from the shell token
+would not create a lower-privilege UI. `Administrator` requests execute locally;
+`TrustedInstaller` requests still use the short-lived TI hop.
+
 ## Process Roles
 
 ### Unelevated UI

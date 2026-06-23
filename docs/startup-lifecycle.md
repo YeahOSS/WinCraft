@@ -18,6 +18,7 @@ any WPF window is created.
 - TrustedInstaller helper modes
 - elevated agent mode
 - elevated bootstrap mode
+- full-administrator UI mode
 - normal unelevated UI mode
 
 Keep this high-level routing centralized. New startup modes should enter
@@ -52,6 +53,13 @@ its main window forward and handles the incoming command-line context.
 This keeps shell interaction, drag-and-drop, and window activation in the
 unelevated UI process. Elevated handoff behavior is part of the privileged host
 model and is covered in `docs/elevated-agent-ipc.md`.
+
+Built-in Administrator and other non split-token administrator sessions run the
+UI directly instead of launching a separate unelevated copy. In that account
+model the shell token already has the same administrator capability, so a
+"downgrade" through Explorer would not reduce the UI token. Administrator-level
+operations execute in-process, while `TrustedInstaller` operations still use the
+privileged bridge.
 
 ## Design Notes
 

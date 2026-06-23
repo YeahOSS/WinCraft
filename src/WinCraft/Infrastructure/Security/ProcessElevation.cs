@@ -20,18 +20,38 @@ namespace WinCraft.Infrastructure.Security
         /// </summary>
         public static bool IsCurrentProcessElevated()
         {
+            return GetCurrentProcessElevationState() != ProcessElevationState.Standard;
+        }
+
+        internal static ProcessElevationState GetCurrentProcessElevationState()
+        {
             var isCurrentTokenAdministrator = IsCurrentTokenAdministrator();
             using var tokenHandle = OpenCurrentProcessToken();
             if (tokenHandle == null)
-                return isCurrentTokenAdministrator;
+                return ClassifyElevationState(isCurrentTokenAdministrator, null);
 
-            if (TryGetTokenElevation(tokenHandle, out TOKEN_ELEVATION elevation))
-                return elevation.TokenIsElevated != 0;
+            if (TryGetTokenElevationKind(tokenHandle, out TokenElevationKind elevationKind))
+                return ClassifyElevationState(isCurrentTokenAdministrator, elevationKind);
 
-            if (TryGetTokenElevationType(tokenHandle, out TOKEN_ELEVATION_TYPE elevationType))
-                return elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull;
+            return ClassifyElevationState(isCurrentTokenAdministrator, null);
+        }
 
-            return isCurrentTokenAdministrator;
+        internal static ProcessElevationState ClassifyElevationState(
+            bool isCurrentTokenAdministrator,
+            TokenElevationKind? elevationKind)
+        {
+            if (!isCurrentTokenAdministrator)
+                return ProcessElevationState.Standard;
+
+            if (!elevationKind.HasValue)
+                return ProcessElevationState.FullAdministrator;
+
+            return elevationKind.Value switch
+            {
+                TokenElevationKind.Full => ProcessElevationState.SplitTokenElevated,
+                TokenElevationKind.Default => ProcessElevationState.FullAdministrator,
+                _ => ProcessElevationState.Standard
+            };
         }
 
         /// <summary>
@@ -125,29 +145,7 @@ namespace WinCraft.Infrastructure.Security
             }
         }
 
-        private static unsafe bool TryGetTokenElevation(SafeHandle tokenHandle, out TOKEN_ELEVATION elevation)
-        {
-            var elevationSize = Marshal.SizeOf(typeof(TOKEN_ELEVATION));
-            var elevationPointer = Marshal.AllocHGlobal(elevationSize);
-
-            try
-            {
-                if (!PInvoke.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, (void*)elevationPointer, (uint)elevationSize, out _))
-                {
-                    elevation = new TOKEN_ELEVATION();
-                    return false;
-                }
-
-                elevation = (TOKEN_ELEVATION)Marshal.PtrToStructure(elevationPointer, typeof(TOKEN_ELEVATION));
-                return true;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(elevationPointer);
-            }
-        }
-
-        private static unsafe bool TryGetTokenElevationType(SafeHandle tokenHandle, out TOKEN_ELEVATION_TYPE elevationType)
+        private static unsafe bool TryGetTokenElevationKind(SafeHandle tokenHandle, out TokenElevationKind elevationKind)
         {
             // Use stack-allocated int to receive the DWORD-sized elevation type value.
             // Marshal.SizeOf fails on the CsWin32-generated TOKEN_ELEVATION_TYPE type,
@@ -156,12 +154,37 @@ namespace WinCraft.Infrastructure.Security
 
             if (!PInvoke.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType, (void*)(&elevationTypeValue), sizeof(int), out _))
             {
-                elevationType = TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault;
+                elevationKind = TokenElevationKind.Default;
                 return false;
             }
 
-            elevationType = (TOKEN_ELEVATION_TYPE)elevationTypeValue;
-            return true;
+            return TryMapTokenElevationKind((TOKEN_ELEVATION_TYPE)elevationTypeValue, out elevationKind);
+        }
+
+        private static bool TryMapTokenElevationKind(
+            TOKEN_ELEVATION_TYPE elevationType,
+            out TokenElevationKind elevationKind)
+        {
+            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+            {
+                elevationKind = TokenElevationKind.Default;
+                return true;
+            }
+
+            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
+            {
+                elevationKind = TokenElevationKind.Full;
+                return true;
+            }
+
+            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
+            {
+                elevationKind = TokenElevationKind.Limited;
+                return true;
+            }
+
+            elevationKind = TokenElevationKind.Default;
+            return false;
         }
     }
 }

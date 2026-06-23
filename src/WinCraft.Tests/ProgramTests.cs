@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using WinCraft.Infrastructure.Security;
 
 namespace WinCraft.Tests
 {
@@ -135,6 +136,30 @@ namespace WinCraft.Tests
             var result = WinCraft.Program.AppendArguments(new string[0], new string[0]);
 
             Assert.That(result.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SelectStartupProcessMode_SplitTokenElevated_ReturnsElevatedBootstrap()
+        {
+            var result = WinCraft.Program.SelectStartupProcessMode(ProcessElevationState.SplitTokenElevated);
+
+            Assert.That(result, Is.EqualTo(StartupProcessMode.ElevatedBootstrap));
+        }
+
+        [Test]
+        public void SelectStartupProcessMode_FullAdministrator_ReturnsUserInterface()
+        {
+            var result = WinCraft.Program.SelectStartupProcessMode(ProcessElevationState.FullAdministrator);
+
+            Assert.That(result, Is.EqualTo(StartupProcessMode.UserInterface));
+        }
+
+        [Test]
+        public void SelectStartupProcessMode_Standard_ReturnsUserInterface()
+        {
+            var result = WinCraft.Program.SelectStartupProcessMode(ProcessElevationState.Standard);
+
+            Assert.That(result, Is.EqualTo(StartupProcessMode.UserInterface));
         }
     }
 }
