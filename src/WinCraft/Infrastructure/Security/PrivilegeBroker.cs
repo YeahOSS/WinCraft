@@ -39,7 +39,7 @@ namespace WinCraft.Infrastructure.Security
             return Task.Run(() => Execute(request));
         }
 
-        private static PrivilegeExecutionResult MapResult(CommandResult result)
+        internal static PrivilegeExecutionResult MapResult(CommandResult result)
         {
             if (result == null)
             {

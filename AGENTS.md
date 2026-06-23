@@ -57,3 +57,11 @@
 - Use a lambda when the handler is 5 lines or fewer, subscribed in one place, and not part of the class contract.
 - Use a named method when the handler is longer, reused, required by inheritance or interfaces, or represents an extensibility point.
 - Avoid extracting a trivial lambda into a named method, and avoid leaving a long inline lambda in place.
+
+## Test Project
+- Tests live under `src/WinCraft.Tests/`, target `net45`, and use NUnit with the NUnitLite self-executing runner.
+- Run with `dotnet build src/WinCraft.Tests/WinCraft.Tests.csproj && src/WinCraft.Tests/bin/Debug/net45/WinCraft.Tests.exe`.
+- Test only pure logic that does not require Windows privileges (parsing, serialization, operation routing, result mapping).
+- When a test needs access to an internal member, make that member `internal` — never `public` — and rely on the project-level `InternalsVisibleTo` already wired to `WinCraft.Tests`.
+- The tested code has no TFM-conditional branches, so a single `net45` test run is sufficient. Add a `dotnet build` for `net30` only when adding TFM-specific code.
+- Keep tests in sync with the production code they cover. When adding an operation, changing a factory method, or adjusting error routing, add or update the corresponding test in the same commit.

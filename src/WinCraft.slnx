@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="WinCraft/WinCraft.csproj" Id="c69d3289-ac09-48ba-a4cb-761e3b6d9fec" />
+  <Project Path="WinCraft.Tests/WinCraft.Tests.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
 </Solution>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net45</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>WinCraft.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnitLite" Version="3.13.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
+  </ItemGroup>
+
+</Project>

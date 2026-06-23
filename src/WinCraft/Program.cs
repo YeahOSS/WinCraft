@@ -235,7 +235,7 @@ namespace WinCraft
             }
         }
 
-        private static string[] AppendArguments(string[] leadingArgs, string[] trailingArgs)
+        internal static string[] AppendArguments(string[] leadingArgs, string[] trailingArgs)
         {
             var leadingCount = leadingArgs?.Length ?? 0;
             var trailingCount = trailingArgs?.Length ?? 0;
@@ -268,7 +268,7 @@ namespace WinCraft
             return TryParsePipeOwnerProcessId(pipeName);
         }
 
-        private static int? TryParsePipeOwnerProcessId(string pipeName)
+        internal static int? TryParsePipeOwnerProcessId(string pipeName)
         {
             const string prefix = "WinCraft.ElevatedAgent.";
             if (string.IsNullOrEmpty(pipeName)
