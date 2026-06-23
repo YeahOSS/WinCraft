@@ -10,6 +10,7 @@ WriteFile
 FlushFileBuffers
 WaitNamedPipe
 GetNamedPipeClientProcessId
+GetNamedPipeServerProcessId
 DisconnectNamedPipe
 CancelIoEx
 GetOverlappedResult
@@ -26,6 +27,7 @@ PROCESS_ACCESS_RIGHTS
 OpenProcess
 LookupPrivilegeValue
 AdjustTokenPrivileges
+SetLastError
 DuplicateTokenEx
 SetTokenInformation
 CreateProcessWithTokenW
@@ -37,3 +39,10 @@ CloseHandle
 GetCurrentProcess
 GetCurrentProcessId
 GetModuleFileName
+QueryFullProcessImageNameW
+OpenSCManagerW
+OpenServiceW
+QueryServiceStatusEx
+CloseServiceHandle
+SC_STATUS_TYPE
+SERVICE_STATUS_PROCESS

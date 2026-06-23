@@ -11,6 +11,10 @@ namespace WinCraft.Infrastructure.Security
         public const string ElevatedAgentUnavailable = "elevated_agent_unavailable";
         public const string EmptyAgentResponse = "empty_agent_response";
         public const string InvalidRequest = "invalid_request";
+        public const string PrivilegeLevelRequired = "privilege_level_required";
+        public const string TrustedInstallerHopFailed = "trusted_installer_hop_failed";
+        public const string TrustedInstallerServiceFailed = "trusted_installer_service_failed";
+        public const string UnexpectedRequestId = "unexpected_request_id";
         public const string RegistryWriteFailed = "registry_write_failed";
         public const string RegistryDeleteFailed = "registry_delete_failed";
         public const string UnsupportedOperation = "unsupported_operation";

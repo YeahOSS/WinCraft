@@ -17,18 +17,26 @@ namespace WinCraft.Infrastructure.Ipc
         [DataMember(Order = 3)]
         public string ErrorMessage { get; set; }
 
-        public static CommandResult Success()
+        [DataMember(Order = 4)]
+        public string RequestId { get; set; }
+
+        public static CommandResult Success(string requestId = null)
         {
-            return new CommandResult { Succeeded = true };
+            return new CommandResult
+            {
+                Succeeded = true,
+                RequestId = requestId
+            };
         }
 
-        public static CommandResult Failure(string errorCode, string errorMessage)
+        public static CommandResult Failure(string errorCode, string errorMessage, string requestId = null)
         {
             return new CommandResult
             {
                 Succeeded = false,
                 ErrorCode = errorCode,
-                ErrorMessage = errorMessage
+                ErrorMessage = errorMessage,
+                RequestId = requestId
             };
         }
     }

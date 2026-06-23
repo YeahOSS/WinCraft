@@ -21,6 +21,14 @@ namespace WinCraft.Infrastructure.Ipc
     /// </remarks>
     internal static class PipeBufferIO
     {
+        /// <summary>
+        /// Maximum time to wait for a single read or write I/O operation
+        /// before cancelling it. Prevents a hung peer from blocking the
+        /// caller indefinitely.
+        /// </summary>
+        private const int ReadTimeoutMilliseconds = 30000;
+        private const int WriteTimeoutMilliseconds = 30000;
+
         public static string BuildFullPipeName(string pipeName)
         {
             return string.Format("\\\\.\\pipe\\{0}", pipeName);
@@ -54,7 +62,27 @@ namespace WinCraft.Infrastructure.Ipc
                                 var errorCode = Marshal.GetLastWin32Error();
                                 if (errorCode == (int)WIN32_ERROR.ERROR_IO_PENDING)
                                 {
-                                    if (!PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesRead, true))
+                                    if (!readEvent.WaitOne(ReadTimeoutMilliseconds))
+                                    {
+                                        PInvoke.CancelIoEx(pipeHandle, (NativeOverlapped*)null);
+                                        if (PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesReadAfterCancel, true))
+                                        {
+                                            if (bytesReadAfterCancel == 0)
+                                                throw new InvalidOperationException("The pipe peer returned an incomplete payload.");
+
+                                            offset += (int)bytesReadAfterCancel;
+                                            continue;
+                                        }
+
+                                        var completionErrorCode = Marshal.GetLastWin32Error();
+                                        if (completionErrorCode == (int)WIN32_ERROR.ERROR_OPERATION_ABORTED)
+                                            throw new TimeoutException("The pipe read operation timed out.");
+                                        if (completionErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
+                                            throw new InvalidOperationException(brokenPipeMessage);
+                                        throw new Win32Exception(completionErrorCode);
+                                    }
+
+                                    if (!PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesRead, false))
                                         throw new Win32Exception(Marshal.GetLastWin32Error());
                                     if (bytesRead == 0)
                                         throw new InvalidOperationException("The pipe peer returned an incomplete payload.");
@@ -72,7 +100,7 @@ namespace WinCraft.Infrastructure.Ipc
                             }
                             else
                             {
-                                // Completed synchronously — get the byte count
+                                // Completed synchronously - get the byte count
                                 // from GetOverlappedResult (lpNumberOfBytesRead
                                 // is null, so it is not available from ReadFile).
                                 if (!PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesRead, false))
@@ -103,9 +131,9 @@ namespace WinCraft.Infrastructure.Ipc
         /// Writes an entire buffer to the pipe, looping until all bytes are sent.
         /// </summary>
         /// <remarks>
-        /// Each <c>WriteFile</c> call is followed by <c>GetOverlappedResult</c>
-        /// with <c>bWait=true</c>, so the data is committed to the kernel pipe
-        /// buffer when this method returns. An explicit flush is not needed.
+        /// Each <c>WriteFile</c> call is awaited via a timed <c>WaitHandle.WaitOne</c>
+        /// followed by <c>GetOverlappedResult</c>, so the data is committed to the
+        /// kernel pipe buffer when this method returns. An explicit flush is not needed.
         /// </remarks>
         public static unsafe void WriteBuffer(SafeFileHandle pipeHandle, byte[] buffer)
         {
@@ -134,7 +162,27 @@ namespace WinCraft.Infrastructure.Ipc
                                 var errorCode = Marshal.GetLastWin32Error();
                                 if (errorCode == (int)WIN32_ERROR.ERROR_IO_PENDING)
                                 {
-                                    if (!PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesWritten, true))
+                                    if (!writeEvent.WaitOne(WriteTimeoutMilliseconds))
+                                    {
+                                        PInvoke.CancelIoEx(pipeHandle, (NativeOverlapped*)null);
+                                        if (PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesWrittenAfterCancel, true))
+                                        {
+                                            if (bytesWrittenAfterCancel == 0)
+                                                throw new InvalidOperationException("The pipe did not accept the payload.");
+
+                                            offset += (int)bytesWrittenAfterCancel;
+                                            continue;
+                                        }
+
+                                        var completionErrorCode = Marshal.GetLastWin32Error();
+                                        if (completionErrorCode == (int)WIN32_ERROR.ERROR_OPERATION_ABORTED)
+                                            throw new TimeoutException("The pipe write operation timed out.");
+                                        if (completionErrorCode == (int)WIN32_ERROR.ERROR_BROKEN_PIPE)
+                                            throw new InvalidOperationException("The pipe peer closed the connection during write.");
+                                        throw new Win32Exception(completionErrorCode);
+                                    }
+
+                                    if (!PInvoke.GetOverlappedResult(pipeHandle, in *overlappedPtr, out uint bytesWritten, false))
                                         throw new Win32Exception(Marshal.GetLastWin32Error());
                                     if (bytesWritten == 0)
                                         throw new InvalidOperationException("The pipe did not accept the payload.");

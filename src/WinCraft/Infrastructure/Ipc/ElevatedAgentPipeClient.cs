@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
@@ -9,46 +10,36 @@ using Windows.Win32.Storage.FileSystem;
 namespace WinCraft.Infrastructure.Ipc
 {
     /// <summary>
-    /// Pipe client that runs inside the elevated agent process.
-    /// Connects to the UI-owned named pipe, reads a request, dispatches it,
-    /// writes the result, and repeats until a shutdown operation arrives.
+    /// Pipe client that runs inside the privileged host process.
     /// </summary>
     internal static class ElevatedAgentPipeClient
     {
         private const string BrokenPipeMessage = "The UI process closed the pipe unexpectedly.";
-
-        /// <summary>
-        /// Per-attempt timeout in milliseconds for <see cref="PInvoke.WaitNamedPipe"/>.
-        /// A finite value gives the agent a periodic chance to check whether the
-        /// UI process is still alive between waits.
-        /// </summary>
         private const int WaitTimeoutMilliseconds = 30000;
 
-        /// <summary>
-        /// Connects to the UI-owned named pipe and processes requests
-        /// until a shutdown operation arrives or the UI process exits.
-        /// This call blocks for the lifetime of the elevated agent.
-        /// </summary>
-        public static void Run(string pipeName, Func<ElevatedCommandRequest, CommandResult> dispatch)
+        public static void Run(
+            string pipeName,
+            int? expectedServerProcessId,
+            Func<ElevatedCommandRequest, CommandResult> dispatch)
         {
             var fullPipeName = PipeBufferIO.BuildFullPipeName(pipeName);
-
-            // The pipe name embeds the UI process ID — parse it so we can
-            // detect when the UI exits without a clean shutdown.
-            var parentPid = ParseParentPid(pipeName);
+            var connectedServerProcessId = expectedServerProcessId;
+            var hasAcceptedServerConnection = false;
 
             while (true)
             {
-                if (parentPid.HasValue && !ProcessExists(parentPid.Value))
+                if (ShouldStopWaitingForServer(connectedServerProcessId))
+                {
                     break;
+                }
 
                 if (!PInvoke.WaitNamedPipe(fullPipeName, (uint)WaitTimeoutMilliseconds))
                 {
-                    // Timed out or the pipe is unavailable.  If the UI is
-                    // still alive this is just an idle interval — retry.
-                    // If the UI is gone, exit.
-                    if (parentPid.HasValue && !ProcessExists(parentPid.Value))
+                    if (ShouldStopWaitingForServer(connectedServerProcessId))
+                    {
                         break;
+                    }
+
                     continue;
                 }
 
@@ -58,7 +49,7 @@ namespace WinCraft.Infrastructure.Ipc
                     0,
                     null,
                     FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-                    0,
+                    FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_OVERLAPPED,
                     null);
 
                 if (pipeHandle.IsInvalid)
@@ -66,7 +57,21 @@ namespace WinCraft.Infrastructure.Ipc
 
                 try
                 {
+                    var actualServerProcessId = GetServerProcessId(pipeHandle);
+                    if (!IsExpectedServerConnection(
+                        expectedServerProcessId,
+                        hasAcceptedServerConnection,
+                        connectedServerProcessId,
+                        actualServerProcessId))
+                    {
+                        continue;
+                    }
+
+                    connectedServerProcessId = actualServerProcessId;
+                    hasAcceptedServerConnection = true;
                     var request = PipeMessageIO.ReadMessage<ElevatedCommandRequest>(pipeHandle, BrokenPipeMessage);
+                    if (request == null)
+                        throw new InvalidOperationException("The privileged host received an empty request.");
 
                     var isShutdown = string.Equals(
                         request.OperationName,
@@ -74,7 +79,7 @@ namespace WinCraft.Infrastructure.Ipc
                         StringComparison.OrdinalIgnoreCase);
 
                     var result = isShutdown
-                        ? CommandResult.Success()
+                        ? CommandResult.Success(request.RequestId)
                         : dispatch(request);
 
                     PipeMessageIO.WriteMessage(pipeHandle, result);
@@ -84,29 +89,48 @@ namespace WinCraft.Infrastructure.Ipc
                 }
                 catch (Win32Exception)
                 {
-                    // The pipe was closed or the connection was lost.
-                    // Loop back and wait for the next connection.
+                    // A transient disconnection is expected between requests.
                 }
                 catch (InvalidOperationException)
                 {
-                    // Protocol error (broken pipe, invalid payload).
-                    // Loop back and wait for the next connection.
+                    // Ignore malformed or torn-down connections and wait again.
+                }
+                catch (TimeoutException)
+                {
+                    // Timed I/O should reset this connection, not terminate the host.
                 }
             }
         }
 
-        /// <summary>
-        /// Extracts the UI process ID from the pipe name.
-        /// The format is "WinCraft.ElevatedAgent.&lt;pid&gt;".
-        /// </summary>
-        private static int? ParseParentPid(string pipeName)
+        private static bool ShouldStopWaitingForServer(int? connectedServerProcessId)
         {
-            var lastDot = pipeName.LastIndexOf('.');
-            if (lastDot < 0)
-                return null;
+            if (!connectedServerProcessId.HasValue)
+                return false;
 
-            var pidPart = pipeName.Substring(lastDot + 1);
-            return int.TryParse(pidPart, out int pid) ? pid : null;
+            return !ProcessExists(connectedServerProcessId.Value);
+        }
+
+        private static bool IsExpectedServerConnection(
+            int? expectedServerProcessId,
+            bool hasAcceptedServerConnection,
+            int? connectedServerProcessId,
+            int actualServerProcessId)
+        {
+            if (!hasAcceptedServerConnection && expectedServerProcessId.HasValue)
+                return actualServerProcessId == expectedServerProcessId.Value;
+
+            if (hasAcceptedServerConnection && connectedServerProcessId.HasValue)
+                return actualServerProcessId == connectedServerProcessId.Value;
+
+            return true;
+        }
+
+        private static int GetServerProcessId(SafeFileHandle pipeHandle)
+        {
+            if (!PInvoke.GetNamedPipeServerProcessId(pipeHandle, out uint serverProcessId))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+
+            return (int)serverProcessId;
         }
 
         private static bool ProcessExists(int pid)

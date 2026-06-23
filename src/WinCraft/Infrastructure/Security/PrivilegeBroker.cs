@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using WinCraft.Infrastructure.Ipc;
 
 namespace WinCraft.Infrastructure.Security
 {
     /// <summary>
-    /// Maps elevated agent command results into UI-friendly privilege outcomes.
+    /// Maps privileged host command results into UI-friendly outcomes.
     /// </summary>
     internal sealed class PrivilegeBroker(ElevatedAgentController controller) : IPrivilegeBroker
     {
@@ -11,23 +12,31 @@ namespace WinCraft.Infrastructure.Security
 
         public PrivilegeExecutionResult Execute(ElevatedCommandRequest request)
         {
-            if (_controller != null)
+            if (_controller == null)
             {
-                var result = _controller.Execute(request);
-                return MapResult(result);
+                if (ProcessElevation.IsCurrentProcessElevated())
+                {
+                    var localResult = ElevatedOperationExecutor.Execute(request);
+                    return MapResult(localResult);
+                }
+
+                return PrivilegeExecutionResult.Unavailable(
+                    PrivilegeErrorCodes.ElevatedAgentUnavailable,
+                    "The elevated agent controller is not available.");
             }
 
-            // When the process is already running elevated there is no need
-            // for an agent — execute the operation locally in the current process.
-            if (ProcessElevation.IsCurrentProcessElevated())
-            {
-                var localResult = ElevatedOperationExecutor.Execute(request);
-                return MapResult(localResult);
-            }
+            var result = _controller.Execute(request);
+            return MapResult(result);
+        }
 
-            return PrivilegeExecutionResult.Unavailable(
-                PrivilegeErrorCodes.ElevatedAgentUnavailable,
-                "The elevated agent controller is not available.");
+        /// <summary>
+        /// Executes a privileged request on a background thread so the
+        /// caller never blocks on a UAC prompt, pipe connection, or
+        /// agent communication timeout.
+        /// </summary>
+        public Task<PrivilegeExecutionResult> ExecuteAsync(ElevatedCommandRequest request)
+        {
+            return Task.Run(() => Execute(request));
         }
 
         private static PrivilegeExecutionResult MapResult(CommandResult result)

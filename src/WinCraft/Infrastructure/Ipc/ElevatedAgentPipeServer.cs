@@ -90,10 +90,24 @@ namespace WinCraft.Infrastructure.Ipc
                                 // the completion so the overlapped struct can
                                 // be safely freed.
                                 PInvoke.CancelIoEx(pipeHandle, (NativeOverlapped*)null);
-                                PInvoke.GetOverlappedResult(
-                                    pipeHandle, in *overlappedPtr, out _, true);
+                                if (PInvoke.GetOverlappedResult(
+                                        pipeHandle, in *overlappedPtr, out _, true))
+                                {
+                                    return;
+                                }
+
+                                var completionErrorCode = Marshal.GetLastWin32Error();
+                                if (completionErrorCode != (int)WIN32_ERROR.ERROR_OPERATION_ABORTED)
+                                    throw new Win32Exception(completionErrorCode);
+
                                 throw new TimeoutException(
                                     "The elevated agent did not connect to the named pipe within the timeout period.");
+                            }
+
+                            if (!PInvoke.GetOverlappedResult(
+                                    pipeHandle, in *overlappedPtr, out _, false))
+                            {
+                                throw new Win32Exception(Marshal.GetLastWin32Error());
                             }
                         }
                         else if (errorCode != (int)WIN32_ERROR.ERROR_PIPE_CONNECTED)

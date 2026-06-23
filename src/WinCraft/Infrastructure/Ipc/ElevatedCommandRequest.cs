@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using WinCraft.Infrastructure.Security;
 
 namespace WinCraft.Infrastructure.Ipc
 {
@@ -13,5 +14,11 @@ namespace WinCraft.Infrastructure.Ipc
 
         [DataMember(Order = 2)]
         public string Payload { get; set; }
+
+        [DataMember(Order = 3)]
+        public string RequestId { get; set; }
+
+        [DataMember(Order = 4)]
+        public PrivilegeLevel PrivilegeLevel { get; set; }
     }
 }

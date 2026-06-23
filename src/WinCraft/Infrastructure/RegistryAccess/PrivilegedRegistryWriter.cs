@@ -6,14 +6,18 @@ using WinCraft.Infrastructure.Security;
 namespace WinCraft.Infrastructure.RegistryAccess
 {
     /// <summary>
-    /// Routes registry writes to either the local process or the elevated agent.
+    /// Routes registry writes to either the current user context or the privileged host.
     /// </summary>
     internal sealed class PrivilegedRegistryWriter(IPrivilegeBroker privilegeBroker)
     {
         private readonly IPrivilegeBroker _privilegeBroker = privilegeBroker;
 
         public PrivilegeExecutionResult WriteString(
-            RegistryValueLocation location, string subKeyPath, string valueName, string valueData)
+            RegistryValueLocation location,
+            string subKeyPath,
+            string valueName,
+            string valueData,
+            PrivilegeLevel privilegeLevel)
         {
             var request = new RegistryValueWriteRequest
             {
@@ -26,11 +30,14 @@ namespace WinCraft.Infrastructure.RegistryAccess
 
             return location == RegistryValueLocation.CurrentUser
                 ? ExecuteLocal(request, WindowsRegistryWriter.WriteValue, PrivilegeErrorCodes.RegistryWriteFailed)
-                : ExecuteElevated(request, ElevatedOperations.RegistryWrite);
+                : ExecutePrivileged(request, ElevatedOperations.RegistryWrite, privilegeLevel);
         }
 
         public PrivilegeExecutionResult DeleteString(
-            RegistryValueLocation location, string subKeyPath, string valueName)
+            RegistryValueLocation location,
+            string subKeyPath,
+            string valueName,
+            PrivilegeLevel privilegeLevel)
         {
             var request = new RegistryValueWriteRequest
             {
@@ -41,11 +48,13 @@ namespace WinCraft.Infrastructure.RegistryAccess
 
             return location == RegistryValueLocation.CurrentUser
                 ? ExecuteLocal(request, WindowsRegistryWriter.DeleteValue, PrivilegeErrorCodes.RegistryDeleteFailed)
-                : ExecuteElevated(request, ElevatedOperations.RegistryDelete);
+                : ExecutePrivileged(request, ElevatedOperations.RegistryDelete, privilegeLevel);
         }
 
         private static PrivilegeExecutionResult ExecuteLocal(
-            RegistryValueWriteRequest request, Action<RegistryValueWriteRequest> operation, string errorCode)
+            RegistryValueWriteRequest request,
+            Action<RegistryValueWriteRequest> operation,
+            string errorCode)
         {
             try
             {
@@ -58,19 +67,16 @@ namespace WinCraft.Infrastructure.RegistryAccess
             }
         }
 
-        private PrivilegeExecutionResult ExecuteElevated(
-            RegistryValueWriteRequest request, string operationName)
+        private PrivilegeExecutionResult ExecutePrivileged(
+            RegistryValueWriteRequest request,
+            string operationName,
+            PrivilegeLevel privilegeLevel)
         {
-            if (ProcessElevation.IsCurrentProcessElevated())
+            if (privilegeLevel == PrivilegeLevel.Standard)
             {
-                var isWrite = operationName == ElevatedOperations.RegistryWrite;
-                Action<RegistryValueWriteRequest> action = isWrite
-                    ? WindowsRegistryWriter.WriteValue
-                    : WindowsRegistryWriter.DeleteValue;
-                var errorCode = isWrite
-                    ? PrivilegeErrorCodes.RegistryWriteFailed
-                    : PrivilegeErrorCodes.RegistryDeleteFailed;
-                return ExecuteLocal(request, action, errorCode);
+                return PrivilegeExecutionResult.Failure(
+                    PrivilegeErrorCodes.PrivilegeLevelRequired,
+                    "A machine-level registry write must declare an elevated privilege level.");
             }
 
             if (_privilegeBroker == null)
@@ -84,7 +90,9 @@ namespace WinCraft.Infrastructure.RegistryAccess
             var command = new ElevatedCommandRequest
             {
                 OperationName = operationName,
-                Payload = payload
+                Payload = payload,
+                PrivilegeLevel = privilegeLevel,
+                RequestId = Guid.NewGuid().ToString("N")
             };
 
             return _privilegeBroker.Execute(command);

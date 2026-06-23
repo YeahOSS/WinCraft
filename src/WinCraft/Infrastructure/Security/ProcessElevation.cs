@@ -11,27 +11,10 @@ using Windows.Win32.Security;
 namespace WinCraft.Infrastructure.Security
 {
     /// <summary>
-    /// Provides account and token elevation checks for startup routing.
+    /// Provides account, token, and relaunch helpers for privilege routing.
     /// </summary>
     internal static class ProcessElevation
     {
-        /// <summary>
-        /// Returns whether the current logon can acquire an administrator token.
-        /// </summary>
-        public static bool IsCurrentAccountAdministrator()
-        {
-            var isCurrentTokenAdministrator = IsCurrentTokenAdministrator();
-            using var tokenHandle = OpenCurrentProcessToken();
-            if (tokenHandle == null)
-                return isCurrentTokenAdministrator;
-
-            if (!TryGetTokenElevationType(tokenHandle, out TOKEN_ELEVATION_TYPE elevationType))
-                return isCurrentTokenAdministrator;
-
-            return IsAdministratorElevationType(elevationType)
-                || isCurrentTokenAdministrator;
-        }
-
         /// <summary>
         /// Returns whether the current process is already running elevated.
         /// </summary>
@@ -57,8 +40,7 @@ namespace WinCraft.Infrastructure.Security
         /// </summary>
         public static bool TryRelaunchElevated(string[] args, out Process elevatedProcess)
         {
-            using var process = Process.GetCurrentProcess();
-            var executablePath = process.MainModule.FileName;
+            var executablePath = GetCurrentProcessPath();
             var startInfo = new ProcessStartInfo
             {
                 FileName = executablePath,
@@ -84,22 +66,51 @@ namespace WinCraft.Infrastructure.Security
             }
         }
 
+        public static bool TryLaunchUnelevatedFromShell(string[] args, out Process uiProcess)
+        {
+            var executablePath = GetCurrentProcessPath();
+            return TokenProcessLauncher.TryStartProcessFromShellToken(executablePath, args, out uiProcess);
+        }
+
+        /// <summary>
+        /// Returns the full path of the current process executable
+        /// via <c>GetModuleFileName(NULL)</c> rather than the BCL
+        /// <see cref="Process.MainModule"/> which allocates a
+        /// <see cref="ProcessModule"/> and may throw
+        /// <see cref="Win32Exception"/> on access-denied.
+        /// </summary>
+        internal static unsafe string GetCurrentProcessPath()
+        {
+            const int initialBufferLength = 260;
+            var bufferLength = initialBufferLength;
+
+            while (true)
+            {
+                char[] buffer = new char[bufferLength];
+                fixed (char* pBuffer = buffer)
+                {
+                    uint len = PInvoke.GetModuleFileName(null, new PWSTR(pBuffer), (uint)buffer.Length);
+                    if (len == 0)
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                    if (len < buffer.Length - 1)
+                        return new string(buffer, 0, (int)len);
+                }
+
+                checked
+                {
+                    bufferLength *= 2;
+                }
+            }
+        }
+
         private static SafeFileHandle OpenCurrentProcessToken()
         {
-            using var process = Process.GetCurrentProcess();
-            // ownsHandle: false — the process handle is owned by the OS; we borrow it here.
-            using var processHandle = new SafeFileHandle(process.Handle, ownsHandle: false);
+            using var processHandle = PInvoke.GetCurrentProcess_SafeHandle();
             if (!PInvoke.OpenProcessToken(processHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle tokenHandle))
                 return null;
 
             return tokenHandle;
-        }
-
-        private static bool IsAdministratorElevationType(TOKEN_ELEVATION_TYPE elevationType)
-        {
-            return elevationType
-                is TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited
-                or TOKEN_ELEVATION_TYPE.TokenElevationTypeFull;
         }
 
         private static bool IsCurrentTokenAdministrator()

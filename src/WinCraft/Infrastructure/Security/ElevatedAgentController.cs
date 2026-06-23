@@ -10,38 +10,77 @@ using WinCraft.Infrastructure.Ipc;
 namespace WinCraft.Infrastructure.Security
 {
     /// <summary>
-    /// Launches a persistent elevated agent on first use and reuses it
-    /// for subsequent operations so UAC only appears once.
-    /// The UI process owns the named pipe server; the elevated agent
-    /// connects as a client. This direction avoids the UAC integrity-level
-    /// and DACL barriers that block the reverse direction.
+    /// Owns the UI-side pipe server and reaches a persistent privileged host.
     /// </summary>
     internal sealed class ElevatedAgentController : IDisposable
     {
         private readonly object _lock = new();
+        private readonly string _pipeName;
+        private readonly int _uiProcessId;
+        private readonly bool _attachOnly;
+        private readonly bool _ownsAgentProcess;
         private Process _agentProcess;
         private SafeFileHandle _pipeHandle;
         private bool _agentRunning;
         private bool _agentConnected;
         private bool _disposed;
+        private AgentConnectionState _state;
+
+        public ElevatedAgentController()
+            : this(null, null, attachOnly: false)
+        {
+        }
+
+        public ElevatedAgentController(int? attachedAgentPid, string pipeName, bool attachOnly)
+        {
+            _pipeName = string.IsNullOrEmpty(pipeName)
+                ? string.Format("WinCraft.ElevatedAgent.{0}", PInvoke.GetCurrentProcessId())
+                : pipeName;
+            _uiProcessId = (int)PInvoke.GetCurrentProcessId();
+            _attachOnly = attachOnly;
+            _ownsAgentProcess = !attachedAgentPid.HasValue;
+            _state = AgentConnectionState.Idle;
+
+            if (attachedAgentPid.HasValue)
+            {
+                try
+                {
+                    _agentProcess = Process.GetProcessById(attachedAgentPid.Value);
+                    _agentRunning = !_agentProcess.HasExited;
+                }
+                catch (ArgumentException)
+                {
+                    // The advertised host may have exited before the UI finished
+                    // starting. Leave the controller unattached so the caller can
+                    // surface a normal "host unavailable" failure instead of
+                    // crashing during startup.
+                    _agentProcess = null;
+                    _agentRunning = false;
+                }
+            }
+        }
 
         /// <summary>
-        /// Sends a request to the elevated agent and returns the result.
+        /// Current lifecycle state of the elevated agent connection.
+        /// Safe to read from any thread.
         /// </summary>
-        /// <remarks>
-        /// This method holds <see cref="_lock"/> during blocking pipe I/O.
-        /// The lock serialises all agent access and ensures state consistency
-        /// across the start / execute / disconnect lifecycle. Callers offload
-        /// long-running operations to background threads so the lock does not
-        /// block the UI dispatcher.
-        /// </remarks>
+        public AgentConnectionState State
+        {
+            get
+            {
+                lock (_lock)
+                    return _state;
+            }
+        }
+
         public CommandResult Execute(ElevatedCommandRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.OperationName))
             {
                 return CommandResult.Failure(
                     PrivilegeErrorCodes.InvalidRequest,
-                    "The elevated request is missing an operation name.");
+                    "The elevated request is missing an operation name.",
+                    request?.RequestId);
             }
 
             var isShutdown = string.Equals(
@@ -54,72 +93,53 @@ namespace WinCraft.Infrastructure.Security
                 if (_disposed)
                     throw new ObjectDisposedException(nameof(ElevatedAgentController));
 
-                CommandResult result;
+                Log.Debug($"Processing elevated operation '{request.OperationName}' (id={request.RequestId}).");
+
                 try
                 {
                     if (!EnsureAgentRunning())
                     {
                         return CommandResult.Failure(
                             PrivilegeErrorCodes.AgentStartCancelled,
-                            "The elevated agent start was cancelled.");
+                            "The elevated agent start was cancelled.",
+                            request.RequestId);
                     }
 
                     PipeMessageIO.WriteMessage(_pipeHandle, request);
-                    result = PipeMessageIO.ReadMessage<CommandResult>(
-                        _pipeHandle, "The elevated agent closed the pipe unexpectedly.");
+                    var result = PipeMessageIO.ReadMessage<CommandResult>(
+                        _pipeHandle,
+                        "The elevated agent closed the pipe unexpectedly.");
+
+                    CompleteRequestLifecycle(isShutdown);
+                    return result;
                 }
                 catch (Win32Exception)
                 {
                     Log.Warn("Elevated agent pipe communication failed; will relaunch on next request.");
-                    _agentRunning = false;
-                    _agentConnected = false;
+                    ResetRunningState();
                     return CommandResult.Failure(
                         PrivilegeErrorCodes.AgentUnavailable,
-                        "The elevated agent is unavailable.");
+                        "The elevated agent is unavailable.",
+                        request.RequestId);
                 }
                 catch (InvalidOperationException exception)
                 {
                     Log.Error(exception, "Elevated agent protocol error.");
-                    _agentRunning = false;
-                    _agentConnected = false;
+                    ResetRunningState();
                     return CommandResult.Failure(
                         PrivilegeErrorCodes.EmptyAgentResponse,
-                        exception.Message);
+                        exception.Message,
+                        request.RequestId);
                 }
                 catch (TimeoutException)
                 {
                     Log.Warn("Elevated agent connection timed out after all retries.");
-                    _agentRunning = false;
-                    _agentConnected = false;
+                    ResetRunningState();
                     return CommandResult.Failure(
                         PrivilegeErrorCodes.AgentStartFailed,
-                        "The elevated agent did not connect within the timeout period.");
+                        "The elevated agent did not connect within the timeout period.",
+                        request.RequestId);
                 }
-
-                // The request/response cycle succeeded. Handle post-I/O
-                // state separately so a failed disconnect cannot discard
-                // the valid result.
-                if (!isShutdown)
-                {
-                    try
-                    {
-                        PInvoke.DisconnectNamedPipe(_pipeHandle);
-                    }
-                    catch (Win32Exception)
-                    {
-                        // The agent may have already closed its end.
-                        // Let EnsureAgentRunning recreate the pipe on
-                        // the next call if the disconnect failed.
-                    }
-                    _agentConnected = false;
-                }
-                else
-                {
-                    _agentRunning = false;
-                    _agentConnected = false;
-                }
-
-                return result;
             }
         }
 
@@ -131,37 +151,31 @@ namespace WinCraft.Infrastructure.Security
                     return;
 
                 _disposed = true;
+                _state = AgentConnectionState.Disposed;
 
-                if (_agentRunning && _agentConnected)
+                if (_ownsAgentProcess)
                 {
                     try
                     {
-                        Log.Info("Sending shutdown request to elevated agent.");
-                        var shutdownRequest = new ElevatedCommandRequest
-                        {
-                            OperationName = ElevatedOperations.Shutdown
-                        };
-                        PipeMessageIO.WriteMessage(_pipeHandle, shutdownRequest);
-                        PipeMessageIO.ReadMessage<CommandResult>(
-                            _pipeHandle, "The elevated agent closed the pipe unexpectedly.");
+                        TryShutdownAgent();
                         _agentProcess?.WaitForExit(2000);
                     }
                     catch
                     {
-                        // Agent may already be gone; proceed to kill.
+                        // Best-effort shutdown only.
                     }
-                }
 
-                if (_agentProcess != null && !_agentProcess.HasExited)
-                {
-                    try
+                    if (_agentProcess != null && !_agentProcess.HasExited)
                     {
-                        Log.Warn("Elevated agent did not exit gracefully; force-killing.");
-                        _agentProcess.Kill();
-                    }
-                    catch
-                    {
-                        // Process may already be dead.
+                        try
+                        {
+                            Log.Warn("Elevated agent did not exit gracefully; force-killing.");
+                            _agentProcess.Kill();
+                        }
+                        catch
+                        {
+                            // The process may already be exiting.
+                        }
                     }
                 }
 
@@ -176,50 +190,49 @@ namespace WinCraft.Infrastructure.Security
 
         private bool EnsureAgentRunning()
         {
-            if (_agentRunning && _agentConnected
-                && _agentProcess != null && !_agentProcess.HasExited)
+            if (_agentRunning && _agentConnected && _agentProcess != null && !_agentProcess.HasExited)
                 return true;
 
-            // Agent not connected — reconnect if the process is still alive,
-            // otherwise launch a new one.
             if (!_agentRunning || _agentProcess == null || _agentProcess.HasExited)
             {
-                _agentRunning = false;
                 _agentConnected = false;
-                _pipeHandle?.Dispose();
-                _pipeHandle = null;
+                _agentRunning = false;
                 _agentProcess?.Dispose();
                 _agentProcess = null;
 
-                using var process = Process.GetCurrentProcess();
-                var pipeName = string.Format("WinCraft.ElevatedAgent.{0}", process.Id);
-                _pipeHandle = ElevatedAgentPipeServer.Create(pipeName);
+                if (_attachOnly)
+                    throw new InvalidOperationException("The attached elevated host is no longer running.");
 
                 var arguments = new[]
                 {
                     ElevatedAgentArguments.ElevatedAgentMode,
                     ElevatedAgentArguments.PipeName,
-                    pipeName
+                    _pipeName,
+                    ElevatedAgentArguments.UiPid,
+                    _uiProcessId.ToString()
                 };
 
-                if (!ProcessElevation.TryRelaunchElevated(arguments, out _agentProcess)
-                    || _agentProcess == null)
+                Log.Info("Launching elevated agent via UAC...");
+                _state = AgentConnectionState.Launching;
+                if (!ProcessElevation.TryRelaunchElevated(arguments, out _agentProcess) || _agentProcess == null)
                 {
                     Log.Warn("Elevated agent launch was cancelled or failed.");
+                    _state = AgentConnectionState.Idle;
                     _pipeHandle?.Dispose();
                     _pipeHandle = null;
                     return false;
                 }
 
-                Log.Info($"Elevated agent launched (pid={_agentProcess.Id}, pipe={pipeName}).");
                 _agentRunning = true;
+                Log.Info($"Elevated agent launched (pid={_agentProcess.Id}, pipe={_pipeName}).");
             }
 
-            // Wait for the elevated agent to connect, with retries.
-            // The agent process does not exist until the user accepts the UAC
-            // prompt, so the first timeout may fire before the agent has started.
-            // Each attempt waits up to the pipe server's connect timeout.
+            if (_pipeHandle == null || _pipeHandle.IsInvalid)
+                _pipeHandle = ElevatedAgentPipeServer.Create(_pipeName);
+
             const int maxConnectionAttempts = 3;
+            _state = AgentConnectionState.WaitingForConnection;
+            Log.Info("Waiting for elevated agent to connect to the named pipe...");
             for (int attempt = 0; attempt < maxConnectionAttempts; attempt++)
             {
                 try
@@ -229,36 +242,132 @@ namespace WinCraft.Infrastructure.Security
                 }
                 catch (TimeoutException)
                 {
-                    // If the agent process has already exited, the user cancelled
-                    // UAC or the agent crashed — propagate the failure immediately.
                     if (_agentProcess != null && _agentProcess.HasExited)
+                    {
+                        Log.Warn("Elevated agent process exited while waiting for connection.");
                         throw;
+                    }
 
                     if (attempt == maxConnectionAttempts - 1)
+                    {
+                        Log.Warn("All connection attempts to the elevated agent failed.");
                         throw;
+                    }
 
-                    Log.Info("Elevated agent connection timed out; retrying.");
+                    Log.Warn(
+                        $"Elevated agent connection attempt {attempt + 1}/{maxConnectionAttempts} timed out; retrying...");
                     _pipeHandle?.Dispose();
-                    _pipeHandle = ElevatedAgentPipeServer.Create(
-                        string.Format("WinCraft.ElevatedAgent.{0}", Process.GetCurrentProcess().Id));
+                    _pipeHandle = ElevatedAgentPipeServer.Create(_pipeName);
                 }
             }
 
-            // Verify that the connecting process is the agent we launched.
             if (!PInvoke.GetNamedPipeClientProcessId(_pipeHandle, out uint connectedProcessId))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
-            if (connectedProcessId != _agentProcess.Id)
+            if (_agentProcess == null || connectedProcessId != _agentProcess.Id)
             {
-                _agentRunning = false;
-                _agentConnected = false;
+                Log.Warn(
+                    $"Pipe connected by unexpected process (expected={_agentProcess?.Id}, actual={connectedProcessId}).");
+                ResetRunningState();
                 throw new InvalidOperationException(
                     "The elevated agent pipe was connected by an unexpected process.");
             }
 
-            Log.Info($"Elevated agent connected (pid={connectedProcessId}).");
             _agentConnected = true;
+            _state = AgentConnectionState.Connected;
+            Log.Info($"Elevated agent connected and verified (pid={connectedProcessId}).");
             return true;
+        }
+
+        private void TryShutdownAgent()
+        {
+            if (!_agentRunning || _agentProcess == null || _agentProcess.HasExited)
+                return;
+
+            if (!_agentConnected && !TryReconnectToRunningAgent())
+                return;
+
+            try
+            {
+                Log.Info("Sending shutdown request to elevated agent.");
+                var shutdownRequest = new ElevatedCommandRequest
+                {
+                    OperationName = ElevatedOperations.Shutdown,
+                    PrivilegeLevel = PrivilegeLevel.Administrator,
+                    RequestId = Guid.NewGuid().ToString("N")
+                };
+                PipeMessageIO.WriteMessage(_pipeHandle, shutdownRequest);
+                PipeMessageIO.ReadMessage<CommandResult>(
+                    _pipeHandle,
+                    "The elevated agent closed the pipe unexpectedly.");
+                _agentRunning = false;
+                _agentConnected = false;
+            }
+            catch
+            {
+                // The host may already be terminating.
+            }
+        }
+
+        private bool TryReconnectToRunningAgent()
+        {
+            if (_agentProcess == null || _agentProcess.HasExited)
+                return false;
+
+            try
+            {
+                if (_pipeHandle == null || _pipeHandle.IsInvalid)
+                    _pipeHandle = ElevatedAgentPipeServer.Create(_pipeName);
+
+                ElevatedAgentPipeServer.WaitForConnection(_pipeHandle);
+
+                if (!PInvoke.GetNamedPipeClientProcessId(_pipeHandle, out uint connectedProcessId))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                if (connectedProcessId != _agentProcess.Id)
+                    throw new InvalidOperationException(
+                        "The elevated agent pipe was connected by an unexpected process.");
+
+                _agentConnected = true;
+                return true;
+            }
+            catch
+            {
+                _agentConnected = false;
+                return false;
+            }
+        }
+
+        private void CompleteRequestLifecycle(bool isShutdown)
+        {
+            if (isShutdown)
+            {
+                _agentRunning = false;
+                _agentConnected = false;
+                _state = AgentConnectionState.Idle;
+                return;
+            }
+
+            try
+            {
+                PInvoke.DisconnectNamedPipe(_pipeHandle);
+            }
+            catch (Win32Exception)
+            {
+                // The client side may already be closed.
+            }
+
+            _agentConnected = false;
+            _state = AgentConnectionState.Idle;
+        }
+
+        private void ResetRunningState()
+        {
+            _agentRunning = false;
+            _agentConnected = false;
+            _state = AgentConnectionState.Idle;
+            _pipeHandle?.Dispose();
+            _pipeHandle = null;
         }
     }
 }
