@@ -1,0 +1,42 @@
+<Window x:Class="WinCraft.TestBench.TestBenchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Test Bench" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Label Content="Process Identity" FontWeight="Bold" />
+                <Button Content="Current Elevation" Click="OnCurrentElevation" Margin="0,0,0,2" />
+                <Button Content="Token / Session Info" Click="OnTokenInfo" Margin="0,0,0,2" />
+
+                <Label Content="Named Pipe" FontWeight="Bold" Margin="0,8,0,0" />
+                <Button Content="Create Server + Wait" Click="OnPipeServerWait" Margin="0,0,0,2" />
+
+                <Label Content="Elevated Agent" FontWeight="Bold" Margin="0,8,0,0" />
+                <Button Content="Launch + Ping + Shutdown" Click="OnAgentLifecycle" Margin="0,0,0,2" />
+
+                <Label Content="Registry" FontWeight="Bold" Margin="0,8,0,0" />
+                <Button Content="Write HKLM (Admin)" Click="OnRegistryWrite" Margin="0,0,0,2" />
+                <Button Content="Delete HKLM (Admin)" Click="OnRegistryDelete" Margin="0,0,0,2" />
+
+                <Label Content="TrustedInstaller" FontWeight="Bold" Margin="0,8,0,0" />
+                <Button Content="TI Service Status" Click="OnTiServiceStatus" Margin="0,0,0,2" />
+                <Button Content="TI Access Validation" Click="OnTiAccessValidation" Margin="0,0,0,2" />
+
+                <Label Content="Output" FontWeight="Bold" Margin="0,8,0,0" />
+                <Button Content="Clear" Click="OnClear" Margin="0,0,0,2" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <TextBox x:Name="OutputBox" Grid.Column="1" Margin="8,0,0,0"
+                 IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"
+                 AcceptsReturn="True" />
+    </Grid>
+</Window>

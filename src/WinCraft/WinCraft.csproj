@@ -72,4 +72,9 @@
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <Compile Remove="TestBench\**" />
+    <Page Remove="TestBench\**" />
+  </ItemGroup>
 </Project>

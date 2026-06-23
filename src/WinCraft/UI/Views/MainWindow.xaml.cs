@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 
 namespace WinCraft
 {
@@ -7,6 +8,14 @@ namespace WinCraft
         public MainWindow()
         {
             InitializeComponent();
+
+#if DEBUG
+            KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.F12)
+                    new TestBench.TestBenchWindow { Owner = this }.Show();
+            };
+#endif
         }
     }
 }
