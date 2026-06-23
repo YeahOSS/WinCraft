@@ -117,9 +117,8 @@ Adding a new privileged operation still means:
 For the long-lived UI/host pipe:
 
 - the UI passes the expected host PID explicitly
-- a host launched by the UI receives the expected UI PID explicitly
-- a host created by "Run as administrator" binds to the first verified UI pipe
-  server that sends a valid request
+- every long-lived host receives the expected UI PID explicitly, whether it was
+  launched by the UI with `runas` or created first by "Run as administrator"
 - the UI validates the connecting client PID on every connection
 - the host exits when its bound UI PID disappears
 
@@ -134,7 +133,9 @@ Cross-user scenarios remain out of scope.
 ## Lifecycle
 
 - the privileged host is bound to one UI session
-- the UI sends a shutdown request during normal exit
-- if the host is already gone, shutdown is best-effort only
-- if the UI PID disappears, the host stops waiting and exits
+- for a UI-owned host, the UI sends a shutdown request during normal exit and
+  may force-kill the host if it does not exit
+- for an attached host, the UI does not own the process; the host exits after
+  its bound UI PID disappears
+- shutdown and missing-process handling are best-effort cleanup paths
 - TI hop processes are never persistent
