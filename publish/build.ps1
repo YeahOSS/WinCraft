@@ -17,7 +17,7 @@ $script:SourceRoot = Join-Path $script:RepositoryRoot "src"
 $script:PublishOutputPath = Join-Path $script:PublishRoot "output"
 $script:LegacyArtifactName = "WinCraft-Legacy.exe"
 $script:StandardArtifactName = "WinCraft-Standard.exe"
-$script:FullArtifactName = "WinCraft-Full.zip"
+$script:FullInstallerArtifactName = "WinCraft-Full-Setup.exe"
 $script:ResolvedProjectPath = $null
 $script:ProjectRoot = $null
 
@@ -195,6 +195,137 @@ function Get-BuildOutputDirectory {
     )
 
     return Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
+}
+
+function Get-NSISCompilerPath {
+    $command = Get-Command makensis -ErrorAction SilentlyContinue
+    if ($null -ne $command) {
+        return $command.Source
+    }
+
+    foreach ($candidatePath in @(
+        "C:\Program Files (x86)\NSIS\makensis.exe",
+        "C:\Program Files\NSIS\makensis.exe"
+    )) {
+        if (Test-Path -LiteralPath $candidatePath) {
+            return $candidatePath
+        }
+    }
+
+    throw "NSIS was not found. Install NSIS and ensure makensis.exe is available before building the Full package."
+}
+
+function Get-VersionString {
+    $versionPropsPath = Join-Path $script:SourceRoot "Version.props"
+    Assert-PathExists -Path $versionPropsPath -Description "Version props file"
+
+    [xml]$versionDocument = Get-Content -LiteralPath $versionPropsPath
+    $propertyGroup = $versionDocument.Project.PropertyGroup
+
+    if ($null -eq $propertyGroup) {
+        throw "Version.props must define a PropertyGroup."
+    }
+
+    $major = [string]$propertyGroup.VersionMajor
+    $minor = [string]$propertyGroup.VersionMinor
+    $build = [string]$propertyGroup.VersionBuild
+    if ([string]::IsNullOrWhiteSpace($major) `
+        -or [string]::IsNullOrWhiteSpace($minor) `
+        -or [string]::IsNullOrWhiteSpace($build)) {
+        throw "Version.props must define VersionMajor, VersionMinor, and VersionBuild."
+    }
+
+    return "$major.$minor.$build"
+}
+
+function Get-FullPackageFiles {
+    param(
+        [string]$ProjectRoot,
+        [string]$TargetSubdirectory
+    )
+
+    $buildOutputDirectory = Get-BuildOutputDirectory -ProjectRoot $ProjectRoot -TargetSubdirectory $TargetSubdirectory
+    Assert-PathExists -Path $buildOutputDirectory -Description "$TargetSubdirectory build output directory"
+
+    $packagePaths = @(Get-ChildItem -Path $buildOutputDirectory -File |
+        Where-Object { $_.Extension -in @(".exe", ".dll", ".config") } |
+        Select-Object -ExpandProperty FullName)
+
+    if ($packagePaths.Count -eq 0) {
+        throw "No files were found for the $TargetSubdirectory Full package."
+    }
+
+    return $packagePaths
+}
+
+function Copy-FullPackageFiles {
+    param(
+        [string]$ProjectRoot,
+        [string]$TargetSubdirectory,
+        [string]$DestinationDirectory
+    )
+
+    $packagePaths = Get-FullPackageFiles -ProjectRoot $ProjectRoot -TargetSubdirectory $TargetSubdirectory
+    New-Item -ItemType Directory -Path $DestinationDirectory -Force | Out-Null
+
+    foreach ($packagePath in $packagePaths) {
+        Copy-Item -LiteralPath $packagePath -Destination (Join-Path $DestinationDirectory (Split-Path $packagePath -Leaf)) -Force
+    }
+
+    return $packagePaths.Count
+}
+
+function New-NSISInstaller {
+    param(
+        [string]$ProjectRoot,
+        [string]$ArtifactName
+    )
+
+    $makensisPath = Get-NSISCompilerPath
+
+    Write-Step "Packaging Full NSIS installer"
+
+    $stagingRoot = Join-Path $script:PublishOutputPath "full-installer"
+    if (Test-Path -LiteralPath $stagingRoot) {
+        Remove-Item -LiteralPath $stagingRoot -Recurse -Force
+    }
+
+    New-Item -ItemType Directory -Path $stagingRoot -Force | Out-Null
+
+    $standardDirectory = Join-Path $stagingRoot "Standard"
+    $legacyDirectory = Join-Path $stagingRoot "Legacy"
+    $standardCount = Copy-FullPackageFiles -ProjectRoot $ProjectRoot -TargetSubdirectory "net45" -DestinationDirectory $standardDirectory
+    $legacyCount = Copy-FullPackageFiles -ProjectRoot $ProjectRoot -TargetSubdirectory "net30" -DestinationDirectory $legacyDirectory
+
+    $artifactPath = Join-Path $script:PublishOutputPath $ArtifactName
+    if (Test-Path -LiteralPath $artifactPath) {
+        Remove-Item -LiteralPath $artifactPath -Force
+    }
+
+    $scriptPath = Join-Path $script:PublishRoot "nsis\WinCraftFull.nsi"
+    Assert-PathExists -Path $scriptPath -Description "NSIS installer script"
+    $iconPath = Join-Path $script:RepositoryRoot "assets\app.ico"
+    Assert-PathExists -Path $iconPath -Description "Installer icon"
+
+    $version = Get-VersionString
+    & $makensisPath `
+        "/DSourceDir=$stagingRoot" `
+        "/DOutFile=$artifactPath" `
+        "/DIconPath=$iconPath" `
+        "/DVersion=$version" `
+        $scriptPath | Out-Host
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "NSIS installer build failed."
+    }
+
+    Remove-Item -LiteralPath $stagingRoot -Recurse -Force
+
+    return [pscustomobject]@{
+        ArtifactPath = $artifactPath
+        FileCount = $standardCount + $legacyCount
+        PackageKind = "nsis"
+    }
 }
 
 function Initialize-LzmaSdk {
@@ -388,28 +519,12 @@ Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -
 $standardBuildResult = New-OverlayExe -BuildLabel "net45" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName
 $legacyBuildResult = New-OverlayExe -BuildLabel "net30" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName
 
-Write-Step "Packaging Full distribution"
-$zipPath = Join-Path $script:PublishOutputPath $script:FullArtifactName
-$configPath = Join-Path (Get-BuildOutputDirectory -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30") "WinCraft.exe.config"
-Assert-PathExists -Path $configPath -Description "Legacy config file"
-
-# The artifact is named WinCraft-Legacy.exe; the CLR discovers the runtime
-# config by replacing the .exe extension with .exe.config, so the config
-# must be renamed to match the artifact.
-$legacyExePath = $legacyBuildResult.ArtifactPath
-$legacyConfigPath = $legacyExePath + ".config"
-Copy-Item -LiteralPath $configPath -Destination $legacyConfigPath -Force
-
-if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
-Compress-Archive -LiteralPath $legacyExePath, $legacyConfigPath -DestinationPath $zipPath
-Assert-PathExists -Path $zipPath -Description "Full package"
-
-Remove-Item -LiteralPath $legacyConfigPath -Force
+$fullBuildResult = New-NSISInstaller -ProjectRoot $script:ProjectRoot -ArtifactName $script:FullInstallerArtifactName
 
 Write-Step "Build completed"
 $standardSizeKB = [math]::Round((Get-Item $standardBuildResult.ArtifactPath).Length / 1KB, 0)
 $legacySizeKB = [math]::Round((Get-Item $legacyBuildResult.ArtifactPath).Length / 1KB, 0)
-$fullSizeKB = [math]::Round((Get-Item $zipPath).Length / 1KB, 0)
+$fullSizeKB = [math]::Round((Get-Item $fullBuildResult.ArtifactPath).Length / 1KB, 0)
 Write-Host "Standard: $($standardBuildResult.ArtifactPath) ($standardSizeKB KB)"
 Write-Host "Legacy: $($legacyBuildResult.ArtifactPath) ($legacySizeKB KB)"
-Write-Host "Full: $zipPath ($fullSizeKB KB)"
+Write-Host "Full: $($fullBuildResult.ArtifactPath) ($fullSizeKB KB, $($fullBuildResult.FileCount) files, $($fullBuildResult.PackageKind))"

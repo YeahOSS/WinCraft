@@ -21,7 +21,7 @@ Current package lines:
 | --- | --- | --- | --- |
 | `WinCraft-Legacy.exe` | Older Windows installations | Windows Vista and Windows 7 | Built on `.NET Framework 3.0` for the legacy compatibility line |
 | `WinCraft-Standard.exe` | Modern Windows installations | Windows 8, Windows 8.1, Windows 10, and Windows 11 | Built on `.NET Framework 4.5` for the standard line |
-| `WinCraft-Full.zip` | Maximum deployment fallback | Windows Vista through Windows 11 | Contains the Legacy executable plus `WinCraft.exe.config` |
+| `WinCraft-Full-Setup.exe` | Built-in framework only plus best available startup path | Windows Vista through Windows 11 | Bundles both loose-file runtime lines; the installer prefers `net45` on newer systems, keeps `net30` for older built-in-framework compatibility, and installs per-user without admin rights |
 
 ## Security Software Notice
 Because WinCraft modifies Windows settings through system APIs, some antivirus or security products may raise false positives — particularly on older release lines where legacy framework heuristics are stricter.
