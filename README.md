@@ -24,7 +24,7 @@ Current package lines:
 | `WinCraft-Full.zip` | Maximum deployment fallback | Windows Vista through Windows 11 | Contains the Legacy executable plus `WinCraft.exe.config` |
 
 ## Security Software Notice
-Because WinCraft modifies Windows settings and the release pipeline produces merged single-file executables, some antivirus or security products may raise false positives.
+Because WinCraft modifies Windows settings through system APIs, some antivirus or security products may raise false positives — particularly on older release lines where legacy framework heuristics are stricter.
 
 Before running a downloaded build, add the WinCraft folder or executable to your security software allowlist if it gets quarantined or blocked.
 

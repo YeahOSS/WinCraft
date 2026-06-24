@@ -15,6 +15,11 @@ namespace WinCraft
 {
     internal static class Program
     {
+        static Program()
+        {
+            OverlayAssemblyResolver.Register();
+        }
+
         [STAThread]
         private static void Main(string[] args)
         {

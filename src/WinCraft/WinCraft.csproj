@@ -17,6 +17,7 @@
     <AppConfig>Properties\app.config</AppConfig>
     <Deterministic>true</Deterministic>
     <LangVersion>12.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);PInvoke009</NoWarn>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -24,7 +25,7 @@
     <StartupObject>WinCraft.Program</StartupObject>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>WinCraft.Tests</_Parameter1>
     </AssemblyAttribute>
@@ -46,17 +47,9 @@
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net30'">
-    <IlRepackTargetPlatformVersion>v2</IlRepackTargetPlatformVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net45'">
-    <IlRepackTargetPlatformVersion>v4</IlRepackTargetPlatformVersion>
-  </PropertyGroup>
-
   <ItemGroup>
-    <Content Include="..\..\assets\app.ico" Link="Properties\app.ico" />
-    <Content Include="..\Version.props" Link="Properties\Version.props" />
+    <None Include="..\..\assets\app.ico" Link="Properties\app.ico" />
+    <None Include="..\Version.props" Link="Properties\Version.props" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,9 +61,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Theraot.Core" Version="3.2.11" />
-    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.45">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

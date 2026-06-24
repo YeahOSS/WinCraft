@@ -197,53 +197,12 @@ function Get-BuildOutputDirectory {
     return Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
 }
 
-function Test-IsFrameworkAssembly {
-    param(
-        [string]$AssemblyName
-    )
-
-    $gacRoots = @(
-        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_MSIL'),
-        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_32'),
-        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_64'),
-        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC_MSIL'),
-        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC_32'),
-        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC')
-    )
-
-    foreach ($root in $gacRoots) {
-        if (Test-Path (Join-Path $root $AssemblyName) -PathType Container) {
-            return $true
-        }
-    }
-
-    return $false
-}
-
-function Assert-MergedAssemblyReferences {
-    param(
-        [string]$MergedExePath,
-        [string]$Label
-    )
-
-    $asm = [System.Reflection.Assembly]::LoadFile($MergedExePath)
-    $missing = @()
-
-    foreach ($ref in $asm.GetReferencedAssemblies()) {
-        if (-not (Test-IsFrameworkAssembly -AssemblyName $ref.Name)) {
-            $missing += "$($ref.Name) v$($ref.Version)"
-        }
-    }
-
-    if ($missing.Count -gt 0) {
-        $message = "The $Label merged executable still references assemblies that are not in the GAC. "
-        $message += "These assemblies must be present in the build output directory so ILRepack can merge them:`n  "
-        $message += ($missing -join "`n  ")
-        throw $message
-    }
-}
-
-function Publish-SingleFileArtifact {
+# Builds a single-file executable by appending a compressed zip of dependency
+# DLLs as a PE overlay.  The PE header and sections stay untouched — the data
+# lives after the last section where the PE loader ignores it.
+# At runtime OverlayAssemblyResolver (Program.cs) reads the overlay, decompresses
+# the zip, and serves assemblies from memory on demand.
+function New-OverlayExe {
     param(
         [string]$BuildLabel,
         [string]$ProjectRoot,
@@ -251,49 +210,84 @@ function Publish-SingleFileArtifact {
         [string]$ArtifactName
     )
 
-    Write-Step "Collecting the $BuildLabel single-file executable"
+    Write-Step "Building $BuildLabel single-file executable with dependency overlay"
 
     $buildOutputDirectory = Get-BuildOutputDirectory -ProjectRoot $ProjectRoot -TargetSubdirectory $TargetSubdirectory
-    $mergedExePath = Join-Path $buildOutputDirectory "merged\WinCraft.exe"
+    $exePath = Join-Path $buildOutputDirectory "WinCraft.exe"
     $artifactPath = Join-Path $script:PublishOutputPath $ArtifactName
 
-    Assert-PathExists -Path $buildOutputDirectory -Description "$BuildLabel output directory"
-    Assert-PathExists -Path $mergedExePath -Description "$BuildLabel merged executable"
+    Assert-PathExists -Path $exePath -Description "$BuildLabel executable"
+
+    # Collect all .dll files in the build output.
+    $dllPaths = @(Get-ChildItem -Path $buildOutputDirectory -Filter "*.dll" -File | Select-Object -ExpandProperty FullName)
+    $dllNames = $dllPaths | ForEach-Object { Split-Path $_ -Leaf }
+    Write-Host "Dependencies: $($dllNames -join ', ')"
+
+    # Build a flat container: [int32 count] (for each: [int16 nameLen] [name] [int32 dataLen] [data]).
+    $containerStream = New-Object System.IO.MemoryStream
+    $writer = New-Object System.IO.BinaryWriter($containerStream, [System.Text.Encoding]::UTF8)
+    $writer.Write([int32]$dllPaths.Count)
+    $totalDllKB = 0
+    foreach ($dllPath in $dllPaths) {
+        $name = Split-Path $dllPath -Leaf
+        $nameBytes = [System.Text.Encoding]::UTF8.GetBytes($name)
+        $data = [System.IO.File]::ReadAllBytes($dllPath)
+        $totalDllKB += [math]::Round($data.Length / 1KB, 0)
+        $writer.Write([int16]$nameBytes.Length)
+        $writer.Write($nameBytes)
+        $writer.Write([int32]$data.Length)
+        $writer.Write($data)
+    }
+    $writer.Flush()
+    $rawBytes = $containerStream.ToArray()
+    $writer.Dispose()
+    $containerStream.Dispose()
+
+    $containerKB = [math]::Round($rawBytes.Length / 1KB, 0)
+
+    # Deflate-compress the container.
+    $compressedStream = New-Object System.IO.MemoryStream
+    $deflate = New-Object System.IO.Compression.DeflateStream(
+        $compressedStream,
+        [System.IO.Compression.CompressionLevel]::Optimal,
+        $true)
+    $deflate.Write($rawBytes, 0, $rawBytes.Length)
+    $deflate.Close()
+    $compressedBytes = $compressedStream.ToArray()
+    $deflate.Dispose()
+    $compressedStream.Dispose()
+
+    $compressedKB = [math]::Round($compressedBytes.Length / 1KB, 0)
+    Write-Host "DLLs $totalDllKB KB raw -> $containerKB KB container -> $compressedKB KB Deflate"
+
+    # Append overlay: [compressed data] [4 bytes LE: compressed len] [4 bytes: magic "WOVL"]
+    $magic = [System.BitConverter]::GetBytes([uint32]0x4C564F57)
+    $lenBytes = [System.BitConverter]::GetBytes([int32]$compressedBytes.Length)
 
     if (Test-Path -LiteralPath $artifactPath) {
         Remove-Item -LiteralPath $artifactPath -Force
     }
 
-    Copy-Item -LiteralPath $mergedExePath -Destination $artifactPath -Force
+    Copy-Item -LiteralPath $exePath -Destination $artifactPath -Force
+
+    $exeBytes = [System.IO.File]::ReadAllBytes($artifactPath)
+    $exeBaseKB = [math]::Round($exeBytes.Length / 1KB, 0)
+    $footerSize = 8
+    $overlayOffset = $exeBytes.Length
+    [Array]::Resize([ref]$exeBytes, $overlayOffset + $compressedBytes.Length + $footerSize)
+    [Array]::Copy($compressedBytes, 0, $exeBytes, $overlayOffset, $compressedBytes.Length)
+    [Array]::Copy($lenBytes, 0, $exeBytes, $overlayOffset + $compressedBytes.Length, 4)
+    [Array]::Copy($magic, 0, $exeBytes, $overlayOffset + $compressedBytes.Length + 4, 4)
+    [System.IO.File]::WriteAllBytes($artifactPath, $exeBytes)
+
+    $finalKB = [math]::Round($exeBytes.Length / 1KB, 0)
+    Write-Host "$($BuildLabel): $exeBaseKB KB exe + $compressedKB KB overlay = $finalKB KB single-file"
+
     Assert-PathExists -Path $artifactPath -Description "$BuildLabel single-file artifact"
 
-    # Validate from the artifact copy to avoid locking the build output file
-    # (which New-FullPackage reads again for the zip archive).
-    Assert-MergedAssemblyReferences -MergedExePath $artifactPath -Label $BuildLabel
-
     return [pscustomobject]@{
-        BuildOutputDirectory = $buildOutputDirectory
         ArtifactPath = $artifactPath
     }
-}
-
-function New-FullPackage {
-    Write-Step "Creating the Full package"
-
-    $zipPath = Join-Path $script:PublishOutputPath $script:FullArtifactName
-    $legacyBuildOutputDirectory = Get-BuildOutputDirectory -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30"
-    $legacyExePath = Join-Path $legacyBuildOutputDirectory "merged\WinCraft.exe"
-    $configPath = Join-Path $legacyBuildOutputDirectory "WinCraft.exe.config"
-
-    Assert-PathExists -Path $legacyExePath -Description "Legacy merged executable"
-    Assert-PathExists -Path $configPath -Description "Legacy configuration file"
-
-    if (Test-Path -LiteralPath $zipPath) {
-        Remove-Item -LiteralPath $zipPath -Force
-    }
-
-    Compress-Archive -LiteralPath $legacyExePath, $configPath -DestinationPath $zipPath
-    Assert-PathExists -Path $zipPath -Description "Full package archive"
 }
 
 Write-Step "Resolving build inputs"
@@ -316,12 +310,32 @@ New-Item -ItemType Directory -Path $script:PublishOutputPath -Force | Out-Null
 
 Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "all framework variants"
 
-$legacyBuildResult = Publish-SingleFileArtifact -BuildLabel "net30" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName
-$standardBuildResult = Publish-SingleFileArtifact -BuildLabel "net45" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName
+# Both targets use PE overlay — clean PE, no AV false positives.
+$standardBuildResult = New-OverlayExe -BuildLabel "net45" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName
+$legacyBuildResult = New-OverlayExe -BuildLabel "net30" -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName
 
-New-FullPackage
+Write-Step "Packaging Full distribution"
+$zipPath = Join-Path $script:PublishOutputPath $script:FullArtifactName
+$configPath = Join-Path (Get-BuildOutputDirectory -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30") "WinCraft.exe.config"
+Assert-PathExists -Path $configPath -Description "Legacy config file"
+
+# The artifact is named WinCraft-Legacy.exe; the CLR discovers the runtime
+# config by replacing the .exe extension with .exe.config, so the config
+# must be renamed to match the artifact.
+$legacyExePath = $legacyBuildResult.ArtifactPath
+$legacyConfigPath = $legacyExePath + ".config"
+Copy-Item -LiteralPath $configPath -Destination $legacyConfigPath -Force
+
+if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
+Compress-Archive -LiteralPath $legacyExePath, $legacyConfigPath -DestinationPath $zipPath
+Assert-PathExists -Path $zipPath -Description "Full package"
+
+Remove-Item -LiteralPath $legacyConfigPath -Force
 
 Write-Step "Build completed"
-Write-Host "Legacy: $($legacyBuildResult.ArtifactPath)"
-Write-Host "Standard: $($standardBuildResult.ArtifactPath)"
-Write-Host "Full: $(Join-Path $script:PublishOutputPath $script:FullArtifactName)"
+$standardSizeKB = [math]::Round((Get-Item $standardBuildResult.ArtifactPath).Length / 1KB, 0)
+$legacySizeKB = [math]::Round((Get-Item $legacyBuildResult.ArtifactPath).Length / 1KB, 0)
+$fullSizeKB = [math]::Round((Get-Item $zipPath).Length / 1KB, 0)
+Write-Host "Standard: $($standardBuildResult.ArtifactPath) ($standardSizeKB KB)"
+Write-Host "Legacy: $($legacyBuildResult.ArtifactPath) ($legacySizeKB KB)"
+Write-Host "Full: $zipPath ($fullSizeKB KB)"
