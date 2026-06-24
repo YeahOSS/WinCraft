@@ -197,6 +197,52 @@ function Get-BuildOutputDirectory {
     return Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
 }
 
+function Test-IsFrameworkAssembly {
+    param(
+        [string]$AssemblyName
+    )
+
+    $gacRoots = @(
+        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_MSIL'),
+        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_32'),
+        [System.IO.Path]::Combine($env:SystemRoot, 'Microsoft.NET\assembly\GAC_64'),
+        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC_MSIL'),
+        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC_32'),
+        [System.IO.Path]::Combine($env:SystemRoot, 'assembly\GAC')
+    )
+
+    foreach ($root in $gacRoots) {
+        if (Test-Path (Join-Path $root $AssemblyName) -PathType Container) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Assert-MergedAssemblyReferences {
+    param(
+        [string]$MergedExePath,
+        [string]$Label
+    )
+
+    $asm = [System.Reflection.Assembly]::LoadFile($MergedExePath)
+    $missing = @()
+
+    foreach ($ref in $asm.GetReferencedAssemblies()) {
+        if (-not (Test-IsFrameworkAssembly -AssemblyName $ref.Name)) {
+            $missing += "$($ref.Name) v$($ref.Version)"
+        }
+    }
+
+    if ($missing.Count -gt 0) {
+        $message = "The $Label merged executable still references assemblies that are not in the GAC. "
+        $message += "These assemblies must be present in the build output directory so ILRepack can merge them:`n  "
+        $message += ($missing -join "`n  ")
+        throw $message
+    }
+}
+
 function Publish-SingleFileArtifact {
     param(
         [string]$BuildLabel,
@@ -220,6 +266,10 @@ function Publish-SingleFileArtifact {
 
     Copy-Item -LiteralPath $mergedExePath -Destination $artifactPath -Force
     Assert-PathExists -Path $artifactPath -Description "$BuildLabel single-file artifact"
+
+    # Validate from the artifact copy to avoid locking the build output file
+    # (which New-FullPackage reads again for the zip archive).
+    Assert-MergedAssemblyReferences -MergedExePath $artifactPath -Label $BuildLabel
 
     return [pscustomobject]@{
         BuildOutputDirectory = $buildOutputDirectory

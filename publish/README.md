@@ -23,7 +23,12 @@ It creates the local release commit and local tag, but it does not push them to 
 
 The main project restores NuGet dependencies through `PackageReference`, including the ILRepack MSBuild task, so no tracked merge tool is required in the repository.
 The custom merge configuration lives in `src/WinCraft/ILRepack.targets`.
+It auto-discovers all `.dll` files in the build output directory — no manual updates are needed when NuGet dependencies change.
 Version numbers come from `src/Version.props` and are applied to assembly metadata.
+
+After merge, `build.ps1` verifies that the merged executable references only
+GAC-resident framework assemblies. If a non-GAC assembly is still referenced,
+the build fails with the name and version of the missing dependency.
 
 ## Output
 `publish/build.ps1` creates these files in `publish/output/`:
