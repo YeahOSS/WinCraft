@@ -2,27 +2,28 @@
   <Import Project="..\Version.props" />
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net30;net45</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-    <AppConfig>Properties\app.config</AppConfig>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Deterministic>true</Deterministic>
     <LangVersion>12.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);S2346;S3869</NoWarn>
-    <StartupObject>WinCraft.Program</StartupObject>
+    <NoWarn>$(NoWarn);PInvoke009;S2346;S3869</NoWarn>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <RootNamespace>WinCraft</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>WinCraft</_Parameter1>
+    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>WinCraft.Tests</_Parameter1>
     </AssemblyAttribute>
@@ -45,31 +46,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\assets\app.ico" Link="Properties\app.ico" />
     <None Include="..\Version.props" Link="Properties\Version.props" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.298">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Theraot.Core" Version="3.2.11" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
-    <Compile Remove="TestBench\**" />
-    <Page Remove="TestBench\**" />
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
 </Project>

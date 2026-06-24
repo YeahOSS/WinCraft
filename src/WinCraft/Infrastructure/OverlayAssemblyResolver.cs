@@ -37,9 +37,7 @@ namespace WinCraft.Infrastructure
 
         public static void Register()
         {
-#if !DEBUG
             AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
-#endif
         }
 
         private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)

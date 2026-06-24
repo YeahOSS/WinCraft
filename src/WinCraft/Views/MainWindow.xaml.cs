@@ -1,7 +1,7 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 
-namespace WinCraft
+namespace WinCraft.Views
 {
     public partial class MainWindow : Window
     {

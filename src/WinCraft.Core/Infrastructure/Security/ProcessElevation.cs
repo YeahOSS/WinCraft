@@ -23,6 +23,11 @@ namespace WinCraft.Infrastructure.Security
             return GetCurrentProcessElevationState() != ProcessElevationState.Standard;
         }
 
+        public static uint GetCurrentProcessId()
+        {
+            return PInvoke.GetCurrentProcessId();
+        }
+
         internal static ProcessElevationState GetCurrentProcessElevationState()
         {
             var isCurrentTokenAdministrator = IsCurrentTokenAdministrator();

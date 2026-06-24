@@ -32,6 +32,10 @@ At runtime `OverlayAssemblyResolver` registers an `AssemblyResolve` handler
 that reads the container from the exe file, decompresses it in memory, and
 serves assemblies on demand.
 
+Most application code lives in `WinCraft.Core.dll`.  The executable project is
+kept as a thin WPF/entry-point shell so Core can be bundled and compressed in
+the overlay instead of expanding the executable PE sections.
+
 The main project restores NuGet dependencies through `PackageReference`.
 Version numbers come from `src/Version.props` and are applied to assembly metadata.
 

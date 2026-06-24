@@ -1,4 +1,4 @@
-namespace WinCraft
+namespace WinCraft.Startup
 {
     internal enum StartupProcessMode
     {

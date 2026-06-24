@@ -7,7 +7,10 @@ such as `IShellItem`. Do not add an `Interop/` directory for Win32 bindings.
 
 When adding a Win32 API or COM interface:
 
-1. Add entries to `src/WinCraft/NativeMethods.txt` first.
+1. Add entries to the owning project's `NativeMethods.txt` first. Most Win32
+   infrastructure call sites live in `src/WinCraft.Core/NativeMethods.txt`;
+   use the executable project's file only for Win32 calls that must remain in
+   the thin startup executable.
 2. Use the undecorated API or interface name, for example `CreateProcessWithTokenW`
    or `IShellItem`. COM interfaces are emitted with `[ComImport]` and `[Guid]`;
    CsWin32 also generates friendly extension methods for common patterns.
