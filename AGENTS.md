@@ -52,6 +52,9 @@ call out the most-repeated violations to prevent the agent from guessing.
 - Keep `docs/source-layout.md` focused on durable structure. Do not update it for routine class additions, one-off helper moves, or implementation-level refactors that still fit the existing rules.
 - Document durable architecture boundaries, recurring pitfalls, and implementation constraints only. Avoid one-off explanations or restating code that is already obvious at the call site.
 
+## Code Review Rules
+- Treat `src/third_party/LzmaSdk/` as vendored third-party LZMA SDK code. Review guidance and source details live in `src/third_party/LzmaSdk/README.md`. Do not review these files for style, naming, modernization, analyzer cleanup, or refactoring.
+
 ## Event Subscription
 - Use a lambda when the handler is 5 lines or fewer, subscribed in one place, and not part of the class contract.
 - Use a named method when the handler is longer, reused, required by inheritance or interfaces, or represents an extensibility point.

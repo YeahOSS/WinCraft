@@ -18,7 +18,6 @@
     <Deterministic>true</Deterministic>
     <LangVersion>12.0</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);S2346;S3869</NoWarn>
     <StartupObject>WinCraft.Program</StartupObject>
   </PropertyGroup>
 
@@ -51,6 +50,23 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\third_party\LzmaSdk\**\*.cs"
+             Exclude="..\third_party\LzmaSdk\Common\CRC.cs;
+                      ..\third_party\LzmaSdk\Compress\LZ\IMatchFinder.cs;
+                      ..\third_party\LzmaSdk\Compress\LZ\LzBinTree.cs;
+                      ..\third_party\LzmaSdk\Compress\LZ\LzInWindow.cs;
+                      ..\third_party\LzmaSdk\Compress\LZMA\LzmaEncoder.cs"
+             LinkBase="third_party\LzmaSdk" />
+    <Compile Include="..\third_party\LzmaSdk\ICoder.cs" Link="third_party\LzmaSdk\ICoder.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\LZ\LzOutWindow.cs" Link="third_party\LzmaSdk\Compress\LZ\LzOutWindow.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\LZMA\LzmaBase.cs" Link="third_party\LzmaSdk\Compress\LZMA\LzmaBase.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\LZMA\LzmaDecoder.cs" Link="third_party\LzmaSdk\Compress\LZMA\LzmaDecoder.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoder.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoder.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBit.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBit.cs" />
+    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBitTree.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBitTree.cs" />
   </ItemGroup>
 
   <ItemGroup>

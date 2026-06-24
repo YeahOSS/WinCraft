@@ -15,8 +15,8 @@ loaded.
 `src/WinCraft.Core/` owns product logic, startup orchestration beneath the thin
 entry point, compatibility shims, Win32 interop call sites, diagnostics,
 security, IPC, registry access, and other reusable services. Moving non-WPF
-logic into Core keeps the executable PE small so publish packaging can Deflate
-the Core assembly into the overlay.
+logic into Core keeps the executable PE small so publish packaging can bundle
+Core into the compressed overlay.
 
 ## Main Directories
 - `Compatibility/`
@@ -32,6 +32,8 @@ the Core assembly into the overlay.
   Stores reusable low-level services such as registry access, file system access, diagnostics, and security helpers.
 - `Infrastructure/Ipc/`
   Stores reusable cross-process contracts, endpoints, and transport helpers.
+- `src/third_party/LzmaSdk/`
+  Stores the vendored LZMA SDK source subset. Repository-specific source, layout, and update notes live in `src/third_party/LzmaSdk/README.md`.
 - `Constants/`
   Stores shared constants such as known registry paths, ProgIDs, CLSIDs, and system option names.
 

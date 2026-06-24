@@ -197,11 +197,90 @@ function Get-BuildOutputDirectory {
     return Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
 }
 
+function Initialize-LzmaSdk {
+    if ($null -ne ("SevenZip.Compression.LZMA.Encoder" -as [type])) {
+        return
+    }
+
+    $sdkPath = Join-Path $script:SourceRoot "third_party\LzmaSdk"
+    Assert-PathExists -Path $sdkPath -Description "LZMA SDK source directory"
+
+    $sourceFiles = @(
+        (Join-Path $sdkPath "ICoder.cs"),
+        (Join-Path $sdkPath "Common\CRC.cs"),
+        (Join-Path $sdkPath "Compress\LZ\IMatchFinder.cs"),
+        (Join-Path $sdkPath "Compress\LZ\LzBinTree.cs"),
+        (Join-Path $sdkPath "Compress\LZ\LzInWindow.cs"),
+        (Join-Path $sdkPath "Compress\LZ\LzOutWindow.cs"),
+        (Join-Path $sdkPath "Compress\LZMA\LzmaBase.cs"),
+        (Join-Path $sdkPath "Compress\LZMA\LzmaEncoder.cs"),
+        (Join-Path $sdkPath "Compress\RangeCoder\RangeCoder.cs"),
+        (Join-Path $sdkPath "Compress\RangeCoder\RangeCoderBit.cs"),
+        (Join-Path $sdkPath "Compress\RangeCoder\RangeCoderBitTree.cs")
+    )
+    foreach ($sourceFile in $sourceFiles) {
+        Assert-PathExists -Path $sourceFile -Description "LZMA SDK source file"
+    }
+
+    Add-Type -Path $sourceFiles
+}
+
+function Compress-Lzma {
+    param(
+        [byte[]]$RawBytes
+    )
+
+    Initialize-LzmaSdk
+
+    $encoder = New-Object SevenZip.Compression.LZMA.Encoder
+    $propIDs = [SevenZip.CoderPropID[]]@(
+        [SevenZip.CoderPropID]::DictionarySize,
+        [SevenZip.CoderPropID]::PosStateBits,
+        [SevenZip.CoderPropID]::LitContextBits,
+        [SevenZip.CoderPropID]::LitPosBits,
+        [SevenZip.CoderPropID]::Algorithm,
+        [SevenZip.CoderPropID]::NumFastBytes,
+        [SevenZip.CoderPropID]::MatchFinder,
+        [SevenZip.CoderPropID]::EndMarker
+    )
+    $properties = [object[]]@(
+        [int](1 -shl 23),
+        [int]2,
+        [int]3,
+        [int]0,
+        [int]2,
+        [int]128,
+        "bt4",
+        $false
+    )
+
+    $encoder.SetCoderProperties($propIDs, $properties)
+
+    $inputStream = New-Object System.IO.MemoryStream -ArgumentList (,$RawBytes)
+    $compressedStream = New-Object System.IO.MemoryStream
+    $propertiesStream = New-Object System.IO.MemoryStream
+
+    try {
+        $encoder.WriteCoderProperties($propertiesStream)
+        $encoder.Code($inputStream, $compressedStream, [int64]-1, [int64]-1, $null)
+
+        return [pscustomobject]@{
+            CompressedBytes = $compressedStream.ToArray()
+            Properties = $propertiesStream.ToArray()
+        }
+    }
+    finally {
+        $propertiesStream.Dispose()
+        $compressedStream.Dispose()
+        $inputStream.Dispose()
+    }
+}
+
 # Builds a single-file executable by appending a compressed zip of dependency
 # DLLs as a PE overlay.  The PE header and sections stay untouched — the data
 # lives after the last section where the PE loader ignores it.
 # At runtime OverlayAssemblyResolver (Program.cs) reads the overlay, decompresses
-# the zip, and serves assemblies from memory on demand.
+# the container, and serves assemblies from memory on demand.
 function New-OverlayExe {
     param(
         [string]$BuildLabel,
@@ -245,23 +324,16 @@ function New-OverlayExe {
 
     $containerKB = [math]::Round($rawBytes.Length / 1KB, 0)
 
-    # Deflate-compress the container.
-    $compressedStream = New-Object System.IO.MemoryStream
-    $deflate = New-Object System.IO.Compression.DeflateStream(
-        $compressedStream,
-        [System.IO.Compression.CompressionLevel]::Optimal,
-        $true)
-    $deflate.Write($rawBytes, 0, $rawBytes.Length)
-    $deflate.Close()
-    $compressedBytes = $compressedStream.ToArray()
-    $deflate.Dispose()
-    $compressedStream.Dispose()
+    $lzmaResult = Compress-Lzma -RawBytes $rawBytes
+    $compressedBytes = $lzmaResult.CompressedBytes
+    $lzmaProperties = $lzmaResult.Properties
 
     $compressedKB = [math]::Round($compressedBytes.Length / 1KB, 0)
-    Write-Host "DLLs $totalDllKB KB raw -> $containerKB KB container -> $compressedKB KB Deflate"
+    Write-Host "DLLs $totalDllKB KB raw -> $containerKB KB container -> $compressedKB KB LZMA"
 
-    # Append overlay: [compressed data] [4 bytes LE: compressed len] [4 bytes: magic "WOVL"]
-    $magic = [System.BitConverter]::GetBytes([uint32]0x4C564F57)
+    # Append overlay: [compressed data] [5 bytes LZMA props] [8 bytes raw len] [4 bytes compressed len] [4 bytes magic "WOLZ"]
+    $magic = [System.BitConverter]::GetBytes([uint32]0x5A4C4F57)
+    $rawLenBytes = [System.BitConverter]::GetBytes([int64]$rawBytes.Length)
     $lenBytes = [System.BitConverter]::GetBytes([int32]$compressedBytes.Length)
 
     if (Test-Path -LiteralPath $artifactPath) {
@@ -272,12 +344,14 @@ function New-OverlayExe {
 
     $exeBytes = [System.IO.File]::ReadAllBytes($artifactPath)
     $exeBaseKB = [math]::Round($exeBytes.Length / 1KB, 0)
-    $footerSize = 8
+    $footerSize = 21
     $overlayOffset = $exeBytes.Length
     [Array]::Resize([ref]$exeBytes, $overlayOffset + $compressedBytes.Length + $footerSize)
     [Array]::Copy($compressedBytes, 0, $exeBytes, $overlayOffset, $compressedBytes.Length)
-    [Array]::Copy($lenBytes, 0, $exeBytes, $overlayOffset + $compressedBytes.Length, 4)
-    [Array]::Copy($magic, 0, $exeBytes, $overlayOffset + $compressedBytes.Length + 4, 4)
+    [Array]::Copy($lzmaProperties, 0, $exeBytes, $overlayOffset + $compressedBytes.Length, 5)
+    [Array]::Copy($rawLenBytes, 0, $exeBytes, $overlayOffset + $compressedBytes.Length + 5, 8)
+    [Array]::Copy($lenBytes, 0, $exeBytes, $overlayOffset + $compressedBytes.Length + 13, 4)
+    [Array]::Copy($magic, 0, $exeBytes, $overlayOffset + $compressedBytes.Length + 17, 4)
     [System.IO.File]::WriteAllBytes($artifactPath, $exeBytes)
 
     $finalKB = [math]::Round($exeBytes.Length / 1KB, 0)
