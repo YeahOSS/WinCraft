@@ -12,6 +12,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <AppConfig>Properties\app.config</AppConfig>
     <Deterministic>true</Deterministic>
@@ -52,6 +53,11 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net45'">
     <IlRepackTargetPlatformVersion>v4</IlRepackTargetPlatformVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\assets\app.ico" Link="Properties\app.ico" />
+    <Content Include="..\Version.props" Link="Properties\Version.props" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.298">
