@@ -18,11 +18,6 @@ namespace WinCraft.Infrastructure
     ///   [4 bytes LE: compressed container length]
     ///   [4 bytes: magic "WOLZ" = 0x5A4C4F57]
     ///
-    /// Legacy Deflate overlay format:
-    ///   [Deflate compressed container]
-    ///   [4 bytes LE: compressed container length]
-    ///   [4 bytes: magic "WOVL" = 0x4C564F57]
-    ///
     /// The decompressed container is a flat sequence:
     ///   [4 bytes: entry count]
     ///   For each entry:
@@ -33,14 +28,13 @@ namespace WinCraft.Infrastructure
     /// </summary>
     internal static class OverlayAssemblyResolver
     {
-        private const uint DeflateOverlayMagic = 0x4C564F57; // "WOVL"
         private const uint LzmaOverlayMagic = 0x5A4C4F57; // "WOLZ"
 
         [ThreadStatic]
         private static bool _resolving;
 
         private static readonly object _lock = new();
-        private static Dictionary<string, byte[]> _cache;
+        private static volatile Dictionary<string, byte[]> _cache;
 
         public static void Register()
         {
@@ -83,7 +77,7 @@ namespace WinCraft.Infrastructure
             {
                 lock (_lock)
                 {
-                    _cache ??= ReadOverlay() ?? [];
+                    _cache ??= ReadOverlay();
                 }
             }
 
@@ -95,7 +89,7 @@ namespace WinCraft.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    _cache.Remove(name);
+                    lock (_lock) { _cache.Remove(name); }
                     Trace.TraceError($"{nameof(OverlayAssemblyResolver)}: failed to load {name} from overlay, evicting — {ex.Message}");
                     return null;
                 }
@@ -115,7 +109,7 @@ namespace WinCraft.Infrastructure
                 byte[] containerBytes;
                 using (var fs = new FileStream(exePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    if (fs.Length < 8)
+                    if (fs.Length < 4)
                         return [];
 
                     fs.Seek(-4, SeekOrigin.End);
@@ -123,19 +117,10 @@ namespace WinCraft.Infrastructure
                     if (fs.Read(magicBytes, 0, 4) != 4)
                         return [];
 
-                    var magic = BitConverter.ToUInt32(magicBytes, 0);
-                    if (magic == LzmaOverlayMagic)
-                    {
-                        containerBytes = ReadLzmaOverlay(fs);
-                    }
-                    else if (magic == DeflateOverlayMagic)
-                    {
-                        containerBytes = ReadDeflateOverlay(fs);
-                    }
-                    else
-                    {
+                    if (BitConverter.ToUInt32(magicBytes, 0) != LzmaOverlayMagic)
                         return [];
-                    }
+
+                    containerBytes = ReadLzmaOverlay(fs);
                 }
 
                 return ReadContainer(containerBytes);
@@ -145,29 +130,6 @@ namespace WinCraft.Infrastructure
                 Trace.TraceError($"{nameof(OverlayAssemblyResolver)}: overlay read failed — {ex.Message}");
                 return [];
             }
-        }
-
-        private static byte[] ReadDeflateOverlay(FileStream fs)
-        {
-            const int footerSize = 8;
-            fs.Seek(-8, SeekOrigin.End);
-            var lenBytes = new byte[4];
-            if (fs.Read(lenBytes, 0, 4) != 4)
-                return [];
-
-            var compressedLength = BitConverter.ToInt32(lenBytes, 0);
-            if (compressedLength <= 0 || compressedLength > fs.Length - footerSize)
-                return [];
-
-            fs.Seek(fs.Length - footerSize - compressedLength, SeekOrigin.Begin);
-            using var deflate = new System.IO.Compression.DeflateStream(fs, System.IO.Compression.CompressionMode.Decompress, true);
-            using var ms = new MemoryStream();
-            var buffer = new byte[8192];
-            int read;
-            while ((read = deflate.Read(buffer, 0, buffer.Length)) > 0)
-                ms.Write(buffer, 0, read);
-
-            return ms.ToArray();
         }
 
         private static byte[] ReadLzmaOverlay(FileStream fs)

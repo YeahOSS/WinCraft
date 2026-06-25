@@ -6,7 +6,7 @@ namespace WinCraft
 {
     internal static class Program
     {
-#if !DEBUG
+#if !DEBUG && !INSTALLER
 
         static Program()
         {

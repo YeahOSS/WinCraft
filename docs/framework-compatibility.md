@@ -7,7 +7,7 @@ The main project multi-targets both framework lines:
 - `net30` for the Legacy line
 - `net45` for the Standard line
 
-Shared version numbers live in `src/Version.props` as `major.minor.build`.
+Shared version numbers live in `publish/version.props` as `major.minor.build`.
 Keep compatibility-sensitive behavior explicit and easy to verify.
 
 ## Theraot

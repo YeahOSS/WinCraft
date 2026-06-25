@@ -33,6 +33,7 @@ packages/
 *.dotCover
 tmp/
 /publish/output/
+/tools/nsis/
 
 # ===== WPF =====
 *.g.cs

@@ -1,51 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  <Import Project="..\Version.props" />
-
+  <Import Project="..\..\publish\version.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net30;net45</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <AppConfig>Properties\app.config</AppConfig>
-    <Deterministic>true</Deterministic>
-    <LangVersion>12.0</LangVersion>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <StartupObject>WinCraft.Program</StartupObject>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>WinCraft.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net30'">
-    <DefineConstants>$(DefineConstants);NET30</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net45'">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
+    <None Include="..\Directory.Build.props" Link="Properties\Directory.Build.props" />
+    <None Include="..\..\publish\version.props" Link="Properties\version.props" />
     <None Include="..\..\assets\app.ico" Link="Properties\app.ico" />
-    <None Include="..\Version.props" Link="Properties\Version.props" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,20 +29,6 @@
                       ..\third_party\LzmaSdk\Compress\LZ\LzInWindow.cs;
                       ..\third_party\LzmaSdk\Compress\LZMA\LzmaEncoder.cs"
              LinkBase="third_party\LzmaSdk" />
-    <Compile Include="..\third_party\LzmaSdk\ICoder.cs" Link="third_party\LzmaSdk\ICoder.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\LZ\LzOutWindow.cs" Link="third_party\LzmaSdk\Compress\LZ\LzOutWindow.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\LZMA\LzmaBase.cs" Link="third_party\LzmaSdk\Compress\LZMA\LzmaBase.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\LZMA\LzmaDecoder.cs" Link="third_party\LzmaSdk\Compress\LZMA\LzmaDecoder.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoder.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoder.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBit.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBit.cs" />
-    <Compile Include="..\third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBitTree.cs" Link="third_party\LzmaSdk\Compress\RangeCoder\RangeCoderBitTree.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -87,5 +42,10 @@
   <ItemGroup Condition="'$(Configuration)' != 'Debug'">
     <Compile Remove="TestBench\**" />
     <Page Remove="TestBench\**" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
+    <Compile Remove="Infrastructure\OverlayAssemblyResolver.cs" />
+    <Compile Remove="..\third_party\LzmaSdk\**\*.cs" />
   </ItemGroup>
 </Project>

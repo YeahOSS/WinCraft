@@ -31,7 +31,7 @@ call out the most-repeated violations to prevent the agent from guessing.
   Read `publish/README.md`.
 
 ## Working Rules
-- Use commit messages in the format `<type>: <short English summary>`.
+- Use commit messages in the format `<type>: <short English summary>`.  Prefer including a brief body describing what changed and why; title-only commits are acceptable for trivial or self-explanatory changes.
 - Do not add `Co-Authored-By` trailers on behalf of the AI; the rule does not restrict human contributors.
 - Keep code comments, script output, and developer-facing notes in English.
 - Do not remove existing comments unless the related code change makes them incorrect.

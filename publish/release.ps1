@@ -7,46 +7,12 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Decode native-command output (git) as UTF-8 to avoid garbled characters
-# when the system console code page differs from the tool output encoding.
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-$script:PublishRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$script:RepositoryRoot = Split-Path -Parent $script:PublishRoot
-$script:VersionPropsPath = Join-Path $script:RepositoryRoot "src\Version.props"
-$script:BuildScriptPath = Join-Path $script:PublishRoot "build.ps1"
+Import-Module (Join-Path $PSScriptRoot "modules\common.psm1") -Force
 
-function Write-Step {
-    param(
-        [string]$Message
-    )
-
-    Write-Host ""
-    Write-Host "==> $Message"
-}
-
-function Assert-PathExists {
-    param(
-        [string]$Path,
-        [string]$Description
-    )
-
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "$Description was not found: $Path"
-    }
-}
-
-function Assert-CommandExists {
-    param(
-        [string]$CommandName
-    )
-
-    $command = Get-Command $CommandName -ErrorAction SilentlyContinue
-
-    if ($null -eq $command) {
-        throw "Required command was not found: $CommandName"
-    }
-}
+$script:VersionPropsPath = Join-Path $PSScriptRoot "version.props"
+$script:BuildScriptPath = Join-Path $PSScriptRoot "build.ps1"
 
 function Assert-GitIdentityConfigured {
     $userName = (& git config --get user.name)
@@ -74,43 +40,6 @@ function Test-GitWorkingTreeClean {
     }
 
     return [string]::IsNullOrWhiteSpace(($statusOutput | Out-String))
-}
-
-function Get-VersionParts {
-    param(
-        [string]$Value
-    )
-
-    if ($Value -notmatch '^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)$') {
-        throw "Version must use the format major.minor.build."
-    }
-
-    return @{
-        Major = $Matches.major
-        Minor = $Matches.minor
-        Build = $Matches.build
-    }
-}
-
-function Get-CurrentVersion {
-    Assert-PathExists -Path $script:VersionPropsPath -Description "Version props file"
-
-    [xml]$versionDocument = Get-Content -LiteralPath $script:VersionPropsPath
-    $propertyGroup = $versionDocument.Project.PropertyGroup
-
-    if ($null -eq $propertyGroup) {
-        throw "Version.props does not contain a PropertyGroup."
-    }
-
-    $major = [string]$propertyGroup.VersionMajor
-    $minor = [string]$propertyGroup.VersionMinor
-    $build = [string]$propertyGroup.VersionBuild
-
-    if ([string]::IsNullOrWhiteSpace($major) -or [string]::IsNullOrWhiteSpace($minor) -or [string]::IsNullOrWhiteSpace($build)) {
-        throw "Version.props must define VersionMajor, VersionMinor, and VersionBuild."
-    }
-
-    return "$major.$minor.$build"
 }
 
 function Set-VersionProps {
@@ -171,7 +100,7 @@ Assert-PathExists -Path $script:VersionPropsPath -Description "Version props fil
 Assert-PathExists -Path $script:BuildScriptPath -Description "Build script"
 
 $targetVersionParts = Get-VersionParts -Value $Version
-$currentVersion = Get-CurrentVersion
+$currentVersion = Get-VersionString
 $targetVersion = "$($targetVersionParts.Major).$($targetVersionParts.Minor).$($targetVersionParts.Build)"
 $tagName = "v$targetVersion"
 

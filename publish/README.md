@@ -1,15 +1,22 @@
 # Publish Workspace
 
 ## Layout
-- `build.ps1` is the publish entry point.
-- `release.ps1` updates the version, builds artifacts, creates the release commit, and creates the git tag.
-- `output/` contains the final distributable files.
+- `build.ps1` — build entry point
+- `release.ps1` — version bump, build, commit, tag
+- `version.props` — three-part version number
+- `modules/` — PowerShell modules (`common.psm1`, `overlay.psm1`, `installer.psm1`)
+- `nsis/` — NSIS scripts (`installer.nsi`, `allusers-uninstaller.nsi`, `uninstall-common.nsh`)
+- `output/` — distributable files
 
 ## Usage
 Run the scripts from the repository root:
 
 ```powershell
+# Full build with overlay packaging and NSIS installer
 powershell -ExecutionPolicy Bypass -File .\publish\build.ps1
+
+# Compile-only (skip overlay compression and NSIS packaging)
+powershell -ExecutionPolicy Bypass -File .\publish\build.ps1 -BuildOnly
 ```
 
 For a tagged release:
@@ -21,59 +28,44 @@ powershell -ExecutionPolicy Bypass -File .\publish\release.ps1 -Version 1.2.3
 `release.ps1` expects a clean git working tree and configured `git user.name` / `git user.email`.
 It creates the local release commit and local tag, but it does not push them to the remote repository.
 
+The full build requires NSIS 3.x (`makensis`).  Download the `nsis-3.x.zip`
+from [SourceForge](https://sourceforge.net/projects/nsis/files/) and extract
+it to `tools\nsis\` under the repository root — no installer needed.
+
 ## Packaging
 
-`WinCraft-Standard.exe` and `WinCraft-Legacy.exe` use PE overlay packaging:
-dependency DLLs are bundled into a flat binary container, LZMA-compressed, and
-appended after the last PE section of the executable.  The PE header and
-sections stay in their original form, avoiding antivirus false positives.
+Both uninstallers embed a merged file manifest at compile time — no external
+file or registry dependency at uninstall time.
 
-At runtime `OverlayAssemblyResolver` registers an `AssemblyResolve` handler
-that reads the container from the exe file, decompresses it in memory, and
-serves assemblies on demand.
+## NSIS Installer
 
-The LZMA overlay ends with a fixed footer:
+| Mode | Default path | Registry | Requires admin |
+|---|---|---|---|
+| Current user | `%LOCALAPPDATA%\WinCraft` | HKCU | No |
+| All users | `%PROGRAMFILES%\WinCraft` | HKLM | Yes |
 
-- 5 bytes of LZMA decoder properties.
-- 8 bytes containing the uncompressed container length.
-- 4 bytes containing the compressed payload length.
-- 4 bytes containing the `WOLZ` magic value.
+## Silent Deployment
 
-`OverlayAssemblyResolver` still recognizes the previous Deflate `WOVL` footer
-for compatibility, but new publish artifacts are written as LZMA overlays.
+```powershell
+# Per-user
+.\WinCraft-Setup.exe /S
 
-Most application code lives in `WinCraft.Core.dll`.  The executable project is
-kept as a thin WPF/entry-point shell so Core can be bundled and compressed in
-the overlay instead of expanding the executable PE sections.
+# All-users (run elevated)
+.\WinCraft-Setup.exe /S /allusers
 
-The Full package is the compatibility-preserving, performance-oriented
-distribution.  It keeps both loose-file runtime lines:
+# Uninstall
+"%LOCALAPPDATA%\WinCraft\Uninstall.exe" /S /currentuser
+"%PROGRAMFILES%\WinCraft\Uninstall.exe" /S /allusers
+```
 
-- `Standard/` contains the `net45` executable, config file, `WinCraft.Core.dll`,
-  and dependency DLLs for the fastest startup path on systems with the built-in
-  .NET Framework 4.5 line.
-- `Legacy/` contains the `net30` executable, config file, `WinCraft.Core.dll`,
-  and dependency DLLs for systems that only have the older built-in framework.
-
-If `makensis` is available, `build.ps1` produces `WinCraft-Full-Setup.exe`
-from `publish/nsis/WinCraftFull.nsi`.  The installer chooses `Standard` on
-Windows 8 and newer, and `Legacy` on older supported systems.  It installs
-per-user under `%LOCALAPPDATA%\WinCraft` and does not require administrator
-rights.
-
-The `net30` build is a compatibility line, not the performance baseline.  Full
-keeps it only to preserve the "runs with built-in framework only" requirement
-on older Windows versions.
-
-`src/third_party/LzmaSdk/` contains the vendored LZMA SDK source subset. Source,
-version, file-selection, and update notes live in `src/third_party/LzmaSdk/README.md`.
-
-The main project restores NuGet dependencies through `PackageReference`.
-Version numbers come from `src/Version.props` and are applied to assembly metadata.
+Silent all-users installation must be launched from an elevated process.  If
+`WinCraft-Setup.exe /S /allusers` is started without administrator rights, it
+does not show UAC or relaunch itself; it exits with code `740` so deployment
+tools can elevate and retry explicitly.
 
 ## Output
 `publish/build.ps1` creates these files in `publish/output/`:
 
 - `WinCraft-Legacy.exe`
 - `WinCraft-Standard.exe`
-- `WinCraft-Full-Setup.exe`
+- `WinCraft-Setup.exe`

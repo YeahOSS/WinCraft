@@ -13,15 +13,21 @@ The project is still in an early scaffold stage. The repository already contains
 - Additional Windows configuration improvements for a smoother daily experience
 
 ## Downloads
-Download release artifacts from the repository Releases page.
+Download release artifacts from the repository [Releases](https://github.com/YeahOSS/WinCraft/releases) page.
 
-Current package lines:
+### Installer (recommended) — `WinCraft-Setup.exe`
 
-| Package | Best for | Directly usable on a clean system | Notes |
-| --- | --- | --- | --- |
-| `WinCraft-Legacy.exe` | Older Windows installations | Windows Vista and Windows 7 | Built on `.NET Framework 3.0` for the legacy compatibility line |
-| `WinCraft-Standard.exe` | Modern Windows installations | Windows 8, Windows 8.1, Windows 10, and Windows 11 | Built on `.NET Framework 4.5` for the standard line |
-| `WinCraft-Full-Setup.exe` | Built-in framework only plus best available startup path | Windows Vista through Windows 11 | Bundles both loose-file runtime lines; the installer prefers `net45` on newer systems, keeps `net30` for older built-in-framework compatibility, and installs per-user without admin rights |
+- **Automatic .NET Framework adaptation.** Detects the installed .NET Framework version at install time: prefers `net45` when .NET 4.5+ is available, falls back to `net30` for older built-in-framework systems.
+- **Better startup performance.** Release builds do not carry overlay decompression code, reducing both binary size and startup path.
+
+### Portable — `WinCraft-Standard.exe` / `WinCraft-Legacy.exe`
+
+Single-file executables for users who prefer a no-installer experience or need to deploy to a specific framework line directly:
+
+| Package | Target Framework | Supported Windows |
+| --- | --- | --- |
+| `WinCraft-Standard.exe` | .NET Framework 4.5 | Windows 8, 8.1, 10, 11 |
+| `WinCraft-Legacy.exe` | .NET Framework 3.0 | Windows Vista, 7 |
 
 ## Security Software Notice
 Because WinCraft modifies Windows settings through system APIs, some antivirus or security products may raise false positives — particularly on older release lines where legacy framework heuristics are stricter.
@@ -35,5 +41,6 @@ Build and release workflow details live in [publish/README.md](publish/README.md
 The current repository is mainly the foundation for the product:
 - SDK-style multi-target project for `.NET Framework 3.0` and `.NET Framework 4.5`
 - Compatibility helpers for APIs that differ across framework versions
-- Single-file release packaging for the Legacy and Standard lines
-- Versioned local release workflow for future public releases
+- PE overlay single-file packaging for the standalone lines
+- NSIS installer with automatic OS adaptation for the recommended distribution
+- Versioned local release workflow

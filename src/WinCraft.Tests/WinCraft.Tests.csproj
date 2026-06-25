@@ -3,11 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net45</TargetFramework>
-    <LangVersion>12.0</LangVersion>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <RootNamespace>WinCraft.Tests</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="SonarAnalyzer.CSharp" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
@@ -22,5 +25,9 @@
     <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
     <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ExcludeFromBuild>true</ExcludeFromBuild>
+  </PropertyGroup>
 
 </Project>
