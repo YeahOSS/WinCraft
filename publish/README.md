@@ -4,8 +4,8 @@
 - `build.ps1` — build entry point
 - `release.ps1` — version bump, build, commit, tag
 - `version.props` — three-part version number
-- `modules/` — PowerShell modules (`common.psm1`, `overlay.psm1`, `installer.psm1`)
-- `nsis/` — NSIS scripts (`installer.nsi`, `allusers-uninstaller.nsi`, `uninstall-common.nsh`)
+- `modules/` — PowerShell modules
+- `nsis/` — NSIS scripts
 - `output/` — distributable files
 
 ## Usage

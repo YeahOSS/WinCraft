@@ -36,7 +36,11 @@ WinCraft 延续了 [ContextMenuManager](https://github.com/BluePointLilac/Contex
 - [ ] 更多用于改善日常体验的 Windows 配置优化能力
 
 ## 📥 下载说明
-可从仓库的 [Releases](https://github.com/YeahOSS/WinCraft/releases) 页面下载发布产物。
+
+| 平台 | 下载 |
+| --- | --- |
+| GitHub | [Releases](https://github.com/YeahOSS/WinCraft/releases) |
+| Gitee（镜像） | [Releases](https://gitee.com/YeahOSS/WinCraft/releases) |
 
 ### 安装包（推荐） — `WinCraft-Setup.exe`
 

@@ -37,7 +37,11 @@ after I lost access to my 2FA credentials.
 - [ ] Additional Windows configuration improvements for a smoother daily experience
 
 ## 📥 Downloads
-Download release artifacts from the repository [Releases](https://github.com/YeahOSS/WinCraft/releases) page.
+
+| Platform | Releases |
+| --- | --- |
+| GitHub | [Releases](https://github.com/YeahOSS/WinCraft/releases) |
+| Gitee (mirror) | [Releases](https://gitee.com/YeahOSS/WinCraft/releases) |
 
 ### Installer (recommended) — `WinCraft-Setup.exe`
 
