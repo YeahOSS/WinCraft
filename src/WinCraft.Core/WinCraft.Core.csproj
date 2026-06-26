@@ -5,8 +5,13 @@
     <TargetFrameworks>net30;net45</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- PInvoke009: CsWin32 recommends System.Memory for Span<T> overloads; net30 unsupported. -->
-    <NoWarn>$(NoWarn);PInvoke009</NoWarn>
+    <!--
+      Suppressed analyzer warnings grouped by rationale.
+
+      PInvoke009: CsWin32 recommends System.Memory for Span<T> overloads; net30 unsupported.
+      S101:       Type names should follow PascalCase (Win32 types use ALL_CAPS convention).
+    -->
+    <NoWarn>$(NoWarn);PInvoke009;S101</NoWarn>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RootNamespace>WinCraft</RootNamespace>
   </PropertyGroup>
