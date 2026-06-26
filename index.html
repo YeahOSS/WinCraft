@@ -2,157 +2,646 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+(function(){
+  var lang = localStorage.getItem('lang') || (navigator.language && navigator.language.slice(0,2) === 'zh' ? 'zh' : 'en');
+  document.documentElement.lang = lang;
+  document.documentElement.classList.add('lang-' + lang);
+  var theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://yeahoss.github.io/WinCraft/">
 <title>WinCraft</title>
+<link rel="preconnect" href="https://raw.githubusercontent.com">
+<link rel="dns-prefetch" href="https://img.shields.io">
+<link rel="preconnect" href="https://cdn.simpleicons.org">
+<link rel="dns-prefetch" href="https://api.github.com">
 <link rel="icon" href="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/app.ico">
-<meta property="og:image" content="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/social-preview.png">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/app.ico">
+<meta name="description" content="WinCraft — Windows 调优工具箱。管理右键菜单、文件关联、优化资源管理器，雕琢 Windows 如你所愿。">
 <meta property="og:title" content="WinCraft">
-<meta property="og:description" content="A Windows tuning toolbox — Craft Windows your way.">
+<meta property="og:description" content="Windows tuning toolbox — Craft Windows your way.">
+<meta property="og:image" content="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/social-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WinCraft">
+<meta name="twitter:description" content="Windows tuning toolbox — Craft Windows your way.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/social-preview.png">
+<meta name="theme-color" content="#0d1117">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "WinCraft",
+  "operatingSystem": "Windows",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "Windows tuning toolbox — Craft Windows your way.",
+  "license": "https://opensource.org/licenses/MIT",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "YeahOSS", "url": "https://github.com/YeahOSS" }
+}
+</script>
 <style>
+  :root {
+    --bg:            #0d1117;
+    --text:          #c9d1d9;
+    --text-heading:  #f0f6fc;
+    --text-muted:    #9ea7b0;
+    --text-dim:      #6e7681;
+    --border:        #30363d;
+    --accent:        #58a6ff;
+    --accent-deep:   #1f6feb;
+    --tagline:       #bdd7ff;
+    --divider:       rgba(110,118,129,0.45);
+    --green:         #238636;
+    --green-hover:   #2ea043;
+    --green-bright:  #3fb950;
+  }
+
+  html { background: var(--bg); transition: background-color 0.28s ease; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #0d1117; color: #c9d1d9;
+    background: transparent;
+    color: var(--text);
     display: flex; align-items: center; justify-content: center;
     min-height: 100vh; padding: 2rem;
+    position: relative; isolation: isolate;
+    transition: color 0.25s ease, background-color 0.25s ease;
   }
+  body::before,
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+    transition: opacity 0.28s ease;
+  }
+  body::before {
+    background: radial-gradient(ellipse at 50% 0%, #1a2332 0%, #0d1117 100%);
+    opacity: 1;
+  }
+  body::after {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(186,213,246,0.7) 0%, rgba(246,248,250,0) 48%),
+      linear-gradient(180deg, #eef5ff 0%, #ffffff 46%, #f3f7fb 100%);
+    opacity: 0;
+  }
+  [data-theme="light"] body::before { opacity: 0; }
+  [data-theme="light"] body::after { opacity: 1; }
   main { max-width: 480px; text-align: center; }
-  .lang-switch { position: absolute; top: 1rem; right: 1.5rem; }
-  .lang-switch a { font-size: 0.8rem; color: #484f58; text-decoration: none; transition: color 0.2s; }
-  .lang-switch a:hover { color: #8b949e; }
-  .lang-switch a.active { color: #f0f6fc; }
-  .lang-switch span { color: #30363d; margin: 0 0.3rem; }
+  .lang-switch {
+    position: absolute; top: 1rem; right: 1.5rem;
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.55rem;
+    background: rgba(255,255,255,0.04); backdrop-filter: blur(12px);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+  .lang-switch button { font-size: 0.75rem; color: var(--text-dim); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0.15rem 0.25rem; transition: color 0.2s; }
+  .lang-switch button:hover { color: var(--text-muted); }
+  .lang-switch button.active { color: var(--text-heading); }
+  .lang-switch span { color: var(--divider); transition: color 0.25s ease; }
   .header { display: flex; align-items: center; justify-content: center; gap: 1.25rem; margin-bottom: 2rem; }
-  .header img { width: 96px; height: 96px; margin: 0; }
+  .header img {
+    width: 96px; height: 96px; margin: 0;
+    filter: drop-shadow(0 0 20px rgba(88,166,255,0.25));
+    user-select: none; -webkit-user-drag: none;
+  }
   .header-text { text-align: left; }
-  h1 { font-size: 2.25rem; color: #f0f6fc; }
+  h1 { font-size: 2.25rem; line-height: 1.05; margin-bottom: 0.35rem; color: var(--text-heading); }
   .accent {
-    background: linear-gradient(135deg, #58a6ff, #1f6feb);
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent; color: transparent;
   }
   .lg { display: grid; }
   .lg > * { grid-area: 1 / 1; }
+  .header-text .lg + .lg { margin-top: 0.15rem; }
   .lgi { display: inline-grid; vertical-align: middle; }
   .lgi > * { grid-area: 1 / 1; }
   .card a .lgi { text-align: left; }
-  .desc { font-size: 0.8rem; color: #8b949e; }
-  .tagline { font-size: 0.95rem; color: #bdd7ff; }
-  .badges { margin-bottom: 2.5rem; display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-  .badges img { width: auto; height: 20px; margin: 0; }
+  .desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; min-height: 1.08rem; }
+  .tagline { font-size: 0.95rem; color: var(--tagline); line-height: 1.35; min-height: 1.29rem; }
+  .badges { margin-bottom: 1.75rem; display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+  .badges img { width: auto; height: 20px; margin: 0; user-select: none; -webkit-user-drag: none; }
+  .release-note {
+    border: 1px dashed rgba(88,166,255,0.36); border-radius: 8px; padding: 0.7rem 0.9rem;
+    margin-bottom: 1rem; color: var(--text-muted); font-size: 0.82rem;
+    background: rgba(88,166,255,0.045);
+    display: flex; align-items: center; justify-content: center; gap: 0.65rem; text-align: left;
+    min-height: 3.25rem;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  }
+  .release-kicker {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+    min-width: 3.6rem; border: 1px solid rgba(88,166,255,0.35); border-radius: 999px;
+    color: var(--accent); font-size: 0.72rem; font-weight: 700; line-height: 1;
+    padding: 0.32rem 0.55rem; background: rgba(88,166,255,0.08); text-align: center;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  }
+  .release-message { display: flex; align-items: center; min-height: 1.7rem; line-height: 1.45; }
+  .release-note .lgi { align-items: center; }
+  .release-note .lgi > * { align-self: center; }
+  .release-note.ready { color: var(--text); border-style: solid; border-color: rgba(35,134,54,0.55); background: rgba(35,134,54,0.08); }
+  .release-note.ready .release-kicker { color: var(--green-bright); border-color: rgba(35,134,54,0.42); background: rgba(35,134,54,0.1); }
   .downloads { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.5rem; }
+  .secondary-downloads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .card {
-    border: 1px solid #30363d; border-radius: 8px; padding: 1.125rem 1.25rem;
+    border: 1px solid var(--border); border-radius: 8px; padding: 1.125rem 1.25rem;
     text-align: left; display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.02);
     animation: fadeUp 0.5s ease both;
-    transition: border-color 0.25s, transform 0.25s;
+    transition: background-color 0.25s ease, border-color 0.25s, color 0.25s ease, transform 0.25s, box-shadow 0.25s, opacity 0.25s ease;
   }
   .card:nth-child(1) { animation-delay: 0.1s; }
   .card:nth-child(2) { animation-delay: 0.2s; }
   .card:nth-child(3) { animation-delay: 0.3s; }
-  .card:hover { border-color: #58a6ff; transform: translateX(4px); }
-  .card.primary { border-color: #238636; background: rgba(35,134,54,0.08); }
-  .card.primary:hover { border-color: #3fb950; }
-  .card-info { flex: 1; }
-  .card-name { font-size: 0.95rem; color: #f0f6fc; font-weight: 600; }
-  .card-meta { font-size: 0.8rem; color: #8b949e; margin-top: 0.15rem; }
-  .card a {
-    display: inline-block; padding: 0.4rem 1rem;
-    border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600;
-    white-space: nowrap; margin-left: 1rem;
-    transition: background 0.2s, transform 0.2s;
+  .card:hover { border-color: var(--accent); transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .card.primary { border-color: var(--green); background: rgba(35,134,54,0.08); }
+  .card.primary:hover { border-color: var(--green-bright); }
+  .card.secondary {
+    border-color: rgba(48,54,61,0.48); background: rgba(255,255,255,0.012);
+    padding: 0.95rem 1rem; flex-direction: column; align-items: flex-start; gap: 0.75rem;
   }
-  a.dl { background: #238636; color: #fff; }
-  a.dl:hover { background: #2ea043; transform: scale(1.05); }
-  a.dl-alt { border: 1px solid #30363d; color: #c9d1d9; }
-  a.dl-alt:hover { border-color: #58a6ff; color: #58a6ff; }
+  .card.secondary:hover { transform: translateX(2px); box-shadow: none; }
+  .card-info { flex: 1; }
+  .card-title { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 1.45rem; }
+  .card-icon {
+    flex: 0 0 auto; width: 1.05rem; height: 1.05rem; color: var(--accent);
+    opacity: 0.9; transition: color 0.28s ease, opacity 0.28s ease;
+    background-color: currentColor;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+  .icon-package { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg"); }
+  .icon-file-down { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/file-down.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/file-down.svg"); }
+  .icon-history { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/history.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/history.svg"); }
+  .card.primary .card-icon { color: var(--green-bright); opacity: 1; }
+  .card.secondary .card-icon { color: var(--text-dim); opacity: 0.78; }
+  .card.secondary .icon-file-down { color: #4c8eda; }
+  .card.secondary .icon-history { color: #7c6bd6; }
+  .card.secondary:hover .card-icon { opacity: 0.92; }
+  .card-name { font-size: 0.95rem; color: var(--text-heading); font-weight: 600; line-height: 1.35; min-height: 1.29rem; }
+  .card-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.35; min-height: 1.08rem; }
+  .card.secondary .card-name { font-size: 0.88rem; color: var(--text-muted); }
+  .card.secondary .card-meta { font-size: 0.76rem; color: var(--text-dim); }
+  .card.secondary .card-info { opacity: 0.86; transition: opacity 0.25s ease; }
+  .card.secondary:hover .card-info { opacity: 1; }
+  .card.secondary .action { align-self: flex-end; margin-left: 0; }
+  .card .action {
+    display: inline-grid; place-items: center; min-width: 5.6rem; height: 2.125rem; padding: 0 1rem;
+    border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600;
+    line-height: 1; white-space: nowrap; margin-left: 1rem;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s;
+  }
+  .card .action > [data-lang] { grid-area: 1 / 1; }
+  .action.dl { background: var(--green); color: #fff; user-select: none; }
+  a.action.dl:hover { background: var(--green-hover); transform: scale(1.05); }
+  .action.dl-alt { border: 1px solid var(--border); color: var(--text); user-select: none; }
+  a.action.dl-alt:hover { border-color: var(--accent); color: var(--accent); }
+  .action.disabled {
+    color: var(--text-dim); border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+    cursor: default; opacity: 0.82;
+  }
+  .card.secondary .action.disabled {
+    border-color: rgba(48,54,61,0.46); background: transparent; opacity: 0.72;
+  }
+  .card.secondary:hover .action.disabled { opacity: 0.86; }
   .badges a { transition: transform 0.2s; display: inline-block; }
   .badges a:hover { transform: translateY(-2px); }
-  .foot { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-  .foot a { font-size: 0.85rem; color: #8b949e; text-decoration: none; transition: color 0.2s; }
-  .foot a:hover { color: #58a6ff; }
-  footer { margin-top: 3rem; font-size: 0.75rem; color: #484f58; }
+  .foot { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; min-height: 1.3rem; }
+  .foot a { font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .foot a:hover { color: var(--accent); }
+  .share {
+    margin-top: 1.1rem; display: flex; align-items: center; justify-content: center;
+    gap: 0.6rem; min-height: 2rem;
+  }
+  .share-toggle {
+    display: inline-grid; place-items: center; min-width: 4.8rem; height: 1.8rem; padding: 0 0.65rem;
+    border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,0.025);
+    color: var(--text-muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s;
+  }
+  .share-toggle:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+  .share-toggle > [data-lang] { grid-area: 1 / 1; }
+  .share-list {
+    display: flex; align-items: center; gap: 0.55rem;
+    opacity: 0; max-width: 0; width: max-content; overflow: hidden;
+    transition: opacity 0.22s ease, max-width 0.22s ease;
+  }
+  .share.open .share-list { opacity: 1; max-width: 20rem; }
+  .share-list a {
+    width: 1.8rem; height: 1.8rem; display: inline-flex; align-items: center; justify-content: center;
+    opacity: 0.72;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .share-list a:hover { opacity: 1; transform: translateY(-1px); }
+  .share-list img { width: 1rem; height: 1rem; display: block; user-select: none; -webkit-user-drag: none; }
+  .qr-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10; align-items: center; justify-content: center; }
+  .qr-overlay.show { display: flex; }
+  .qr-box { background: #fff; border-radius: 8px; padding: 0.25rem; box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
+  .qr-box svg { width: 200px; height: 200px; display: block; border-radius: 6px; }
+  footer { margin-top: 2rem; font-size: 0.75rem; line-height: 1.4; color: var(--text-dim); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  @media (max-width: 520px) {
+    body { padding: 1rem; }
+    .header { flex-direction: column; text-align: center; }
+    .header-text { text-align: center; }
+    h1 { font-size: 1.75rem; }
+    .release-note { align-items: flex-start; justify-content: flex-start; flex-direction: column; gap: 0.5rem; }
+    .secondary-downloads { grid-template-columns: 1fr; }
+    .card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .card .action { margin-left: 0; align-self: flex-end; }
+    .share { flex-direction: column; gap: 0.5rem; }
+.theme-toggle { top: 0.5rem; left: 0.75rem; }
+    .lang-switch { top: 0.5rem; right: 0.75rem; }
+  }
+  @media (min-width: 768px) {
+    main { max-width: 560px; }
+  }
+  /* 语言切换 — CSS 驱动初始状态防闪烁 */
   [data-lang] { visibility: hidden; }
   [data-lang].active { visibility: visible; }
-  .card a > [data-lang] { display: none; visibility: visible; }
-  .card a > [data-lang].active { display: inline; }
-  .foot a > [data-lang] { display: none; visibility: visible; }
-  .foot a > [data-lang].active { display: inline; }
+  html.lang-en [data-lang="en"] { visibility: visible; }
+  html.lang-zh [data-lang="zh"] { visibility: visible; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:            #ffffff;
+      --text:          #24292f;
+      --text-heading:  #1a1e23;
+      --text-muted:    #57606a;
+      --text-dim:      #8b949e;
+      --border:        #d0d7de;
+      --accent:        #0969da;
+      --accent-deep:   #0550ae;
+      --tagline:       #0969da;
+      --divider:       rgba(139,148,158,0.34);
+      --green:         #218b3a;
+      --green-hover:   #1f7c35;
+      --green-bright:  #1a7f37;
+    }
+    .card.primary { background: rgba(35,134,54,0.06); }
+    .card { background: rgba(0,0,0,0.02); }
+    .card.secondary { border-color: rgba(208,215,222,0.58); background: rgba(0,0,0,0.01); }
+    .card.secondary .action.disabled { border-color: rgba(139,148,158,0.48); }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .release-note { background: rgba(9,105,218,0.05); }
+    .release-note.ready { background: rgba(35,134,54,0.06); }
+    .share-toggle { background: rgba(0,0,0,0.015); }
+    .qr-overlay { background: rgba(0,0,0,0.32); }
+  }
+  /* 手动主题覆盖 */
+  [data-theme="dark"] {
+    --bg:            #0d1117;
+    --text:          #c9d1d9;
+    --text-heading:  #f0f6fc;
+    --text-muted:    #9ea7b0;
+    --text-dim:      #6e7681;
+    --border:        #30363d;
+    --accent:        #58a6ff;
+    --accent-deep:   #1f6feb;
+    --tagline:       #bdd7ff;
+    --divider:       rgba(110,118,129,0.45);
+    --green:         #238636;
+    --green-hover:   #2ea043;
+    --green-bright:  #3fb950;
+  }
+  [data-theme="dark"] .card.primary { background: rgba(35,134,54,0.08); }
+  [data-theme="dark"] .card { background: rgba(255,255,255,0.02); }
+  [data-theme="dark"] .card.secondary { border-color: rgba(48,54,61,0.48); background: rgba(255,255,255,0.012); }
+  [data-theme="dark"] .card.secondary .action.disabled { border-color: rgba(48,54,61,0.46); }
+  [data-theme="dark"] .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .release-note { background: rgba(88,166,255,0.045); }
+  [data-theme="dark"] .release-note.ready { background: rgba(35,134,54,0.08); }
+  [data-theme="dark"] .share-toggle { background: rgba(255,255,255,0.025); }
+  [data-theme="dark"] .qr-overlay { background: rgba(0,0,0,0.55); }
+  [data-theme="light"] {
+    --bg:            #ffffff;
+    --text:          #24292f;
+    --text-heading:  #1a1e23;
+    --text-muted:    #57606a;
+    --text-dim:      #8b949e;
+    --border:        #d0d7de;
+    --accent:        #0969da;
+    --accent-deep:   #0550ae;
+    --tagline:       #0969da;
+    --divider:       rgba(139,148,158,0.34);
+    --green:         #218b3a;
+    --green-hover:   #1f7c35;
+    --green-bright:  #1a7f37;
+  }
+  [data-theme="light"] .card { background: rgba(0,0,0,0.02); }
+  [data-theme="light"] .card.primary { background: rgba(35,134,54,0.06); }
+  [data-theme="light"] .card.secondary { border-color: rgba(208,215,222,0.58); background: rgba(0,0,0,0.01); }
+  [data-theme="light"] .card.secondary .action.disabled { border-color: rgba(139,148,158,0.48); }
+  [data-theme="light"] .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  [data-theme="light"] .release-note { background: rgba(9,105,218,0.05); }
+  [data-theme="light"] .release-note.ready { background: rgba(35,134,54,0.06); }
+  [data-theme="light"] .share-toggle { background: rgba(0,0,0,0.015); }
+  [data-theme="light"] .qr-overlay { background: rgba(0,0,0,0.32); }
+  /* 主题切换按钮 */
+  .theme-toggle { position: absolute; top: 1rem; left: 1.5rem; }
+  .theme-toggle button {
+    width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--border);
+    color: var(--text-muted); background: rgba(255,255,255,0.04); cursor: pointer;
+    font-family: inherit; font-size: 0.95rem; line-height: 1; transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    backdrop-filter: blur(12px);
+  }
+  .theme-toggle button:hover { color: var(--text-heading); border-color: var(--accent); transform: translateY(-1px); }
+  body,
+  h1,
+  .desc,
+  .tagline,
+  .lang-switch,
+  .lang-switch button,
+  .lang-switch span,
+  .release-note,
+  .release-kicker,
+  .card,
+  .card-name,
+  .card-meta,
+  .action,
+  .foot a,
+  footer {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 0.28s;
+    transition-timing-function: ease;
+  }
 </style>
+<noscript>
+  <style>[data-lang="en"] { visibility: visible !important; }</style>
+</noscript>
 <script>
   function switchLang(lang) {
-    document.querySelectorAll('[data-lang]').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('[data-lang="' + lang + '"]').forEach(el => el.classList.add('active'));
-    document.querySelectorAll('.lang-switch a').forEach(el => el.classList.remove('active'));
-    document.getElementById('lang-' + lang).classList.add('active');
+    document.querySelectorAll('[data-lang]').forEach(function(el){ el.classList.remove('active'); });
+    document.querySelectorAll('[data-lang="' + lang + '"]').forEach(function(el){ el.classList.add('active'); });
+    document.querySelectorAll('.lang-switch button').forEach(function(el){
+      el.classList.remove('active'); el.removeAttribute('aria-current');
+    });
+    var btn = document.getElementById('lang-' + lang);
+    btn.classList.add('active');
+    btn.setAttribute('aria-current', 'true');
     document.documentElement.lang = lang;
+    document.documentElement.classList.remove('lang-en', 'lang-zh');
+    document.documentElement.classList.add('lang-' + lang);
     localStorage.setItem('lang', lang);
+    updateReleaseCopy();
   }
   document.addEventListener('DOMContentLoaded', function() {
-    switchLang(localStorage.getItem('lang') || 'en');
+    switchLang(localStorage.getItem('lang') || (navigator.language && navigator.language.slice(0,2) === 'zh' ? 'zh' : 'en'));
+    loadLatestRelease();
   });
-</script>
+
+  var latestRelease = null;
+  var releaseAssets = {
+    setup: 'WinCraft-Setup.exe',
+    standard: 'WinCraft-Standard.exe',
+    legacy: 'WinCraft-Legacy.exe'
+  };
+
+  function updateReleaseCopy() {
+    var note = document.getElementById('release-note');
+    if (!note || !latestRelease) return;
+    var tag = latestRelease.tag_name || latestRelease.name || '';
+    var date = latestRelease.published_at ? new Date(latestRelease.published_at).toISOString().slice(0, 10) : '';
+    var isZh = document.documentElement.lang === 'zh';
+    var kicker = isZh ? '最新版本' : 'Release';
+    var message = isZh
+      ? tag + (date ? ' · 发布于 ' + date : '') + '。请选择适合的安装包下载。'
+      : tag + (date ? ' · released ' + date : '') + '. Choose the package that fits your system.';
+    note.innerHTML = '<span class="release-kicker">' + kicker + '</span><span class="release-message">' + message + '</span>';
+  }
+
+  function enableDownload(kind, url) {
+    var action = document.querySelector('[data-download="' + kind + '"]');
+    if (!action || !url) return;
+    var link = document.createElement('a');
+    link.className = action.className.replace(' disabled', '');
+    link.classList.add(kind === 'setup' ? 'dl' : 'dl-alt');
+    link.href = url;
+    link.download = '';
+    link.rel = 'noopener noreferrer';
+    link.setAttribute('data-download', kind);
+    link.innerHTML = '<span data-lang="en">Download</span><span data-lang="zh">下载</span>';
+    action.replaceWith(link);
+  }
+
+  function loadLatestRelease() {
+    fetch('https://api.github.com/repos/YeahOSS/WinCraft/releases?per_page=1')
+      .then(function(response) {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then(function(releases) {
+        var release = Array.isArray(releases) ? releases[0] : null;
+        if (!release || !Array.isArray(release.assets)) return;
+        latestRelease = release;
+        var note = document.getElementById('release-note');
+        if (note) note.classList.add('ready');
+        updateReleaseCopy();
+        release.assets.forEach(function(asset) {
+          Object.keys(releaseAssets).forEach(function(kind) {
+            if (asset.name === releaseAssets[kind]) {
+              enableDownload(kind, asset.browser_download_url);
+            }
+          });
+        });
+        switchLang(document.documentElement.lang === 'zh' ? 'zh' : 'en');
+      })
+      .catch(function() {});
+  }
+
+  var shareUrl = 'https://yeahoss.github.io/WinCraft/';
+  var shareText = 'WinCraft — Windows tuning toolbox. Craft Windows your way.';
+  var isMobile = /iphone|ipad|android|mobile/i.test(navigator.userAgent);
+
+  function toggleShare() {
+    var share = document.getElementById('share');
+    if (!share) return;
+    var open = !share.classList.contains('open');
+    share.classList.toggle('open', open);
+    var btn = document.getElementById('share-toggle');
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function popup(u) { window.open(u, '_blank', 'noopener,noreferrer,width=600,height=420'); }
+  function shareX() { popup('https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl)); }
+  function shareFB() { popup('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl)); }
+  function shareReddit() { popup('https://www.reddit.com/submit?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText)); }
+  function shareTelegram() { popup('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(shareText)); }
+  function shareQQ() {
+    var scheme = 'mqqapi://share/to_fri?src_type=web&version=1&file_type=news&url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText);
+    var web = 'https://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText);
+    if (isMobile) {
+      var started = Date.now();
+      window.location.href = scheme;
+      setTimeout(function() {
+        if (Date.now() - started < 2000) window.location.href = web;
+      }, 1500);
+    } else {
+      popup(web);
+    }
+  }
+  function shareWeChat() {
+    if (isMobile) {
+      var started = Date.now();
+      window.location.href = 'weixin://';
+      setTimeout(function() {
+        if (Date.now() - started < 2500) showQR();
+      }, 2000);
+    } else {
+      showQR();
+    }
+  }
+  function showQR() {
+    var overlay = document.getElementById('qr-overlay');
+    if (overlay) overlay.classList.add('show');
+  }
+  function closeQR(e) {
+    if (e.target === this) this.classList.remove('show');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var overlay = document.getElementById('qr-overlay');
+      if (overlay) overlay.classList.remove('show');
+    }
+  });
+
+  /* 主题切换 */
+  function getTheme() {
+    var saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var btn = document.getElementById('theme-btn'); if (btn) {
+    btn.textContent = t === 'light' ? '☀' : '🌙';
+    btn.setAttribute('aria-label', t === 'light' ? 'Switch to dark mode' : 'Switch to light mode') }
+  }
+  function toggleTheme() {
+    var t = getTheme() === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', t);
+    applyTheme(t);
+  }
+  document.addEventListener('DOMContentLoaded', function() { applyTheme(getTheme()); });</script>
 </head>
 <body>
 
-<div class="lang-switch">
-  <a id="lang-zh" href="javascript:switchLang('zh')">中文</a><span>|</span><a id="lang-en" href="javascript:switchLang('en')">EN</a>
+<div class="theme-toggle">
+  <button id="theme-btn" onclick="toggleTheme()" aria-label="Switch theme"></button>
+</div>
+<div class="lang-switch" role="group" aria-label="语言切换">
+  <button id="lang-zh" onclick="switchLang('zh')">中文</button><span aria-hidden="true">|</span><button id="lang-en" onclick="switchLang('en')">EN</button>
+</div>
+
+<div id="qr-overlay" class="qr-overlay" onclick="closeQR.call(this, event)">
+  <div class="qr-box">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="1 1 35 35" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#000000" d="M4 4.5h7m4 0h2m1 0h1m2 0h4m1 0h7M4 5.5h1m5 0h1m1 0h2m3 0h1m4 0h2m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h4m2 0h1m2 0h3m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m3 0h1m1 0h2m4 0h2m2 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h1m4 0h1m2 0h4m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m2 0h1m4 0h4m1 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h2m1 0h1m3 0h5M4 12.5h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m2 0h3m6 0h1m2 0h1M5 13.5h1m5 0h5m1 0h1m6 0h3m2 0h1m2 0h1M6 14.5h2m1 0h2m2 0h1m2 0h1m1 0h1m1 0h2m2 0h2m2 0h1m1 0h3M4 15.5h1m6 0h1m3 0h9m2 0h3m2 0h1M5 16.5h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h6m2 0h1m1 0h2M4 17.5h2m1 0h2m3 0h1m1 0h2m2 0h1m1 0h1m3 0h1m1 0h1m2 0h1m2 0h1M4 18.5h1m1 0h1m2 0h9m2 0h2m2 0h1m1 0h4m1 0h2M6 19.5h3m2 0h1m2 0h1m1 0h1m3 0h5m1 0h2m1 0h1m1 0h1M4 20.5h1m3 0h3m2 0h2m5 0h1m4 0h2m2 0h1m1 0h2M6 21.5h1m1 0h2m3 0h2m2 0h1m2 0h3m1 0h1m1 0h1m2 0h2m1 0h1M4 22.5h1m1 0h2m2 0h2m4 0h1m1 0h1m2 0h1m4 0h3m2 0h2M5 23.5h4m7 0h4m1 0h3m2 0h1m2 0h1m1 0h1M4 24.5h1m1 0h2m2 0h2m1 0h2m3 0h1m1 0h2m1 0h6M12 25.5h1m1 0h3m1 0h1m1 0h1m2 0h2m3 0h1m1 0h3M4 26.5h7m2 0h1m1 0h3m2 0h1m1 0h3m1 0h1m1 0h2m1 0h2M4 27.5h1m5 0h1m3 0h1m1 0h1m4 0h2m1 0h1m3 0h2m2 0h1M4 28.5h1m1 0h3m1 0h1m1 0h5m4 0h1m2 0h5m3 0h1M4 29.5h1m1 0h3m1 0h1m3 0h1m2 0h1m2 0h1m3 0h2m1 0h2m1 0h3M4 30.5h1m1 0h3m1 0h1m1 0h4m1 0h1m3 0h1m1 0h2m2 0h3m2 0h1M4 31.5h1m5 0h1m5 0h3m2 0h1m1 0h2m1 0h1m4 0h1M4 32.5h7m1 0h1m3 0h1m1 0h1m1 0h1m2 0h2m4 0h1m1 0h2"/></svg>
+  </div>
 </div>
 
 <main>
   <div class="header">
-    <img src="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/logo.png" alt="WinCraft">
+    <img src="https://raw.githubusercontent.com/YeahOSS/WinCraft/master/assets/logo.png" alt="WinCraft" fetchpriority="high" onerror="this.outerHTML='<svg width=96 height=96 viewBox=0 0 96 96 xmlns=http://www.w3.org/2000/svg><rect width=96 height=96 rx=20 fill=%231f6feb/><text x=48 y=62 text-anchor=middle fill=white font-size=48 font-weight=bold>W</text></svg>'">
     <div class="header-text">
       <h1>Win<span class="accent">Craft</span></h1>
-      <div class="lg"><p class="desc" data-lang="en">A Windows tuning toolbox</p><p class="desc" data-lang="zh">Windows 调优工具箱</p></div>
+      <div class="lg"><p class="desc" data-lang="en">Windows tuning toolbox</p><p class="desc" data-lang="zh">Windows 调优工具箱</p></div>
       <div class="lg"><p class="tagline" data-lang="en">Craft Windows your way</p><p class="tagline" data-lang="zh">雕琢 Windows，如你所愿</p></div>
     </div>
   </div>
 
   <div class="badges">
-    <a href="https://github.com/YeahOSS/WinCraft/releases"><img src="https://img.shields.io/github/v/release/YeahOSS/WinCraft?style=flat&color=238636" alt="release"></a>
-    <a href="https://github.com/YeahOSS/WinCraft/releases"><img src="https://img.shields.io/github/downloads/YeahOSS/WinCraft/total?style=flat" alt="downloads"></a>
-    <a href="https://github.com/YeahOSS/WinCraft/stargazers"><img src="https://img.shields.io/github/stars/YeahOSS/WinCraft?style=flat" alt="stars"></a>
-    <a href="https://github.com/YeahOSS/WinCraft"><img src="https://img.shields.io/badge/platform-Windows-0078D6?style=flat" alt="platform"></a>
-    <a href="https://github.com/YeahOSS/WinCraft/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="license"></a>
-    <a href="https://dotnet.microsoft.com"><img src="https://img.shields.io/badge/.NET-3.0%20%7C%204.5-512BD4?style=flat" alt=".NET"></a>
+    <a href="https://github.com/YeahOSS/WinCraft/releases" rel="noopener noreferrer" aria-label="Release status"><img src="https://img.shields.io/badge/status-preview-0969da?style=flat" alt="preview" loading="lazy"></a>
+    <a href="https://github.com/YeahOSS/WinCraft/stargazers" rel="noopener noreferrer" aria-label="GitHub stars"><img src="https://img.shields.io/github/stars/YeahOSS/WinCraft?style=flat" alt="stars" loading="lazy"></a>
+    <a href="https://github.com/YeahOSS/WinCraft" rel="noopener noreferrer" aria-label="Platform: Windows"><img src="https://img.shields.io/badge/platform-Windows-0078D6?style=flat" alt="platform" loading="lazy"></a>
+    <a href="https://github.com/YeahOSS/WinCraft/blob/master/LICENSE" rel="noopener noreferrer" aria-label="License: MIT"><img src="https://img.shields.io/badge/license-MIT-green?style=flat" alt="license" loading="lazy"></a>
+    <a href="https://dotnet.microsoft.com" rel="noopener noreferrer" aria-label=".NET 3.0 | 4.5"><img src="https://img.shields.io/badge/.NET-3.0%20%7C%204.5-512BD4?style=flat" alt=".NET" loading="lazy"></a>
+  </div>
+
+  <div id="release-note" class="release-note">
+    <span class="release-kicker"><span class="lgi"><span data-lang="en">Preview</span><span data-lang="zh">预览</span></span></span>
+    <span class="release-message"><span class="lgi"><span data-lang="en">The first public release is being prepared. Downloads will be enabled after the release assets are published.</span><span data-lang="zh">首个公开版本正在准备中。发布资源上传后，这里会开放下载。</span></span></span>
   </div>
 
   <div class="downloads">
     <div class="card primary">
       <div class="card-info">
-        <div class="card-name"><span class="lgi"><span data-lang="en">📦 Installer</span><span data-lang="zh">📦 安装版</span></span></div>
-        <div class="card-meta"><span class="lgi"><span data-lang="en">Auto-detect .NET · Recommended</span><span data-lang="zh">自动适配 .NET 版本，启动更快 · 推荐</span></span></div>
+        <div class="card-name">
+          <span class="card-title">
+            <span class="card-icon icon-package" aria-hidden="true"></span>
+            <span class="lgi"><span data-lang="en">Installer</span><span data-lang="zh">安装版</span></span>
+          </span>
+        </div>
+        <div class="card-meta"><span class="lgi"><span data-lang="en">Broad compatibility · Windows Vista ~ 11 · Faster launch · Recommended</span><span data-lang="zh">广泛兼容 · Windows Vista ~ 11 · 启动更快 · 推荐</span></span></div>
       </div>
-      <a class="dl" href="https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Setup.exe"><span data-lang="en">⬇ Download</span><span data-lang="zh">⬇ 下载</span></a>
+      <span class="action disabled" data-download="setup" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
     </div>
-    <div class="card">
-      <div class="card-info">
-        <div class="card-name"><span class="lgi"><span data-lang="en">📄 Portable</span><span data-lang="zh">📄 标准版</span></span></div>
-        <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows 8 ~ 11</span><span data-lang="zh">单文件便携 · Windows 8 ~ 11</span></span></div>
+    <div class="secondary-downloads">
+      <div class="card secondary">
+        <div class="card-info">
+          <div class="card-name">
+            <span class="card-title">
+              <span class="card-icon icon-file-down" aria-hidden="true"></span>
+              <span class="lgi"><span data-lang="en">Portable</span><span data-lang="zh">标准版</span></span>
+            </span>
+          </div>
+          <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows 8 ~ 11</span><span data-lang="zh">单文件便携 · Windows 8 ~ 11</span></span></div>
+        </div>
+        <span class="action disabled" data-download="standard" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
       </div>
-      <a class="dl-alt" href="https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Standard.exe"><span data-lang="en">⬇ Download</span><span data-lang="zh">⬇ 下载</span></a>
-    </div>
-    <div class="card">
-      <div class="card-info">
-        <div class="card-name"><span class="lgi"><span data-lang="en">💾 Legacy</span><span data-lang="zh">💾 兼容版</span></span></div>
-        <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows Vista ~ 7</span><span data-lang="zh">单文件便携 · Windows Vista ~ 7</span></span></div>
+      <div class="card secondary">
+        <div class="card-info">
+          <div class="card-name">
+            <span class="card-title">
+              <span class="card-icon icon-history" aria-hidden="true"></span>
+              <span class="lgi"><span data-lang="en">Legacy</span><span data-lang="zh">兼容版</span></span>
+            </span>
+          </div>
+          <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows Vista ~ 7</span><span data-lang="zh">单文件便携 · Windows Vista ~ 7</span></span></div>
+        </div>
+        <span class="action disabled" data-download="legacy" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
       </div>
-      <a class="dl-alt" href="https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Legacy.exe"><span data-lang="en">⬇ Download</span><span data-lang="zh">⬇ 下载</span></a>
     </div>
   </div>
 
   <div class="foot">
-    <a href="https://github.com/YeahOSS/WinCraft/releases"><span class="lgi"><span data-lang="en">GitHub Releases</span><span data-lang="zh">GitHub 发布页</span></span></a>
-    <a href="https://gitee.com/YeahOSS/WinCraft/releases"><span class="lgi"><span data-lang="en">Gitee Mirror</span><span data-lang="zh">Gitee 镜像</span></span></a>
-    <a href="https://github.com/YeahOSS/WinCraft"><span class="lgi"><span data-lang="en">Source</span><span data-lang="zh">源码</span></span></a>
+    <a href="https://github.com/YeahOSS/WinCraft/releases" rel="noopener noreferrer"><span class="lgi"><span data-lang="en">GitHub Releases</span><span data-lang="zh">GitHub 发布页</span></span></a>
+    <a href="https://gitee.com/YeahOSS/WinCraft/releases" rel="noopener noreferrer"><span class="lgi"><span data-lang="en">Gitee Mirror</span><span data-lang="zh">Gitee 镜像</span></span></a>
+    <a href="https://github.com/YeahOSS/WinCraft" rel="noopener noreferrer"><span class="lgi"><span data-lang="en">Source</span><span data-lang="zh">源码</span></span></a>
   </div>
 
-  <footer>&copy; 2026 YeahOSS &mdash; MIT License</footer>
+  <div id="share" class="share">
+    <button id="share-toggle" class="share-toggle" type="button" onclick="toggleShare()" aria-expanded="false" aria-controls="share-list">
+      <span data-lang="en">Share</span><span data-lang="zh">分享</span>
+    </button>
+    <div id="share-list" class="share-list">
+      <a href="javascript:void(0)" onclick="shareX()" aria-label="Share on X"><img src="https://cdn.simpleicons.org/x/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareFB()" aria-label="Share on Facebook"><img src="https://cdn.simpleicons.org/facebook/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareReddit()" aria-label="Share on Reddit"><img src="https://cdn.simpleicons.org/reddit/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareTelegram()" aria-label="Share on Telegram"><img src="https://cdn.simpleicons.org/telegram/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareQQ()" aria-label="Share on QQ"><img src="https://cdn.simpleicons.org/qq/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareWeChat()" aria-label="Share on WeChat"><img src="https://cdn.simpleicons.org/wechat/8b949e" alt="" loading="lazy"></a>
+    </div>
+  </div>
+
+  <footer>
+  <p>&copy; 2026 YeahOSS &mdash; MIT License</p>
+</footer>
 </main>
 </body>
 </html>
