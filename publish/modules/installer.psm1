@@ -96,11 +96,14 @@ function New-NSISInstaller {
         Write-Host "==> Deduplicated $dedupCount file(s) to Common staging"
     }
 
-    # Bundle LICENSE and README alongside the installed files.
+    # Bundle LICENSE, README and third-party notices alongside the installed files.
+    # LICENSE has no extension — append .txt so Windows opens it with Notepad.
     $licensePath = Join-Path $script:RepoRoot "LICENSE"
     $readmePath = Join-Path $script:RepoRoot "README.md"
-    Copy-Item -LiteralPath $licensePath -Destination $commonDirectory -Force
+    $thirdPartyLicensesPath = Join-Path $script:RepoRoot "docs\OPEN-SOURCE-LICENSES.md"
+    Copy-Item -LiteralPath $licensePath -Destination (Join-Path $commonDirectory "LICENSE.txt") -Force
     Copy-Item -LiteralPath $readmePath -Destination $commonDirectory -Force
+    Copy-Item -LiteralPath $thirdPartyLicensesPath -Destination $commonDirectory -Force
 
     # Build a merged manifest of all possible files so the uninstaller can
     # clean up regardless of which build line (Standard / Legacy) was installed.
