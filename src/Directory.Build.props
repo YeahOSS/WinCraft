@@ -19,6 +19,7 @@
 
       WPF — framework constraints cause false positives:
         S2325  Non-instance methods should be static (event handler signatures are fixed).
+        S2955  Generic-typed comparison to null is intentional (detects Nullable<T>/reference types in ICommand).
         S3459  Unassigned members should be removed (XAML-bindable properties look unused).
         S3598  async void should be avoided (WPF event handlers require async void).
 
@@ -27,7 +28,7 @@
         S3776  Cognitive complexity of methods should not be too high (interop is complex).
         S1135  TODO comments should be tracked.
     -->
-		<NoWarn>$(NoWarn);S2346;S3874;S3881;S3265;S3869;S2221;S2486;S3717;S2325;S3459;S3598;S125;S3776;S1135</NoWarn>
+		<NoWarn>$(NoWarn);S2346;S3874;S3881;S3265;S3869;S2221;S2486;S3717;S2325;S2955;S3459;S3598;S125;S3776;S1135</NoWarn>
 		<Deterministic>true</Deterministic>
 		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
 		<GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
