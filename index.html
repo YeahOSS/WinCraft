@@ -386,6 +386,10 @@
   <style>[data-lang="en"] { visibility: visible !important; }</style>
 </noscript>
 <script>
+  var pageTitles = {
+    en: 'WinCraft ✨ Craft Windows your way',
+    zh: 'WinCraft ✨ 雕琢 Windows，如你所愿'
+  };
   function switchLang(lang) {
     document.querySelectorAll('[data-lang]').forEach(function(el){ el.classList.remove('active'); });
     document.querySelectorAll('[data-lang="' + lang + '"]').forEach(function(el){ el.classList.add('active'); });
@@ -400,6 +404,12 @@
     document.documentElement.classList.add('lang-' + lang);
     localStorage.setItem('lang', lang);
     updateReleaseCopy();
+    var title = pageTitles[lang] || pageTitles['en'];
+    document.title = title;
+    var ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+    var twTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twTitle) twTitle.setAttribute('content', title);
   }
   document.addEventListener('DOMContentLoaded', function() {
     switchLang(localStorage.getItem('lang') || (navigator.language && navigator.language.slice(0,2) === 'zh' ? 'zh' : 'en'));
