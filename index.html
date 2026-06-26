@@ -476,8 +476,15 @@
   }
 
   var shareUrl = 'https://yeahoss.github.io/WinCraft/';
-  var shareText = 'WinCraft — Windows tuning toolbox. Craft Windows your way.';
   var isMobile = /iphone|ipad|android|mobile/i.test(navigator.userAgent);
+
+  var shareTexts = {
+    en: 'WinCraft ✨ Craft Windows your way',
+    zh: 'WinCraft ✨ 雕琢 Windows，如你所愿'
+  };
+  function getShareText(lang) {
+    return shareTexts[lang] || shareTexts['en'];
+  }
 
   function toggleShare() {
     var share = document.getElementById('share');
@@ -489,13 +496,16 @@
   }
 
   function popup(u) { window.open(u, '_blank', 'noopener,noreferrer,width=600,height=420'); }
-  function shareX() { popup('https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl)); }
+  function shareX() { popup('https://twitter.com/intent/tweet?text=' + encodeURIComponent(getShareText('en')) + '&url=' + encodeURIComponent(shareUrl)); }
   function shareFB() { popup('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl)); }
-  function shareReddit() { popup('https://www.reddit.com/submit?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText)); }
-  function shareTelegram() { popup('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(shareText)); }
+  function shareReddit() { popup('https://www.reddit.com/submit?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(getShareText('en'))); }
+  function shareTelegram() { popup('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(getShareText('en'))); }
+  function shareBluesky() { popup('https://bsky.app/intent/compose?text=' + encodeURIComponent(getShareText('en') + ' ' + shareUrl)); }
+  function shareWeibo() { popup('https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(getShareText('zh'))); }
   function shareQQ() {
-    var scheme = 'mqqapi://share/to_fri?src_type=web&version=1&file_type=news&url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText);
-    var web = 'https://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareText);
+    var text = getShareText('zh');
+    var scheme = 'mqqapi://share/to_fri?src_type=web&version=1&file_type=news&url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text);
+    var web = 'https://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text);
     if (isMobile) {
       var started = Date.now();
       window.location.href = scheme;
@@ -644,6 +654,8 @@
       <a href="javascript:void(0)" onclick="shareFB()" aria-label="Share on Facebook"><img src="https://cdn.simpleicons.org/facebook/8b949e" alt="" loading="lazy"></a>
       <a href="javascript:void(0)" onclick="shareReddit()" aria-label="Share on Reddit"><img src="https://cdn.simpleicons.org/reddit/8b949e" alt="" loading="lazy"></a>
       <a href="javascript:void(0)" onclick="shareTelegram()" aria-label="Share on Telegram"><img src="https://cdn.simpleicons.org/telegram/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareBluesky()" aria-label="Share on Bluesky"><img src="https://cdn.simpleicons.org/bluesky/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareWeibo()" aria-label="在新浪微博分享"><img src="https://cdn.simpleicons.org/sinaweibo/8b949e" alt="" loading="lazy"></a>
       <a href="javascript:void(0)" onclick="shareQQ()" aria-label="Share on QQ"><img src="https://cdn.simpleicons.org/qq/8b949e" alt="" loading="lazy"></a>
       <a href="javascript:void(0)" onclick="shareWeChat()" aria-label="Share on WeChat"><img src="https://cdn.simpleicons.org/wechat/8b949e" alt="" loading="lazy"></a>
     </div>
