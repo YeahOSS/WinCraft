@@ -17,7 +17,9 @@ call out the most-repeated violations to prevent the agent from guessing.
   not convenience — the doc defines which type goes where.
 - **Before building or reviewing `net30`-specific failures:**
   Read `docs/framework-compatibility.md`.
-  Common violation: reporting a standalone `dotnet build` `net30` failure as a bug.
+  Common violation: running `dotnet build` without `-f net45` and reporting
+  the missing net30 reference assemblies as a bug.  The expected CLI build
+  command is `dotnet build -f net45`.
 - **Before adding TFM conditionals, compatibility wrappers, or using post-net45 C# syntax:**
   Read `docs/framework-compatibility.md`.
   Common violation: scattering `#if` blocks instead of using a `WinCraft.Compatibility` helper.
@@ -35,7 +37,10 @@ call out the most-repeated violations to prevent the agent from guessing.
 ## Working Rules
 - Use commit messages in the format `<type>: <short English summary>`.  Prefer including a brief body describing what changed and why; title-only commits are acceptable for trivial or self-explanatory changes.
 - Do not add `Co-Authored-By` trailers on behalf of the AI; the rule does not restrict human contributors.
+- When running `git commit` in PowerShell, use a single-quoted here-string (`@' ... '@`) for multi-line messages so that `@` is not accidentally embedded in the commit message.
 - Prefer UTF-8 when reading or writing text files. Do not change BOM, line endings, or file encoding unless the task explicitly requires it.
+- Prefer `dotnet build -f net45` for CLI validation.
+- When adding or modifying code, assess whether it contains testable logic (parsing, mapping, state machines, validation, algorithms, structured data transformation, or public/internal APIs with defined behaviour).  If it does, add or update the corresponding test in the same commit.  Trivial types (enums, constants, pure-DTO classes, generated interop files) are exempt.
 - Prefer small, verifiable PowerShell and Git commands instead of long chained commands.
 - Run Git write operations serially. Do not overlap `git add`, `git commit`, `git merge`, `git rebase`, or branch-changing commands.
 
