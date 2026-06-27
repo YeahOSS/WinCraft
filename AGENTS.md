@@ -35,8 +35,6 @@ call out the most-repeated violations to prevent the agent from guessing.
 ## Working Rules
 - Use commit messages in the format `<type>: <short English summary>`.  Prefer including a brief body describing what changed and why; title-only commits are acceptable for trivial or self-explanatory changes.
 - Do not add `Co-Authored-By` trailers on behalf of the AI; the rule does not restrict human contributors.
-- Keep code comments, script output, and developer-facing notes in English.
-- Do not remove existing comments unless the related code change makes them incorrect.
 - Prefer UTF-8 when reading or writing text files. Do not change BOM, line endings, or file encoding unless the task explicitly requires it.
 - Prefer small, verifiable PowerShell and Git commands instead of long chained commands.
 - Run Git write operations serially. Do not overlap `git add`, `git commit`, `git merge`, `git rebase`, or branch-changing commands.
@@ -52,7 +50,10 @@ call out the most-repeated violations to prevent the agent from guessing.
 ## Documentation Rules
 - Keep layout and directory-boundary guidance in `docs/source-layout.md`, not in `AGENTS.md`.
 - Keep `docs/source-layout.md` focused on durable structure. Do not update it for routine class additions, one-off helper moves, or implementation-level refactors that still fit the existing rules.
-- Document durable architecture boundaries, recurring pitfalls, and implementation constraints only. Avoid one-off explanations or restating code that is already obvious at the call site.
+- All comments and developer-facing text must be written in English.
+- Default to no comment.  Add one only when the code is surprising, works around an external constraint, or reflects a non-obvious design choice.  Never restate what the line of code already says.
+- Public and internal types/methods get a one-line `<summary>` describing purpose.  Omit `<param>`, `<returns>`, and `<remarks>` unless the behaviour is genuinely unexpected.
+- Remove noise comments during any edit that touches the same file.  Existing comments that are still correct and non-obvious should stay.
 
 ## Code Review Rules
 - Treat `src/third_party/LzmaSdk/` as vendored third-party LZMA SDK code. Review guidance and source details live in `src/third_party/LzmaSdk/README.md`. Do not review these files for style, naming, modernization, analyzer cleanup, or refactoring.
