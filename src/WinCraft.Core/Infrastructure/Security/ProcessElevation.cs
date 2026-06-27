@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -23,11 +24,17 @@ namespace WinCraft.Infrastructure.Security
             return GetCurrentProcessElevationState() != ProcessElevationState.Standard;
         }
 
+        /// <summary>
+        /// Returns the current process identifier.
+        /// </summary>
         public static uint GetCurrentProcessId()
         {
             return PInvoke.GetCurrentProcessId();
         }
 
+        /// <summary>
+        /// Returns the elevation state of the current process.
+        /// </summary>
         internal static ProcessElevationState GetCurrentProcessElevationState()
         {
             var isCurrentTokenAdministrator = IsCurrentTokenAdministrator();
@@ -41,6 +48,9 @@ namespace WinCraft.Infrastructure.Security
             return ClassifyElevationState(isCurrentTokenAdministrator, null);
         }
 
+        /// <summary>
+        /// Classifies elevation state from token administrator status and elevation kind.
+        /// </summary>
         internal static ProcessElevationState ClassifyElevationState(
             bool isCurrentTokenAdministrator,
             TokenElevationKind? elevationKind)
@@ -60,8 +70,7 @@ namespace WinCraft.Infrastructure.Security
         }
 
         /// <summary>
-        /// Restarts the current executable as administrator.
-        /// Returns false when the user cancels the UAC prompt.
+        /// Restarts the current executable as administrator via the <c>runas</c> verb.
         /// </summary>
         public static bool TryRelaunchElevated(string[] args, out Process elevatedProcess)
         {
@@ -91,6 +100,9 @@ namespace WinCraft.Infrastructure.Security
             }
         }
 
+        /// <summary>
+        /// Restarts the current executable unelevated via the active shell token.
+        /// </summary>
         public static bool TryLaunchUnelevatedFromShell(string[] args, out Process uiProcess)
         {
             var executablePath = GetCurrentProcessPath();
@@ -98,16 +110,24 @@ namespace WinCraft.Infrastructure.Security
         }
 
         /// <summary>
-        /// Returns the full path of the current process executable
-        /// via <c>GetModuleFileName(NULL)</c> rather than the BCL
-        /// <see cref="Process.MainModule"/> which allocates a
-        /// <see cref="ProcessModule"/> and may throw
-        /// <see cref="Win32Exception"/> on access-denied.
+        /// Configures <paramref name="startInfo"/> to bypass <c>requireAdministrator</c> manifest elevation.
+        /// </summary>
+        public static void SetRunAsInvoker(ProcessStartInfo startInfo)
+        {
+            if (startInfo == null)
+                throw new ArgumentNullException(nameof(startInfo));
+
+            startInfo.UseShellExecute = false;
+            startInfo.EnvironmentVariables["__COMPAT_LAYER"] = "RUNASINVOKER";
+        }
+
+        /// <summary>
+        /// Returns the full path of the current executable.  Uses <c>GetModuleFileName</c>
+        /// to avoid <see cref="Process.MainModule"/> allocations and access-denied errors.
         /// </summary>
         internal static unsafe string GetCurrentProcessPath()
         {
-            const int initialBufferLength = 260;
-            var bufferLength = initialBufferLength;
+            var bufferLength = (int)PInvoke.MAX_PATH;
 
             while (true)
             {
@@ -166,30 +186,23 @@ namespace WinCraft.Infrastructure.Security
             return TryMapTokenElevationKind((TOKEN_ELEVATION_TYPE)elevationTypeValue, out elevationKind);
         }
 
-        private static bool TryMapTokenElevationKind(
-            TOKEN_ELEVATION_TYPE elevationType,
-            out TokenElevationKind elevationKind)
+        private static bool TryMapTokenElevationKind(TOKEN_ELEVATION_TYPE elevationType, out TokenElevationKind elevationKind)
         {
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+            switch (elevationType)
             {
-                elevationKind = TokenElevationKind.Default;
-                return true;
+                case TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault:
+                    elevationKind = TokenElevationKind.Default;
+                    return true;
+                case TOKEN_ELEVATION_TYPE.TokenElevationTypeFull:
+                    elevationKind = TokenElevationKind.Full;
+                    return true;
+                case TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited:
+                    elevationKind = TokenElevationKind.Limited;
+                    return true;
+                default:
+                    elevationKind = TokenElevationKind.Default;
+                    return false;
             }
-
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
-            {
-                elevationKind = TokenElevationKind.Full;
-                return true;
-            }
-
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
-            {
-                elevationKind = TokenElevationKind.Limited;
-                return true;
-            }
-
-            elevationKind = TokenElevationKind.Default;
-            return false;
         }
     }
 }

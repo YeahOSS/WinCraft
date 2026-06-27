@@ -237,7 +237,7 @@ namespace WinCraft.Infrastructure.Security
             if (processHandle == null || processHandle.IsInvalid)
                 return false;
 
-            var bufferLength = 260;
+            var bufferLength = PInvoke.MAX_PATH;
             while (true)
             {
                 char[] buffer = new char[bufferLength];
