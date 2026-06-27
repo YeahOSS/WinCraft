@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
+using Windows.Win32;
 
 namespace WinCraft.Infrastructure
 {
@@ -76,30 +76,6 @@ namespace WinCraft.Infrastructure
 
     public static class WindowsVersion
     {
-        // Uses a manual P/Invoke for RtlGetVersion rather than CsWin32.
-        // RtlGetVersion is excluded from both the SDK and WDK win32metadata
-        // packages (ntdll user-mode exports are not covered).  CsWin32
-        // cannot emit the binding because it is absent from the metadata.
-        [DllImport("ntdll.dll", ExactSpelling = true)]
-        private static extern int RtlGetVersion(ref RTL_OSVERSIONINFOEXW lpVersionInformation);
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private struct RTL_OSVERSIONINFOEXW
-        {
-            public uint dwOSVersionInfoSize;
-            public uint dwMajorVersion;
-            public uint dwMinorVersion;
-            public uint dwBuildNumber;
-            public uint dwPlatformId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-            public string szCSDVersion;
-            public ushort wServicePackMajor;
-            public ushort wServicePackMinor;
-            public ushort wSuiteMask;
-            public byte wProductType;
-            public byte wReserved;
-        }
-
         private struct OsVersionInfo
         {
             public Version Version;
@@ -194,11 +170,12 @@ namespace WinCraft.Infrastructure
 
         private static OsVersionInfo GetVersionInfo()
         {
-            var info = new RTL_OSVERSIONINFOEXW
+            var info = new PInvoke.RTL_OSVERSIONINFOEXW
             {
-                dwOSVersionInfoSize = (uint)Marshal.SizeOf(typeof(RTL_OSVERSIONINFOEXW))
+                dwOSVersionInfoSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf(
+                    typeof(PInvoke.RTL_OSVERSIONINFOEXW))
             };
-            int status = RtlGetVersion(ref info);
+            int status = PInvoke.RtlGetVersion(ref info);
             if (status == 0) // STATUS_SUCCESS
             {
                 return new OsVersionInfo

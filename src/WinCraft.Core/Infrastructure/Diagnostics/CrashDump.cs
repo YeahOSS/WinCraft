@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Windows.Win32;
 
 namespace WinCraft.Infrastructure.Diagnostics
@@ -10,42 +9,11 @@ namespace WinCraft.Infrastructure.Diagnostics
     /// </summary>
     internal static class CrashDump
     {
-        // Uses a manual P/Invoke for MiniDumpWriteDump rather than CsWin32.
-        // The parameter structures (e.g. MINIDUMP_EXCEPTION_INFORMATION)
-        // contain pointer-sized fields whose binary layout differs between
-        // x86 and x64.  CsWin32 cannot emit the binding under AnyCPU
-        // (PInvoke005) because it cannot know which layout to use at
-        // generation time.  IntPtr-based marshalling avoids the issue.
-        [DllImport("dbghelp.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool MiniDumpWriteDump(
-            IntPtr hProcess,
-            uint processId,
-            IntPtr hFile,
-            MiniDumpType dumpType,
-            IntPtr exceptionParam,
-            IntPtr userStreamParam,
-            IntPtr callbackParam);
-
-        [Flags]
-        private enum MiniDumpType : uint
-        {
-            Normal = 0x00000000,
-            WithDataSegs = 0x00000001,
-            WithFullMemory = 0x00000002,
-            WithHandleData = 0x00000004,
-            WithUnloadedModules = 0x00000020,
-            WithIndirectlyReferencedMemory = 0x00000040,
-            WithFullMemoryInfo = 0x00000800,
-            WithThreadInfo = 0x00008000,
-            WithCodeSegs = 0x00010000,
-        }
-
-        private const MiniDumpType DefaultDumpType =
-            MiniDumpType.WithDataSegs |
-            MiniDumpType.WithHandleData |
-            MiniDumpType.WithUnloadedModules |
-            MiniDumpType.WithThreadInfo;
+        private const PInvoke.MiniDumpType DefaultDumpType =
+            PInvoke.MiniDumpType.WithDataSegs |
+            PInvoke.MiniDumpType.WithHandleData |
+            PInvoke.MiniDumpType.WithUnloadedModules |
+            PInvoke.MiniDumpType.WithThreadInfo;
 
         /// <summary>
         /// Writes a minidump of the current process to <paramref name="outputPath"/>.
@@ -65,7 +33,7 @@ namespace WinCraft.Infrastructure.Diagnostics
 
                 using var processHandle = PInvoke.GetCurrentProcess_SafeHandle();
                 using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write);
-                return MiniDumpWriteDump(
+                return PInvoke.MiniDumpWriteDump(
                     processHandle.DangerousGetHandle(),
                     PInvoke.GetCurrentProcessId(),
                     fs.SafeFileHandle.DangerousGetHandle(),
