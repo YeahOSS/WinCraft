@@ -35,15 +35,6 @@
     <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
-    <Compile Remove="TestBench\**" />
-    <Page Remove="TestBench\**" />
-  </ItemGroup>
 
   <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
     <Compile Remove="Infrastructure\OverlayAssemblyResolver.cs" />
