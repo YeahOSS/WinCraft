@@ -1,0 +1,3 @@
+[*.cs]
+# Types here use Windows.Win32.* namespaces to align with CsWin32 generated code.
+dotnet_diagnostic.IDE0130.severity = none

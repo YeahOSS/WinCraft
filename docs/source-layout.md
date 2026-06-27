@@ -34,6 +34,11 @@ Core into the compressed overlay.
   Stores reusable cross-process contracts, endpoints, and transport helpers.
 - `src/third_party/LzmaSdk/`
   Stores the vendored LZMA SDK source subset. Repository-specific source, layout, and update notes live in `src/third_party/LzmaSdk/README.md`.
+- `Interop/`
+  Stores hand-written Win32 COM interfaces, `[ComImport]` coclasses, and P/Invoke
+  declarations that CsWin32 cannot generate (see `docs/win32-interop.md` § "CsWin32
+  COM Interface Limitations").  Types use CsWin32-matching namespaces such as
+  `Windows.Win32.UI.Shell`.  Place each type in its own file.
 - `Constants/`
   Stores shared constants such as known registry paths, ProgIDs, CLSIDs, and system option names.
 

@@ -1,11 +1,15 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using WinCraft.Infrastructure;
 using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.RegistryAccess;
 using WinCraft.Infrastructure.Security;
+using WinCraft.Infrastructure.Shell;
+using WinCraft.Infrastructure.Shell.DragDrop;
 
 namespace WinCraft.TestBench
 {
@@ -16,6 +20,8 @@ namespace WinCraft.TestBench
         public TestBenchWindow()
         {
             InitializeComponent();
+
+            ShellDropTarget.Register(DropTarget, System.Windows.DragDropEffects.Copy, OnDrop);
         }
 
         private void Append(string text)
@@ -261,6 +267,84 @@ namespace WinCraft.TestBench
 
                 return Done;
             });
+        }
+
+        private void OnDragSourceMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            var data = new ShellDataObject();
+            data.SetText("Hello from WinCraft TestBench!");
+
+            using (var bitmap = CreateDragBitmap())
+            {
+                ShellDragSource.DoDragDrop(
+                    DragSource,
+                    data,
+                    System.Windows.DragDropEffects.Copy | System.Windows.DragDropEffects.Move,
+                    bitmap);
+            }
+
+            data.Dispose();
+        }
+
+        private void OnDrop(ShellDragEventArgs args)
+        {
+            Append($"  Drop received — Effects: {args.Effects}");
+
+            var textStream = args.Data.GetStream(System.Windows.DataFormats.UnicodeText);
+            if (textStream != null)
+            {
+                using (textStream)
+                using (var reader = new System.IO.StreamReader(textStream, System.Text.Encoding.Unicode))
+                {
+                    string text = reader.ReadToEnd().TrimEnd('\0');
+                    Append($"  Text: \"{text}\"");
+                }
+            }
+            else
+            {
+                Append("  No text data in drop payload.");
+            }
+        }
+
+        private async void OnSetDropDescription(object sender, RoutedEventArgs e)
+        {
+            await RunTest("Set Drop Description", () =>
+            {
+                ShellDropTarget.SetDropDescription(
+                    System.Windows.DragDropEffects.Copy,
+                    "Copy to TestBench",
+                    "Destination");
+                Append("  Drop description set (will show on next drag over target).");
+                return Done;
+            });
+        }
+
+        private async void OnClearDropDescription(object sender, RoutedEventArgs e)
+        {
+            await RunTest("Clear Drop Description", () =>
+            {
+                ShellDropTarget.ClearDropDescription();
+                Append("  Drop description cleared.");
+                return Done;
+            });
+        }
+
+        private static System.Drawing.Bitmap CreateDragBitmap()
+        {
+            var bitmap = new System.Drawing.Bitmap(64, 64);
+            using (var g = System.Drawing.Graphics.FromImage(bitmap))
+            {
+                g.Clear(System.Drawing.Color.CornflowerBlue);
+                using (var font = new System.Drawing.Font(System.Drawing.SystemFonts.DefaultFont.FontFamily, 9))
+                using (var brush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+                {
+                    g.DrawString("Drag", font, brush, 10, 22);
+                }
+            }
+            return bitmap;
         }
 
         private async void OnClear(object sender, RoutedEventArgs e)

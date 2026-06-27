@@ -29,6 +29,24 @@
                 <Button Content="TI Service Status" Click="OnTiServiceStatus" Margin="0,0,0,2" />
                 <Button Content="TI Access Validation" Click="OnTiAccessValidation" Margin="0,0,0,2" />
 
+                <Label Content="Drag-and-Drop" FontWeight="Bold" Margin="0,8,0,0" />
+                <Border x:Name="DragSource" Background="LightBlue" BorderBrush="SteelBlue"
+                        BorderThickness="1" Padding="6,4" Margin="0,0,0,2"
+                        Cursor="Hand" ToolTip="Left-drag to start a Shell drag"
+                        MouseMove="OnDragSourceMouseMove">
+                    <TextBlock Text="Drag me" HorizontalAlignment="Center" />
+                </Border>
+                <Border x:Name="DropTarget" Background="LightGreen" BorderBrush="SeaGreen"
+                        BorderThickness="1" Height="48" Margin="0,0,0,2">
+                    <TextBlock x:Name="DropHint" Text="Drop here"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="Gray" />
+                </Border>
+                <Button Content="Set Drop Description" Click="OnSetDropDescription"
+                        Margin="0,0,0,2" />
+                <Button Content="Clear Drop Description" Click="OnClearDropDescription"
+                        Margin="0,0,0,2" />
+
                 <Label Content="Output" FontWeight="Bold" Margin="0,8,0,0" />
                 <Button Content="Clear" Click="OnClear" Margin="0,0,0,2" />
             </StackPanel>

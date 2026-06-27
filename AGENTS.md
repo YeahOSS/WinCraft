@@ -27,6 +27,8 @@ call out the most-repeated violations to prevent the agent from guessing.
   Read `docs/startup-lifecycle.md`.
 - **Before touching privileged process launch or IPC between processes:**
   Read `docs/elevated-agent-ipc.md`.
+- **Before touching Shell drag-and-drop, COM drag helpers, or ShellDataObject:**
+  Read `docs/shell-drag-drop.md`.
 - **Before changing the publish or release workflow:**
   Read `publish/README.md`.
 

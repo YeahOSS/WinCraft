@@ -1,8 +1,30 @@
+// ── Process & Token ──
 OpenProcessToken
 GetTokenInformation
 IsUserAnAdmin
+TOKEN_ACCESS_MASK
+TOKEN_ELEVATION
+TOKEN_ELEVATION_TYPE
+TOKEN_INFORMATION_CLASS
+TOKEN_TYPE
+SECURITY_IMPERSONATION_LEVEL
+TOKEN_PRIVILEGES_ATTRIBUTES
+PROCESS_ACCESS_RIGHTS
+OpenProcess
+LookupPrivilegeValue
+AdjustTokenPrivileges
+SetLastError
+DuplicateTokenEx
+SetTokenInformation
+CreateProcessWithTokenW
+CreateProcessAsUserW
+CreateEnvironmentBlock
+DestroyEnvironmentBlock
+WTSGetActiveConsoleSessionId
+WaitForSingleObject
+
+// ── Named Pipes ──
 CreateNamedPipe
-FILE_FLAGS_AND_ATTRIBUTES
 ConnectNamedPipe
 CreateFile
 ReadFile
@@ -16,34 +38,61 @@ CancelIoEx
 GetOverlappedResult
 GENERIC_ACCESS_RIGHTS
 WIN32_ERROR
-TOKEN_ACCESS_MASK
-TOKEN_ELEVATION
-TOKEN_ELEVATION_TYPE
-TOKEN_INFORMATION_CLASS
-TOKEN_TYPE
-SECURITY_IMPERSONATION_LEVEL
-TOKEN_PRIVILEGES_ATTRIBUTES
-PROCESS_ACCESS_RIGHTS
-OpenProcess
-WaitForSingleObject
-LookupPrivilegeValue
-AdjustTokenPrivileges
-SetLastError
-DuplicateTokenEx
-SetTokenInformation
-CreateProcessWithTokenW
-CreateProcessAsUserW
-CreateEnvironmentBlock
-DestroyEnvironmentBlock
-WTSGetActiveConsoleSessionId
-CloseHandle
-GetCurrentProcess
-GetCurrentProcessId
-GetModuleFileName
-QueryFullProcessImageNameW
+FILE_FLAGS_AND_ATTRIBUTES
+
+// ── Services ──
 OpenSCManagerW
 OpenServiceW
 QueryServiceStatusEx
 CloseServiceHandle
 SC_STATUS_TYPE
 SERVICE_STATUS_PROCESS
+CloseHandle
+
+// ── Diagnostics ──
+GetCurrentProcess
+GetCurrentProcessId
+GetModuleFileName
+QueryFullProcessImageNameW
+
+// ── Global Memory ──
+GlobalAlloc
+GlobalFree
+GlobalLock
+GlobalUnlock
+GlobalSize
+
+// ── Window ──
+IsWindow
+PostMessage
+GetCursorPos
+GetIconInfo
+CreateIconIndirect
+DestroyIcon
+DestroyCursor
+WM_USER
+
+// ── Clipboard ──
+CFSTR_DROPDESCRIPTION
+CFSTR_INDRAGLOOP
+CFSTR_LOGICALPERFORMEDDROPEFFECT
+
+// ── COM ──
+S_OK
+E_NOTIMPL
+OLE_E_ADVISENOTSUPPORTED
+DATA_S_SAMEFORMATETC
+DV_E_FORMATETC
+DV_E_LINDEX
+DV_E_TYMED
+DV_E_DVASPECT
+
+// ── Shell ──
+MAX_PATH
+
+// ── Shell Drag-and-Drop ──
+CLSID_DragDropHelper
+DSH_FLAGS
+SHDRAGIMAGE
+DROPDESCRIPTION
+DROPIMAGETYPE
