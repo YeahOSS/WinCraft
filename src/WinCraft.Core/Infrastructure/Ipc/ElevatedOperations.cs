@@ -9,5 +9,6 @@ namespace WinCraft.Infrastructure.Ipc
         public const string Shutdown = "shutdown";
         public const string RegistryWrite = "registry.write";
         public const string RegistryDelete = "registry.delete";
+        public const string FileWrite = "file.write";
     }
 }

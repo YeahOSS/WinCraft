@@ -1,6 +1,10 @@
 using System;
+using System.ComponentModel;
+using System.IO;
+using System.Security;
 using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.RegistryAccess;
+using Windows.Win32.Foundation;
 
 namespace WinCraft.Infrastructure.Security
 {
@@ -69,6 +73,9 @@ namespace WinCraft.Infrastructure.Security
             if (string.Equals(request.OperationName, ElevatedOperations.RegistryDelete, StringComparison.OrdinalIgnoreCase))
                 return ExecuteRegistryOperation(request, WindowsRegistryWriter.DeleteValue, PrivilegeErrorCodes.RegistryDeleteFailed);
 
+            if (string.Equals(request.OperationName, ElevatedOperations.FileWrite, StringComparison.OrdinalIgnoreCase))
+                return ExecuteFileWrite(request);
+
             return CommandResult.Failure(
                 PrivilegeErrorCodes.UnsupportedOperation,
                 "The elevated operation is not implemented yet.",
@@ -96,13 +103,39 @@ namespace WinCraft.Infrastructure.Security
             }
         }
 
+        private static CommandResult ExecuteFileWrite(ElevatedCommandRequest command)
+        {
+            try
+            {
+                var request = DataContractPayloadSerializer.Deserialize<FileWriteRequest>(command.Payload);
+                string destDir = Path.GetDirectoryName(request.Path);
+                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+                using (var stream = new FileStream(request.Path, FileMode.Create, FileAccess.Write))
+                    stream.Write(request.Content, 0, request.Content.Length);
+                return CommandResult.Success(command.RequestId);
+            }
+            catch (Exception exception) when (IsPermissionFailure(exception))
+            {
+                return CommandResult.Failure(PrivilegeErrorCodes.FileAccessDenied, exception.Message, command.RequestId);
+            }
+            catch (Exception exception)
+            {
+                return CommandResult.Failure(
+                    PrivilegeErrorCodes.FileWriteFailed,
+                    exception.Message,
+                    command.RequestId);
+            }
+        }
+
         internal static bool IsPermissionFailure(Exception exception)
         {
             return exception is UnauthorizedAccessException
-                || exception is System.Security.SecurityException
-                || exception is System.ComponentModel.Win32Exception win32Exception
-                    && (win32Exception.NativeErrorCode == (int)Windows.Win32.Foundation.WIN32_ERROR.ERROR_ACCESS_DENIED
-                        || win32Exception.NativeErrorCode == (int)Windows.Win32.Foundation.WIN32_ERROR.ERROR_PRIVILEGE_NOT_HELD);
+                || exception is SecurityException
+                || exception is Win32Exception win32Exception
+                    && (win32Exception.NativeErrorCode 
+                        is (int)WIN32_ERROR.ERROR_ACCESS_DENIED
+                        or (int)WIN32_ERROR.ERROR_PRIVILEGE_NOT_HELD);
         }
     }
 }

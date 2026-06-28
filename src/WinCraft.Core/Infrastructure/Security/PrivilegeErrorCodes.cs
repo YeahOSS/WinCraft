@@ -19,5 +19,7 @@ namespace WinCraft.Infrastructure.Security
         public const string RegistryWriteFailed = "registry_write_failed";
         public const string RegistryDeleteFailed = "registry_delete_failed";
         public const string UnsupportedOperation = "unsupported_operation";
+        public const string FileAccessDenied = "file_access_denied";
+        public const string FileWriteFailed = "file_write_failed";
     }
 }
