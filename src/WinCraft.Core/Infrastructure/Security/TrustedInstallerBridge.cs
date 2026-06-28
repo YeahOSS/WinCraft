@@ -34,7 +34,7 @@ namespace WinCraft.Infrastructure.Security
 
             var executablePath = ProcessElevation.GetCurrentProcessPath();
             string[] args =
-            {
+            [
                 ElevatedAgentArguments.TrustedInstallerHopMode,
                 ElevatedAgentArguments.PipeName,
                 resultPipeName,
@@ -42,7 +42,7 @@ namespace WinCraft.Infrastructure.Security
                 requestPipeName,
                 ElevatedAgentArguments.RequestId,
                 request.RequestId ?? string.Empty
-            };
+            ];
 
             if (!TokenProcessLauncher.TryStartProcessFromTrustedSource(
                 "winlogon.exe",
@@ -139,7 +139,7 @@ namespace WinCraft.Infrastructure.Security
 
                 var executablePath = ProcessElevation.GetCurrentProcessPath();
                 string[] executeArgs =
-                {
+                [
                     ElevatedAgentArguments.TrustedInstallerExecuteMode,
                     ElevatedAgentArguments.PipeName,
                     executeResultPipeName,
@@ -147,7 +147,7 @@ namespace WinCraft.Infrastructure.Security
                     executeRequestPipeName,
                     ElevatedAgentArguments.RequestId,
                     request.RequestId ?? string.Empty
-                };
+                ];
 
                 using var executeResultPipeHandle = ElevatedAgentPipeServer.Create(executeResultPipeName);
                 using var executeRequestPipeHandle = ElevatedAgentPipeServer.Create(executeRequestPipeName);

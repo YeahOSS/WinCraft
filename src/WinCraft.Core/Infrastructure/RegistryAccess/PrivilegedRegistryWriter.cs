@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Win32;
 using WinCraft.Infrastructure.Ipc;
@@ -17,24 +17,24 @@ namespace WinCraft.Infrastructure.RegistryAccess
             PrivilegeLevel privilegeLevel);
 
         private static readonly PrivilegeLevel[] CurrentOnlyLevels =
-        {
+        [
             PrivilegeLevel.Standard
-        };
+        ];
 
         private static readonly PrivilegeLevel[] AutoWithoutTrustedInstallerLevels =
-        {
+        [
             PrivilegeLevel.Standard,
             PrivilegeLevel.Administrator,
             PrivilegeLevel.System
-        };
+        ];
 
         private static readonly PrivilegeLevel[] AutoLevels =
-        {
+        [
             PrivilegeLevel.Standard,
             PrivilegeLevel.Administrator,
             PrivilegeLevel.System,
             PrivilegeLevel.TrustedInstaller
-        };
+        ];
 
         private readonly IPrivilegeBroker _privilegeBroker;
         private readonly RegistryOperationAttempt _operationAttempt;
@@ -107,7 +107,7 @@ namespace WinCraft.Infrastructure.RegistryAccess
                 : ExecutePrivileged(request, ElevatedOperations.RegistryWrite, privilegeLevel)
                     .WithPrivilegeDetails(
                         GetEffectiveExplicitPrivilegeLevel(privilegeLevel),
-                        new[] { privilegeLevel });
+                        [privilegeLevel]);
         }
 
         public PrivilegeExecutionResult DeleteString(
@@ -157,7 +157,7 @@ namespace WinCraft.Infrastructure.RegistryAccess
                 : ExecutePrivileged(request, ElevatedOperations.RegistryDelete, privilegeLevel)
                     .WithPrivilegeDetails(
                         GetEffectiveExplicitPrivilegeLevel(privilegeLevel),
-                        new[] { privilegeLevel });
+                        [privilegeLevel]);
         }
 
         internal static PrivilegeLevel[] GetAttemptLevels(
@@ -282,13 +282,13 @@ namespace WinCraft.Infrastructure.RegistryAccess
         {
             if (string.Equals(operationName, ElevatedOperations.RegistryWrite, StringComparison.OrdinalIgnoreCase))
             {
-                WindowsRegistryWriter.WriteValue(request);
+                RegistryWriter.WriteValue(request);
                 return;
             }
 
             if (string.Equals(operationName, ElevatedOperations.RegistryDelete, StringComparison.OrdinalIgnoreCase))
             {
-                WindowsRegistryWriter.DeleteValue(request);
+                RegistryWriter.DeleteValue(request);
                 return;
             }
 

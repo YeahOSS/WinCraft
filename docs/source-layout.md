@@ -59,5 +59,5 @@ Core into the compressed overlay.
 - Context menu behavior: `Features/ContextMenu/`
 - Explorer tweaks: `Features/Explorer/`
 - Startup routing: `Startup/ProgramHost.cs`
-- Shared registry wrapper: `Infrastructure/RegistryAccess/WindowsRegistryWriter.cs`
+- Shared registry wrapper: `Infrastructure/RegistryAccess/RegistryWriter.cs`
 - Missing string APIs: `Compatibility/StringCompat.cs`

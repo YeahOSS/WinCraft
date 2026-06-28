@@ -34,7 +34,7 @@ namespace WinCraft.Infrastructure.Security
 
             var executablePath = ProcessElevation.GetCurrentProcessPath();
             string[] args =
-            {
+            [
                 ElevatedAgentArguments.SystemExecuteMode,
                 ElevatedAgentArguments.PipeName,
                 resultPipeName,
@@ -42,7 +42,7 @@ namespace WinCraft.Infrastructure.Security
                 requestPipeName,
                 ElevatedAgentArguments.RequestId,
                 request.RequestId ?? string.Empty
-            };
+            ];
 
             if (!TokenProcessLauncher.TryStartProcessFromTrustedSource(
                 "winlogon.exe",

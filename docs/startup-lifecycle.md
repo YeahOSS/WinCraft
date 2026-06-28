@@ -14,7 +14,7 @@ single-instance activation. Privileged host IPC details live in
 any WPF window is created.
 
 `Program` is intentionally a thin executable shell. It registers
-`OverlayAssemblyResolver` before touching code that may live in bundled
+`AssemblyResolver` before touching code that may live in bundled
 dependency assemblies, then delegates startup routing to `WinCraft.Startup`.
 Keep this ordering intact: the executable project should not touch
 `WinCraft.Core` types before the resolver is registered, because release

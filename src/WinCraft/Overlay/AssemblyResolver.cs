@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace WinCraft.Infrastructure
+namespace WinCraft.Overlay
 {
     /// <summary>
     /// Loads dependency assemblies from a compressed container appended to the
@@ -26,7 +26,7 @@ namespace WinCraft.Infrastructure
     ///     [4 bytes LE: data length]
     ///     [data bytes]
     /// </summary>
-    internal static class OverlayAssemblyResolver
+    internal static class AssemblyResolver
     {
         private const uint LzmaOverlayMagic = 0x5A4C4F57; // "WOLZ"
 
@@ -53,7 +53,7 @@ namespace WinCraft.Infrastructure
             }
             catch (Exception ex)
             {
-                Trace.TraceWarning($"{nameof(OverlayAssemblyResolver)}: failed to parse assembly name — {ex.Message}");
+                Trace.TraceWarning($"{nameof(AssemblyResolver)}: failed to parse assembly name — {ex.Message}");
                 return null;
             }
 
@@ -90,7 +90,7 @@ namespace WinCraft.Infrastructure
                 catch (Exception ex)
                 {
                     lock (_lock) { _cache.Remove(name); }
-                    Trace.TraceError($"{nameof(OverlayAssemblyResolver)}: failed to load {name} from overlay, evicting — {ex.Message}");
+                    Trace.TraceError($"{nameof(AssemblyResolver)}: failed to load {name} from overlay, evicting — {ex.Message}");
                     return null;
                 }
             }
@@ -127,7 +127,7 @@ namespace WinCraft.Infrastructure
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"{nameof(OverlayAssemblyResolver)}: overlay read failed — {ex.Message}");
+                Trace.TraceError($"{nameof(AssemblyResolver)}: overlay read failed — {ex.Message}");
                 return [];
             }
         }
@@ -200,7 +200,7 @@ namespace WinCraft.Infrastructure
 
                         var key = Path.GetFileNameWithoutExtension(entryName);
                         if (result.ContainsKey(key))
-                            Trace.TraceWarning($"{nameof(OverlayAssemblyResolver)}: duplicate entry '{key}', overwriting");
+                            Trace.TraceWarning($"{nameof(AssemblyResolver)}: duplicate entry '{key}', overwriting");
                         result[key] = data;
                     }
                     catch (EndOfStreamException)

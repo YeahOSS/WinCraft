@@ -540,7 +540,7 @@ namespace WinCraft.Infrastructure.Security
 
         private static bool IsRecoverableLaunchException(Exception exception)
         {
-            return exception is Win32Exception || exception is InvalidOperationException;
+            return exception is Win32Exception or InvalidOperationException;
         }
 
         private static string GetProcessIdOrUnknown(Process process)

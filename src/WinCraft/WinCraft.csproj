@@ -28,7 +28,7 @@
                       ..\third_party\LzmaSdk\Compress\LZ\LzBinTree.cs;
                       ..\third_party\LzmaSdk\Compress\LZ\LzInWindow.cs;
                       ..\third_party\LzmaSdk\Compress\LZMA\LzmaEncoder.cs"
-             LinkBase="third_party\LzmaSdk" />
+             LinkBase="Overlay\Lzma" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +37,7 @@
 
 
   <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
-    <Compile Remove="Infrastructure\OverlayAssemblyResolver.cs" />
+    <Compile Remove="Overlay\AssemblyResolver.cs" />
     <Compile Remove="..\third_party\LzmaSdk\**\*.cs" />
   </ItemGroup>
 </Project>

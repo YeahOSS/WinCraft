@@ -69,10 +69,8 @@ namespace WinCraft.Infrastructure.Ipc
 
                     connectedServerProcessId = actualServerProcessId;
                     hasAcceptedServerConnection = true;
-                    var request = PipeMessageIO.ReadMessage<ElevatedCommandRequest>(pipeHandle, BrokenPipeMessage);
-                    if (request == null)
-                        throw new InvalidOperationException("The privileged host received an empty request.");
-
+                    var request = PipeMessageIO.ReadMessage<ElevatedCommandRequest>(pipeHandle, BrokenPipeMessage)
+                        ?? throw new InvalidOperationException("The privileged host received an empty request.");
                     var isShutdown = string.Equals(
                         request.OperationName,
                         ElevatedOperations.Shutdown,
