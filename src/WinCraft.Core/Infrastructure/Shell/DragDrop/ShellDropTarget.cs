@@ -14,7 +14,7 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
     /// </summary>
     public static class ShellDropTarget
     {
-        private static readonly IDropTargetHelper _helper = (IDropTargetHelper)new DragDropHelper();
+        private static readonly IDropTargetHelper _helper = (IDropTargetHelper)new CDragDropHelper();
 
         // Only accessed on the UI thread.
         private static IDataObject _data;

@@ -93,7 +93,9 @@ dropped or when the affected APIs are guarded with `#if NET45`.
 - Every hand-written type gets a one-line `<summary>` — describe purpose, not parameters.
 - Namespace matches CsWin32 (COM types in `Windows.Win32.UI.Shell`, P/Invoke in `Windows.Win32`).
 - P/Invoke files named `PInvoke.{DllName}.cs` extend the `PInvoke` partial class with a `private const string` for the DLL name.
-- COM interface and coclass files named after the type (`IDragSourceHelper.cs`, `DragDropHelper.cs`).
+- COM interface and coclass files named after the type (`IShellLink.cs`, `CShellLink.cs`).
+- Struct and enum names use ALL_CAPS matching CsWin32 generated types; prefer CsWin32 generation over hand-writing for enums.
+- Use `((HRESULT)result).Failed` / `.Succeeded` instead of `== 0` / `!= 0` for COM method returns.
 - All placed in `src/WinCraft.Core/Interop/`.
 
 

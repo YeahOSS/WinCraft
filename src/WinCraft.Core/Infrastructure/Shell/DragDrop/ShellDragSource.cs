@@ -22,7 +22,7 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
         /// </summary>
         public static bool ShowDragImageWhenNotSupported { get; set; } = true;
 
-        private static readonly IDragSourceHelper2 _helper = (IDragSourceHelper2)new DragDropHelper();
+        private static readonly IDragSourceHelper2 _helper = (IDragSourceHelper2)new CDragDropHelper();
 
         // Only accessed on the UI thread.
         private static IDataObject _data;

@@ -42,9 +42,9 @@ namespace WinCraft.Tests.Shell
         }
 
         [Test]
-        public void DragDropHelper_CanCreate_AndCastToBothInterfaces()
+        public void CDragDropHelper_CanCreate_AndCastToBothInterfaces()
         {
-            var helper = new DragDropHelper();
+            var helper = new CDragDropHelper();
 
             var dropHelper = (IDropTargetHelper)helper;
             Assert.That(dropHelper, Is.Not.Null);
@@ -72,7 +72,7 @@ namespace WinCraft.Tests.Shell
                 crColorKey = (COLORREF)uint.MaxValue,
             };
 
-            var helper = (IDragSourceHelper)new DragDropHelper();
+            var helper = (IDragSourceHelper)new CDragDropHelper();
             int hr = helper.InitializeFromBitmap(ref image, data);
 
             Assert.That(hr, Is.EqualTo(0)); // S_OK
@@ -81,7 +81,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void DragSourceHelper2_SetFlags_ReturnsOK()
         {
-            var helper = (IDragSourceHelper2)new DragDropHelper();
+            var helper = (IDragSourceHelper2)new CDragDropHelper();
 
             int hr = helper.SetFlags((int)DSH_FLAGS.DSH_ALLOWDROPDESCRIPTIONTEXT);
 
@@ -95,7 +95,7 @@ namespace WinCraft.Tests.Shell
             data.SetText("drag-test");
             var pt = new Point(10, 10);
 
-            var helper = (IDropTargetHelper)new DragDropHelper();
+            var helper = (IDropTargetHelper)new CDragDropHelper();
 
             int enterHr = helper.DragEnter(_hwnd, data, ref pt, (int)DragDropEffects.Copy);
             Assert.That(enterHr, Is.EqualTo(0)); // S_OK
@@ -111,7 +111,7 @@ namespace WinCraft.Tests.Shell
             data.SetText("drag-over-test");
             var pt = new Point(5, 5);
 
-            var helper = (IDropTargetHelper)new DragDropHelper();
+            var helper = (IDropTargetHelper)new CDragDropHelper();
             helper.DragEnter(_hwnd, data, ref pt, (int)DragDropEffects.Copy);
 
             pt.X = 15;
@@ -129,7 +129,7 @@ namespace WinCraft.Tests.Shell
             data.SetText("drop-test");
             var pt = new Point(20, 20);
 
-            var helper = (IDropTargetHelper)new DragDropHelper();
+            var helper = (IDropTargetHelper)new CDragDropHelper();
             helper.DragEnter(_hwnd, data, ref pt, (int)DragDropEffects.Copy);
 
             int hr = helper.Drop(data, ref pt, (int)DragDropEffects.Copy);
@@ -140,7 +140,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void DropTargetHelper_Show_ReturnsOK()
         {
-            var helper = (IDropTargetHelper)new DragDropHelper();
+            var helper = (IDropTargetHelper)new CDragDropHelper();
 
             int hideHr = helper.Show(false);
             Assert.That(hideHr, Is.EqualTo(0)); // S_OK

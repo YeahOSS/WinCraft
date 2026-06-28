@@ -10,9 +10,8 @@ namespace Windows.Win32
         /// Returns version information about the currently running operating system.
         /// </summary>
         /// <remarks>
-        /// Hand-written — RtlGetVersion is absent from both the SDK and WDK
-        /// win32metadata packages (ntdll user-mode exports are not covered).
-        /// See docs/win32-interop.md § CsWin32 COM Interface Limitations.
+        /// RtlGetVersion is absent from win32metadata (ntdll user-mode exports
+        /// are not covered).
         /// </remarks>
         [DllImport(Ntdll, ExactSpelling = true)]
         internal static extern int RtlGetVersion(ref RTL_OSVERSIONINFOEXW lpVersionInformation);

@@ -5,6 +5,9 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace Windows.Win32.UI.Shell
 {
+    /// <summary>
+    /// COM interface for displaying Shell drag images and drop descriptions at the drop target.
+    /// </summary>
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("4657278B-411B-11D2-839A-00C04FD918D0")]
