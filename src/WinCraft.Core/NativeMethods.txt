@@ -89,6 +89,16 @@ DV_E_DVASPECT
 
 // ── Shell ──
 MAX_PATH
+MAXINFOSIZE
+PSGetPropertyKeyFromName
+HashData
+
+// ── Shell Link ──
+SLGP_FLAGS
+STGM
+PROPERTYKEY
+SHOW_WINDOW_CMD
+SHELL_LINK_DATA_FLAGS
 
 // ── Shell Drag-and-Drop ──
 CLSID_DragDropHelper
