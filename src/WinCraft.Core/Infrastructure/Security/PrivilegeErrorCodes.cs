@@ -18,8 +18,13 @@ namespace WinCraft.Infrastructure.Security
         public const string RegistryAccessDenied = "registry_access_denied";
         public const string RegistryWriteFailed = "registry_write_failed";
         public const string RegistryDeleteFailed = "registry_delete_failed";
+        public const string RegistryKeyDeleteFailed = "registry_key_delete_failed";
+        public const string RegistryKeyMoveFailed = "registry_key_move_failed";
         public const string UnsupportedOperation = "unsupported_operation";
         public const string FileAccessDenied = "file_access_denied";
         public const string FileWriteFailed = "file_write_failed";
+        public const string FileDeleteFailed = "file_delete_failed";
+        public const string FileRenameFailed = "file_rename_failed";
+        public const string FileSetAttributesFailed = "file_set_attributes_failed";
     }
 }
