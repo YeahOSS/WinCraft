@@ -155,7 +155,9 @@ function Invoke-ProjectBuild {
     Write-Step "Building $ProjectLabel"
 
     # Pass ContinuousIntegrationBuild for Release to enable full deterministic build semantics.
-    $extraProperties = @()
+    # Net30ValidationBuild suppresses the post-build validation target since this
+    # script already builds both TFMs via VS MSBuild.
+    $extraProperties = @("/p:Net30ValidationBuild=true")
     if ($Configuration -eq "Release") {
         $extraProperties += "/p:ContinuousIntegrationBuild=true"
     }

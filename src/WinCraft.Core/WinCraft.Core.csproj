@@ -16,6 +16,15 @@
     <RootNamespace>WinCraft</RootNamespace>
   </PropertyGroup>
 
+  <!--
+    Quick net30 validation triggered from every net45 build.
+    Net30ValidationBuild guard prevents re-entry when validate.ps1 calls MSBuild.
+  -->
+  <Target Name="ValidateNet30" AfterTargets="Build"
+          Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\validate.ps1&quot;" />
+  </Target>
+
   <ItemGroup>
     <Compile Include="..\WinCraft\Properties\AssemblyInfo.Shared.cs" Link="Properties\AssemblyInfo.Shared.cs" />
   </ItemGroup>

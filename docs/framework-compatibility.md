@@ -24,17 +24,26 @@ reference is unconditional.
 
 ## Build Validation
 
-Do not treat a standalone `dotnet build` failure as authoritative for `net30`,
-especially when it reports missing `.NET Framework 3.0` reference assemblies.
-For this repository, Visual Studio MSBuild and `publish/build.ps1` are the
-authoritative validation path for `net30`, and they may succeed even when the
-standalone `dotnet` SDK build does not.
+`dotnet build` and `dotnet msbuild` use the .NET SDK's bundled MSBuild,
+which cannot resolve net30 reference assemblies — even when Visual Studio
+has the targeting packs installed.  The .NET SDK simply does not ship the
+framework resolution logic for frameworks that old.
 
-In code review findings, do not report a standalone `dotnet build` `net30`
-failure as a bug, regression, or testing gap by itself. First verify with
-Visual Studio MSBuild or `publish/build.ps1`, and only report a build problem
-when that authoritative path fails or when the change actually breaks the
-repository's supported build workflow.
+Use these validation paths instead:
+
+| Path | Command | Use |
+|------|---------|-----|
+| Quick validation | `src/validate.ps1` | Day-to-day CI check; locates VS MSBuild via `vswhere.exe` |
+| Quick + tests | `src/validate.ps1 -Test` | Pre-commit validation |
+| Full publish build | `publish/build.ps1 -BuildOnly` | Release readiness |
+
+Inside Visual Studio, a post-build event in `WinCraft.Core.csproj` validates
+net30 automatically after every net45 build.  The event carries a
+`Net30ValidationBuild=true` guard to prevent re-entrant loops.
+
+Do not report a standalone `dotnet build` net30 failure as a bug, regression,
+or testing gap.  Only report a build problem when `src/validate.ps1` or
+`publish/build.ps1` fails.
 
 ## Compatibility Helpers
 
