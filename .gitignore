@@ -32,6 +32,9 @@ packages/
 .nuget/
 *.dotCover
 tmp/
+
+# ===== Publish / build tooling =====
+.wix/
 /publish/output/
 /tools/nsis/
 

@@ -36,7 +36,6 @@ call out the most-repeated violations to prevent the agent from guessing.
 
 ## Working Rules
 - Use commit messages in the format `<type>: <short English summary>`.  Prefer including a brief body describing what changed and why; title-only commits are acceptable for trivial or self-explanatory changes.
-- Do not add `Co-Authored-By` trailers on behalf of the AI; the rule does not restrict human contributors.
 - When running `git commit` in PowerShell, use a single-quoted here-string (`@' ... '@`) for multi-line messages so that `@` is not accidentally embedded in the commit message.
 - Prefer UTF-8 when reading or writing text files. Do not change BOM, line endings, or file encoding unless the task explicitly requires it.
 - Prefer `src/validate.ps1` for CLI validation; use `src/validate.ps1 -Test`

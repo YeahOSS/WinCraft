@@ -38,3 +38,13 @@ indent_size = 2
 [*.yaml]
 indent_style = space
 indent_size = 2
+
+[*.nsi]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+
+[*.nsh]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true

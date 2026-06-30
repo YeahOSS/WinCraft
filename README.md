@@ -1,10 +1,10 @@
 # WinCraft
 
-[![GitHub Release](https://img.shields.io/github/v/release/YeahOSS/WinCraft)](https://github.com/YeahOSS/WinCraft/releases) [![GitHub Downloads](https://img.shields.io/github/downloads/YeahOSS/WinCraft/total)](https://github.com/YeahOSS/WinCraft/releases) [![GitHub Stars](https://img.shields.io/github/stars/YeahOSS/WinCraft)](https://github.com/YeahOSS/WinCraft/stargazers) [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows-0078D6)](https://github.com/YeahOSS/WinCraft) [![.NET](https://img.shields.io/badge/.NET-3.0%20%7C%204.5-512BD4)](https://dotnet.microsoft.com)
+[![GitHub Release](https://img.shields.io/github/v/release/YeahOSS/WinCraft?style=flat)](https://github.com/YeahOSS/WinCraft/releases) [![GitHub Downloads](https://img.shields.io/github/downloads/YeahOSS/WinCraft/total?style=flat)](https://github.com/YeahOSS/WinCraft/releases) [![GitHub Stars](https://img.shields.io/github/stars/YeahOSS/WinCraft?style=flat)](https://github.com/YeahOSS/WinCraft/stargazers) [![License](https://img.shields.io/badge/license-MIT-green?style=flat)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat)](https://github.com/YeahOSS/WinCraft) [![.NET](https://img.shields.io/badge/.NET-3.0%20%7C%204.5-512BD4?style=flat)](https://dotnet.microsoft.com)
 
 <br>
 <p align="center">
-  <img src="assets/social-preview.png" alt="WinCraft" width="600">
+  <img src="assets/social-preview.png" alt="WinCraft" width="800">
 </p>
 
 English | [简体中文](docs/i18n/README.zh-CN.md)
@@ -25,7 +25,7 @@ after I lost access to my 2FA credentials.
 
 | Then | Now |
 | --- | --- |
-| <img src="https://raw.githubusercontent.com/BluePointLilac/ContextMenuManager/master/ContextMenuManager/Properties/AppIcon.ico" width="16" height="16"> ContextMenuManager | <img src="assets/app.ico" width="16" height="16"> WinCraft |
+| <img src="https://raw.githubusercontent.com/BluePointLilac/ContextMenuManager/master/ContextMenuManager/Properties/AppIcon.ico" width="16" height="16" style="vertical-align: middle"> ContextMenuManager | <img src="assets/app.ico" width="16" height="16" style="vertical-align: middle"> WinCraft |
 | BluePointLilac (lost 2FA) | YeahOSS |
 | Context menus only | Broader Windows tuning toolbox |
 | WinForms | WPF — more modern look and feel |
@@ -43,19 +43,24 @@ after I lost access to my 2FA credentials.
 | GitHub | [Releases](https://github.com/YeahOSS/WinCraft/releases) |
 | Gitee (mirror) | [Releases](https://gitee.com/YeahOSS/WinCraft/releases) |
 
-### Installer (recommended) — `WinCraft-Setup.exe`
+### Installer (recommended)
+
+| Format | File | Best for |
+| --- | --- | --- |
+| Setup | [WinCraft-Setup.exe](https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Setup.exe) | Interactive install, personal use |
+| MSI | [WinCraft-Setup.msi](https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Setup.msi) | Enterprise deployment, Group Policy |
+
+See [docs/installer-guide.md](docs/installer-guide.md) for deployment commands.
 
 - **Automatic .NET Framework adaptation.** Detects the installed .NET Framework version at install time: prefers `net45` when .NET 4.5+ is available, falls back to `net30` for older built-in-framework systems.
 - **Faster startup.** Files are deployed directly to disk with an optimized runtime configuration — no overlay decompression at launch.
 
-### Portable — `WinCraft-Standard.exe` / `WinCraft-Legacy.exe`
+### Portable
 
-Single-file executables for users who prefer a no-installer experience or need to deploy to a specific framework line directly:
-
-| Package | Target Framework | Supported Windows |
-| --- | --- | --- |
-| `WinCraft-Standard.exe` | .NET Framework 4.5 | Windows 8, 8.1, 10, 11 |
-| `WinCraft-Legacy.exe` | .NET Framework 3.0 | Windows Vista, 7 |
+| Format | File | Target Framework | Supported Windows |
+| --- | --- | --- | --- |
+| Standard | [WinCraft-Standard.exe](https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Standard.exe) | .NET Framework 4.5 | Windows 8, 8.1, 10, 11 |
+| Legacy | [WinCraft-Legacy.exe](https://github.com/YeahOSS/WinCraft/releases/latest/download/WinCraft-Legacy.exe) | .NET Framework 3.0 | Windows Vista, 7 |
 
 > [!WARNING]
 > Because WinCraft modifies Windows settings through system APIs, some antivirus or security products may raise false positives — particularly on older release lines where legacy framework heuristics are stricter.
@@ -73,5 +78,6 @@ WinCraft builds on the work of these open-source projects:
 - [Theraot](https://github.com/theraot/Theraot) — backfills missing .NET APIs for `net30` compatibility
 - [CsWin32](https://github.com/microsoft/CsWin32) — Microsoft — source-generated Win32 P/Invoke
 - [NSIS](https://nsis.sourceforge.io/) — Nullsoft — flexible Windows installer
+- [WiX Toolset](https://wixtoolset.org/) — .NET Foundation — Windows Installer XML (MSI) packaging
 
 [![Star History](https://api.star-history.com/svg?repos=YeahOSS/WinCraft&type=Date)](https://star-history.com/#YeahOSS/WinCraft&Date)
