@@ -6,7 +6,7 @@ namespace WinCraft.Features
 {
     public static class LicenseViewer
     {
-        private const string LicenseFileName = "LICENSE.txt";
+        private const string LicenseFileName = "LICENSE.rtf";
         private const string OpenSourceLicensesFileName = "OPEN-SOURCE-LICENSES.md";
 #pragma warning disable S1075
         private const string LicenseFallbackUrl = "https://raw.githubusercontent.com/YeahOSS/WinCraft/master/LICENSE";

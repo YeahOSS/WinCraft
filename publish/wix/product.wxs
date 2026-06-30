@@ -1,0 +1,487 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="WinCraft"
+           Manufacturer="YeahOSS"
+           Version="$(var.Version)"
+           UpgradeCode="3D17A351-F892-4555-93DB-9F4745BD7437"
+           Language="1033"
+           Scope="perUserOrMachine">
+
+    <SummaryInformation Description="Craft Windows your way" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of WinCraft is already installed on this computer." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_45_OR_LATER_INSTALLED" />
+
+    <Property Id="ApplicationFolderName" Value="WinCraft" />
+    <Property Id="WINCRAFT_INSTALL_SCOPE" Value="perUser" />
+    <Property Id="WINCRAFT_PROGRAMFILES_ROOT">
+      <RegistrySearch Id="GetProgramFilesRoot"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion"
+                      Name="ProgramFilesDir"
+                      Type="raw"
+                      Bitness="always32" />
+    </Property>
+    <Property Id="WINCRAFT_CURRENTUSER_PROGRAMS_ROOT">
+      <RegistrySearch Id="GetCurrentUserProgramsRoot"
+                      Root="HKCU"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                      Name="Programs"
+                      Type="raw"
+                      Bitness="always32" />
+    </Property>
+    <Property Id="WINCRAFT_CURRENTUSER_DESKTOP_ROOT">
+      <RegistrySearch Id="GetCurrentUserDesktopRoot"
+                      Root="HKCU"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                      Name="Desktop"
+                      Type="raw"
+                      Bitness="always32" />
+    </Property>
+    <Property Id="WINCRAFT_ALLUSERS_PROGRAMS_ROOT">
+      <RegistrySearch Id="GetAllUsersProgramsRoot"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                      Name="Common Programs"
+                      Type="raw"
+                      Bitness="always32" />
+    </Property>
+    <Property Id="WINCRAFT_ALLUSERS_DESKTOP_ROOT">
+      <RegistrySearch Id="GetAllUsersDesktopRoot"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+                      Name="Common Desktop"
+                      Type="raw"
+                      Bitness="always32" />
+    </Property>
+
+    <SetProperty Id="ALLUSERS"
+                 Value=""
+                 Before="SetWinCraftPerUserFolder"
+                 Sequence="both"
+                 Condition="NOT Installed AND MSIINSTALLPERUSER=1 AND ALLUSERS=2" />
+
+    <CustomAction Id="SetWinCraftPerUserFolder"
+                  Property="WixPerUserFolder"
+                  Value="[LocalAppDataFolder][ApplicationFolderName]"
+                  Execute="immediate" />
+    <CustomAction Id="SetWinCraftPerMachineFolderFromRegistry"
+                  Property="WixPerMachineFolder"
+                  Value="[WINCRAFT_PROGRAMFILES_ROOT]\[ApplicationFolderName]"
+                  Execute="immediate" />
+    <CustomAction Id="SetWinCraftPerMachineFolderFromStandardFolder"
+                  Property="WixPerMachineFolder"
+                  Value="[ProgramFilesFolder][ApplicationFolderName]"
+                  Execute="immediate" />
+    <CustomAction Id="SetWinCraftApplicationFolderPerUser"
+                  Property="APPLICATIONFOLDER"
+                  Value="[WixPerUserFolder]"
+                  Execute="immediate" />
+    <CustomAction Id="SetWinCraftApplicationFolderPerMachine"
+                  Property="APPLICATIONFOLDER"
+                  Value="[WixPerMachineFolder]"
+                  Execute="immediate" />
+    <InstallUISequence>
+      <Custom Action="SetWinCraftPerUserFolder" Before="SetWinCraftPerMachineFolderFromRegistry" Condition="NOT Installed" />
+      <Custom Action="SetWinCraftPerMachineFolderFromRegistry" Before="SetWinCraftPerMachineFolderFromStandardFolder" Condition="NOT Installed AND WINCRAFT_PROGRAMFILES_ROOT&lt;&gt;&quot;&quot;" />
+      <Custom Action="SetWinCraftPerMachineFolderFromStandardFolder" Before="SetWinCraftApplicationFolderPerUser" Condition="NOT Installed AND WINCRAFT_PROGRAMFILES_ROOT=&quot;&quot;" />
+      <Custom Action="SetWinCraftApplicationFolderPerUser" Before="SetWinCraftApplicationFolderPerMachine" Condition="ACTION=&quot;INSTALL&quot; AND APPLICATIONFOLDER=&quot;&quot; AND (ALLUSERS=&quot;&quot; OR (ALLUSERS=2 AND MSIINSTALLPERUSER=1))" />
+      <Custom Action="SetWinCraftApplicationFolderPerMachine" Before="CostFinalize" Condition="ACTION=&quot;INSTALL&quot; AND APPLICATIONFOLDER=&quot;&quot; AND ALLUSERS=1" />
+      <Show Dialog="CleanupOptionsDlg"
+            After="MaintenanceWelcomeDlg"
+            Condition="Installed AND REMOVE=&quot;ALL&quot; AND Preselected AND NOT UPGRADINGPRODUCTCODE" />
+    </InstallUISequence>
+    <InstallExecuteSequence>
+      <Custom Action="SetWinCraftPerUserFolder" Before="SetWinCraftPerMachineFolderFromRegistry" Condition="NOT Installed" />
+      <Custom Action="SetWinCraftPerMachineFolderFromRegistry" Before="SetWinCraftPerMachineFolderFromStandardFolder" Condition="NOT Installed AND WINCRAFT_PROGRAMFILES_ROOT&lt;&gt;&quot;&quot;" />
+      <Custom Action="SetWinCraftPerMachineFolderFromStandardFolder" Before="SetWinCraftApplicationFolderPerUser" Condition="NOT Installed AND WINCRAFT_PROGRAMFILES_ROOT=&quot;&quot;" />
+      <Custom Action="SetWinCraftApplicationFolderPerUser" Before="SetWinCraftApplicationFolderPerMachine" Condition="ACTION=&quot;INSTALL&quot; AND APPLICATIONFOLDER=&quot;&quot; AND (ALLUSERS=&quot;&quot; OR (ALLUSERS=2 AND MSIINSTALLPERUSER=1))" />
+      <Custom Action="SetWinCraftApplicationFolderPerMachine" Before="CostFinalize" Condition="ACTION=&quot;INSTALL&quot; AND APPLICATIONFOLDER=&quot;&quot; AND ALLUSERS=1" />
+    </InstallExecuteSequence>
+
+    <StandardDirectory Id="TARGETDIR">
+      <Directory Id="APPLICATIONFOLDER" Name="WinCraft" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Feature Id="MainFeature"
+             Title="WinCraft"
+             Level="1"
+             ConfigurableDirectory="APPLICATIONFOLDER">
+      <ComponentGroupRef Id="ProductFiles" />
+      <Feature Id="StartMenuShortcutFeature"
+               Title="Start Menu shortcut"
+               Level="1">
+        <ComponentRef Id="StartMenuShortcut" />
+      </Feature>
+      <Feature Id="DesktopShortcutFeature"
+               Title="Desktop shortcut"
+               Level="1">
+        <ComponentRef Id="DesktopShortcut" />
+      </Feature>
+    </Feature>
+
+    <Component Id="StartMenuShortcut" Directory="APPLICATIONFOLDER" Guid="2B3C4D5E-6F7A-8901-BCDE-F12345678902">
+      <Shortcut Id="StartMenuLink"
+                Directory="ProgramMenuFolder"
+                Name="WinCraft"
+                Description="Craft Windows your way"
+                Target="[APPLICATIONFOLDER]WinCraft.exe"
+                WorkingDirectory="APPLICATIONFOLDER" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\WinCraft\InstallerState"
+                     Name="StartMenuShortcutInstalled"
+                     Value="1"
+                     Type="integer"
+                     KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="APPLICATIONFOLDER" Guid="3C4D5E6F-7A8B-9012-CDEF-123456789013">
+      <Shortcut Id="DesktopLink"
+                Directory="DesktopFolder"
+                Name="WinCraft"
+                Description="Craft Windows your way"
+                Target="[APPLICATIONFOLDER]WinCraft.exe"
+                WorkingDirectory="APPLICATIONFOLDER" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\WinCraft\InstallerState"
+                     Name="DesktopShortcutInstalled"
+                     Value="1"
+                     Type="integer"
+                     KeyPath="yes" />
+    </Component>
+
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPCOMMENTS" Value="Craft Windows your way" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/YeahOSS/WinCraft" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/YeahOSS/WinCraft" />
+    <Property Id="ARPPRODUCTICON" Value="WinCraftIcon" />
+    <Icon Id="WinCraftIcon" SourceFile="$(var.RepoRoot)\assets\app.ico" />
+
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[APPLICATIONFOLDER]" After="CostFinalize" />
+    <SetProperty Id="ARPREADME" Value="[APPLICATIONFOLDER]README.md" After="CostFinalize" />
+    <SetProperty Id="ProductVersion" Value="$(var.DisplayVersion)" After="InstallValidate" Sequence="execute" Condition="NOT Installed" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.DialogBitmap)" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.BannerBitmap)" />
+    <!-- Launch WinCraft after install.  WixUI shows a checkbox on the
+         exit dialog when WixShellExecTarget is defined. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch WinCraft" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <SetProperty Id="WixShellExecTarget" Value="[APPLICATIONFOLDER]WinCraft.exe" After="CostFinalize" />
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="APPLICATIONFOLDER" />
+
+    <Property Id="CREATE_STARTMENU_SHORTCUT" Value="1" />
+    <Property Id="CREATE_DESKTOP_SHORTCUT" Value="1" />
+    <Property Id="KEEP_CONFIG" Value="1" />
+    <Property Id="DELETE_LOGS_DUMPS" Value="1" />
+    <Property Id="REMOVE_CONFIG" Secure="yes" />
+    <Property Id="KEEP_LOGS_DUMPS" Secure="yes" />
+
+    <UI>
+      <RadioButtonGroup Property="WINCRAFT_INSTALL_SCOPE">
+        <RadioButton Value="perUser" X="0" Y="0" Width="295" Height="16"
+                     Text="!(loc.InstallScopeDlgPerUser)" />
+        <RadioButton Value="perMachine" X="0" Y="60" Width="295" Height="16"
+                     Text="!(loc.InstallScopeDlgPerMachine)" />
+      </RadioButtonGroup>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next"
+               Event="NewDialog" Value="WinCraftInstallScopeDlg"
+               Order="99" Condition="LicenseAccepted=&quot;1&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Back"
+               Event="NewDialog" Value="LicenseAgreementDlg"
+               Order="1" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="ALLUSERS" Value="{}"
+               Order="1" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="MSIINSTALLPERUSER" Value="1"
+               Order="2" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="ALLUSERS" Value="1"
+               Order="4" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="MSIINSTALLPERUSER" Value="{}"
+               Order="5" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="APPLICATIONFOLDER" Value="[WixPerUserFolder]"
+               Order="7" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="APPLICATIONFOLDER" Value="[WixPerMachineFolder]"
+               Order="8" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="ProgramMenuFolder" Value="[WINCRAFT_CURRENTUSER_PROGRAMS_ROOT]\"
+               Order="9" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot; AND WINCRAFT_CURRENTUSER_PROGRAMS_ROOT&lt;&gt;&quot;&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="ProgramMenuFolder" Value="[WINCRAFT_ALLUSERS_PROGRAMS_ROOT]\"
+               Order="10" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot; AND WINCRAFT_ALLUSERS_PROGRAMS_ROOT&lt;&gt;&quot;&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Event="SetTargetPath" Value="ProgramMenuFolder"
+               Order="11" Condition="(WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot; AND WINCRAFT_CURRENTUSER_PROGRAMS_ROOT&lt;&gt;&quot;&quot;) OR (WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot; AND WINCRAFT_ALLUSERS_PROGRAMS_ROOT&lt;&gt;&quot;&quot;)" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="DesktopFolder" Value="[WINCRAFT_CURRENTUSER_DESKTOP_ROOT]\"
+               Order="12" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot; AND WINCRAFT_CURRENTUSER_DESKTOP_ROOT&lt;&gt;&quot;&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Property="DesktopFolder" Value="[WINCRAFT_ALLUSERS_DESKTOP_ROOT]\"
+               Order="13" Condition="WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot; AND WINCRAFT_ALLUSERS_DESKTOP_ROOT&lt;&gt;&quot;&quot;" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Event="SetTargetPath" Value="DesktopFolder"
+               Order="14" Condition="(WINCRAFT_INSTALL_SCOPE=&quot;perUser&quot; AND WINCRAFT_CURRENTUSER_DESKTOP_ROOT&lt;&gt;&quot;&quot;) OR (WINCRAFT_INSTALL_SCOPE=&quot;perMachine&quot; AND WINCRAFT_ALLUSERS_DESKTOP_ROOT&lt;&gt;&quot;&quot;)" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]"
+               Order="15" />
+      <Publish Dialog="WinCraftInstallScopeDlg" Control="Next"
+               Event="NewDialog" Value="InstallDirDlg"
+               Order="16" />
+      <Publish Dialog="InstallDirDlg" Control="Back"
+               Event="NewDialog" Value="WinCraftInstallScopeDlg"
+               Order="99" Condition="NOT Installed" />
+      <Publish Dialog="InstallDirDlg" Control="Next"
+               Event="NewDialog" Value="ShortcutOptionsDlg"
+               Order="99" Condition="WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID=&quot;1&quot;" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Back"
+               Event="NewDialog" Value="InstallDirDlg"
+               Order="1" Condition="NOT Installed" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Next"
+               Event="AddLocal" Value="StartMenuShortcutFeature"
+               Order="1" Condition="CREATE_STARTMENU_SHORTCUT=&quot;1&quot;" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Next"
+               Event="Remove" Value="StartMenuShortcutFeature"
+               Order="2" Condition="CREATE_STARTMENU_SHORTCUT&lt;&gt;&quot;1&quot;" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Next"
+               Event="AddLocal" Value="DesktopShortcutFeature"
+               Order="3" Condition="CREATE_DESKTOP_SHORTCUT=&quot;1&quot;" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Next"
+               Event="Remove" Value="DesktopShortcutFeature"
+               Order="4" Condition="CREATE_DESKTOP_SHORTCUT&lt;&gt;&quot;1&quot;" />
+      <Publish Dialog="ShortcutOptionsDlg" Control="Next"
+               Event="NewDialog" Value="VerifyReadyDlg"
+               Order="5" />
+      <Publish Dialog="VerifyReadyDlg" Control="Back"
+               Event="NewDialog" Value="ShortcutOptionsDlg"
+               Order="99" Condition="NOT Installed" />
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next"
+               Property="WixUI_InstallMode" Value="Remove"
+               Order="99" />
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next"
+               Event="NewDialog" Value="CleanupOptionsDlg"
+               Order="100" />
+      <Publish Dialog="VerifyReadyDlg" Control="Back"
+               Event="NewDialog" Value="CleanupOptionsDlg"
+               Order="99" Condition="WixUI_InstallMode=&quot;Remove&quot;" />
+      <Publish Dialog="ExitDialog" Control="Finish"
+               Event="DoAction" Value="LaunchApplication"
+               Order="1"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed" />
+
+      <Dialog Id="WinCraftInstallScopeDlg" Width="370" Height="270"
+              Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0"
+                 Width="370" Height="44" TabSkip="no"
+                 Text="WixUI_Bmp_Banner" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44"
+                 Width="370" Height="0" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}!(loc.InstallScopeDlgTitle)" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280"
+                 Height="20" Transparent="yes" NoPrefix="yes"
+                 Text="!(loc.InstallScopeDlgDescription)" />
+        <Control Id="ScopeRadioGroup" Type="RadioButtonGroup" X="20" Y="55"
+                 Width="330" Height="120" Property="WINCRAFT_INSTALL_SCOPE" />
+        <Control Id="PerUserDescription" Type="Text" X="33" Y="70"
+                 Width="300" Height="36" NoPrefix="yes"
+                 Text="[ProductName] will be installed under your local application data folder and will be available only to your user account." />
+        <Control Id="PerMachineDescription" Type="Text" X="33" Y="131"
+                 Width="300" Height="48" NoPrefix="yes"
+                 Text="[ProductName] will be installed under the system Program Files folder for this MSI package and will be available to everyone who uses this computer. Administrator approval is required." />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234"
+                 Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243"
+                 Width="56" Height="17" Text="&amp;Back" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243"
+                 Width="56" Height="17" Default="yes" Text="&amp;Next" />
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243"
+                 Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
+      <Dialog Id="ShortcutOptionsDlg" Width="370" Height="270"
+              Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0"
+                 Width="370" Height="44" TabSkip="no"
+                 Text="WixUI_Bmp_Banner" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44"
+                 Width="370" Height="0" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}Shortcuts" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="300"
+                 Height="20" Transparent="yes" NoPrefix="yes"
+                 Text="Choose the shortcuts you would like to create." />
+        <Control Id="StartMenuCheck" Type="CheckBox" X="45" Y="68"
+                 Width="290" Height="17"
+                 Property="CREATE_STARTMENU_SHORTCUT" CheckBoxValue="1"
+                 Text="Create a Start Menu shortcut" />
+        <Control Id="DesktopCheck" Type="CheckBox" X="45" Y="90"
+                 Width="290" Height="17"
+                 Property="CREATE_DESKTOP_SHORTCUT" CheckBoxValue="1"
+                 Text="Create a Desktop shortcut" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234"
+                 Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243"
+                 Width="56" Height="17" Text="&amp;Back" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243"
+                 Width="56" Height="17" Default="yes" Text="&amp;Next" />
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243"
+                 Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
+      <Dialog Id="CleanupOptionsDlg" Width="370" Height="270"
+              Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0"
+                 Width="370" Height="44" TabSkip="no"
+                 Text="WixUI_Bmp_Banner" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44"
+                 Width="370" Height="0" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="340" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}!(loc.CleanupOptionsDlgTitle)" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="320"
+                 Height="40" Transparent="yes" NoPrefix="yes"
+                 Text="!(loc.CleanupOptionsDlgDescription)" />
+        <Control Id="Icon" Type="Icon" X="15" Y="65" Width="24" Height="24"
+                 TabSkip="no" FixedSize="yes" IconSize="32"
+                 Text="WixUI_Ico_Info" />
+        <Control Id="KeepConfigCheck" Type="CheckBox" X="45" Y="68"
+                 Width="290" Height="17"
+                 Property="KEEP_CONFIG" CheckBoxValue="1"
+                 Text="!(loc.CleanupOptionsDlgKeepConfig)" />
+        <Control Id="DeleteLogsCheck" Type="CheckBox" X="45" Y="90"
+                 Width="290" Height="17"
+                 Property="DELETE_LOGS_DUMPS" CheckBoxValue="1"
+                 Text="!(loc.CleanupOptionsDlgDeleteLogs)" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234"
+                 Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243"
+                 Width="56" Height="17" Text="&amp;Back"
+                 Hidden="yes" ShowCondition="NOT Preselected">
+          <Publish Event="NewDialog" Value="MaintenanceWelcomeDlg" />
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243"
+                 Width="56" Height="17" Default="yes" Text="&amp;Next">
+          <Publish Property="REMOVE_CONFIG" Value="1" Order="1" Condition="KEEP_CONFIG&lt;&gt;&quot;1&quot;" />
+          <Publish Property="REMOVE_CONFIG" Value="{}" Order="2" Condition="KEEP_CONFIG=&quot;1&quot;" />
+          <Publish Property="KEEP_LOGS_DUMPS" Value="1" Order="3" Condition="DELETE_LOGS_DUMPS&lt;&gt;&quot;1&quot;" />
+          <Publish Property="KEEP_LOGS_DUMPS" Value="{}" Order="4" Condition="DELETE_LOGS_DUMPS=&quot;1&quot;" />
+          <Publish Property="WixUI_InstallMode" Value="Remove" Order="5" />
+          <Publish Event="NewDialog" Value="VerifyReadyDlg" Order="6" Condition="NOT Preselected" />
+          <Publish Event="EndDialog" Value="Return" Order="7" Condition="Preselected" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243"
+                 Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg" />
+        </Control>
+      </Dialog>
+
+    </UI>
+
+    <CustomAction Id="LaunchApplication"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixShellExec"
+                  Execute="immediate"
+                  Impersonate="yes" />
+
+    <!-- Uninstall cleanup custom actions.
+
+         Two tiers per scope:
+         - Full  (REMOVE_CONFIG = "1")         : remove the entire %LocalAppData%\WinCraft tree.
+         - Runtime (REMOVE_CONFIG != "1" AND KEEP_LOGS_DUMPS != "1") : remove only Logs + Dumps. -->
+
+    <SetProperty Id="CleanupInstalledShortcuts"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /d /c del /f /q &quot;[DesktopFolder]WinCraft.lnk&quot; 2&gt;nul &amp; del /f /q &quot;[ProgramMenuFolder]WinCraft.lnk&quot; 2&gt;nul &amp; del /f /q &quot;[ProgramMenuFolder]WinCraft\WinCraft.lnk&quot; 2&gt;nul &amp; rmdir &quot;[ProgramMenuFolder]WinCraft&quot; 2&gt;nul"
+                 Before="CleanupInstalledShortcuts"
+                 Sequence="execute"
+                 Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+    <CustomAction Id="CleanupInstalledShortcuts"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <SetProperty Id="CleanupCurrentUserFull"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /d /c rmdir /s /q &quot;%LOCALAPPDATA%\WinCraft&quot; &amp; reg delete HKCU\Software\WinCraft /f 2&gt;nul"
+                 Before="CleanupCurrentUserFull"
+                 Sequence="execute"
+                 Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND NOT ALLUSERS=1 AND REMOVE_CONFIG=&quot;1&quot;" />
+    <CustomAction Id="CleanupCurrentUserFull"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <SetProperty Id="CleanupCurrentUserRuntime"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /d /c rmdir /s /q &quot;%LOCALAPPDATA%\WinCraft\Logs&quot; 2&gt;nul &amp; rmdir /s /q &quot;%LOCALAPPDATA%\WinCraft\Dumps&quot; 2&gt;nul &amp; rmdir &quot;%LOCALAPPDATA%\WinCraft&quot; 2&gt;nul"
+                 Before="CleanupCurrentUserRuntime"
+                 Sequence="execute"
+                 Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND NOT ALLUSERS=1 AND REMOVE_CONFIG&lt;&gt;&quot;1&quot; AND KEEP_LOGS_DUMPS&lt;&gt;&quot;1&quot;" />
+    <CustomAction Id="CleanupCurrentUserRuntime"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <SetProperty Id="CleanupAllUsersFull"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /d /c for /d %P in (&quot;%SystemDrive%\Users\*&quot;) do rmdir /s /q &quot;%P\AppData\Local\WinCraft&quot; 2&gt;nul"
+                 Before="CleanupAllUsersFull"
+                 Sequence="execute"
+                 Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND ALLUSERS=1 AND REMOVE_CONFIG=&quot;1&quot;" />
+    <CustomAction Id="CleanupAllUsersFull"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <SetProperty Id="CleanupAllUsersRuntime"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /d /c for /d %P in (&quot;%SystemDrive%\Users\*&quot;) do (rmdir /s /q &quot;%P\AppData\Local\WinCraft\Logs&quot; 2&gt;nul &amp; rmdir /s /q &quot;%P\AppData\Local\WinCraft\Dumps&quot; 2&gt;nul &amp; rmdir &quot;%P\AppData\Local\WinCraft&quot; 2&gt;nul)"
+                 Before="CleanupAllUsersRuntime"
+                 Sequence="execute"
+                 Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND ALLUSERS=1 AND REMOVE_CONFIG&lt;&gt;&quot;1&quot; AND KEEP_LOGS_DUMPS&lt;&gt;&quot;1&quot;" />
+    <CustomAction Id="CleanupAllUsersRuntime"
+                  BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="CleanupInstalledShortcuts" After="RemoveFiles"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+      <Custom Action="CleanupCurrentUserFull" After="CleanupInstalledShortcuts"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND NOT ALLUSERS=1 AND REMOVE_CONFIG=&quot;1&quot;" />
+      <Custom Action="CleanupCurrentUserRuntime" After="CleanupCurrentUserFull"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND NOT ALLUSERS=1 AND REMOVE_CONFIG&lt;&gt;&quot;1&quot; AND KEEP_LOGS_DUMPS&lt;&gt;&quot;1&quot;" />
+      <Custom Action="CleanupAllUsersFull" After="CleanupCurrentUserRuntime"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND ALLUSERS=1 AND REMOVE_CONFIG=&quot;1&quot;" />
+      <Custom Action="CleanupAllUsersRuntime" After="CleanupAllUsersFull"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND ALLUSERS=1 AND REMOVE_CONFIG&lt;&gt;&quot;1&quot; AND KEEP_LOGS_DUMPS&lt;&gt;&quot;1&quot;" />
+    </InstallExecuteSequence>
+
+  </Package>
+</Wix>

@@ -46,10 +46,10 @@ Page custom RuntimeDataPageCreate RuntimeDataPageLeave
 
 LangString UNCONFIRM_SUBTITLE ${LANG_ENGLISH} "Remove WinCraft for all users on this computer."
 LangString RUNTIMEDATA_PAGE_TITLE ${LANG_ENGLISH} "Keep Data"
-LangString RUNTIMEDATA_PAGE_SUBTITLE ${LANG_ENGLISH} "Choose runtime data to keep."
-LangString RUNTIMEDATA_HEADER ${LANG_ENGLISH} "Keep these items after uninstall:"
-LangString RUNTIMEDATA_CONFIG ${LANG_ENGLISH} "Configuration"
-LangString RUNTIMEDATA_LOGS_DUMPS ${LANG_ENGLISH} "Logs and crash dumps"
+LangString RUNTIMEDATA_PAGE_SUBTITLE ${LANG_ENGLISH} "Choose what to keep or remove."
+LangString RUNTIMEDATA_HEADER ${LANG_ENGLISH} "Uninstall cleanup:"
+LangString RUNTIMEDATA_CONFIG ${LANG_ENGLISH} "Keep configuration"
+LangString RUNTIMEDATA_CLEAN_LOGS_DUMPS ${LANG_ENGLISH} "Delete logs and crash dumps"
 LangString UNINSTALL_BUTTON ${LANG_ENGLISH} "Uninstall"
 LangString APP_RUNNING_WARNING ${LANG_ENGLISH} "WinCraft is currently running.$\nPlease close WinCraft before uninstalling."
 LangString UNINSTALLING_TITLE ${LANG_ENGLISH} "Uninstalling"
@@ -59,10 +59,10 @@ LangString UNINSTALL_FINISH_SUBTITLE ${LANG_ENGLISH} "WinCraft was successfully 
 
 LangString UNCONFIRM_SUBTITLE ${LANG_SIMPCHINESE} "从这台计算机的所有用户中移除 WinCraft。"
 LangString RUNTIMEDATA_PAGE_TITLE ${LANG_SIMPCHINESE} "保留数据"
-LangString RUNTIMEDATA_PAGE_SUBTITLE ${LANG_SIMPCHINESE} "选择卸载后要保留的运行时数据。"
-LangString RUNTIMEDATA_HEADER ${LANG_SIMPCHINESE} "卸载后保留以下项目："
-LangString RUNTIMEDATA_CONFIG ${LANG_SIMPCHINESE} "配置"
-LangString RUNTIMEDATA_LOGS_DUMPS ${LANG_SIMPCHINESE} "日志和崩溃 Dump"
+LangString RUNTIMEDATA_PAGE_SUBTITLE ${LANG_SIMPCHINESE} "选择要保留或清理的内容。"
+LangString RUNTIMEDATA_HEADER ${LANG_SIMPCHINESE} "卸载清理："
+LangString RUNTIMEDATA_CONFIG ${LANG_SIMPCHINESE} "保留配置"
+LangString RUNTIMEDATA_CLEAN_LOGS_DUMPS ${LANG_SIMPCHINESE} "删除日志和崩溃 Dump"
 LangString UNINSTALL_BUTTON ${LANG_SIMPCHINESE} "卸载"
 LangString APP_RUNNING_WARNING ${LANG_SIMPCHINESE} "WinCraft 正在运行。$\n请先关闭 WinCraft 再继续。"
 LangString UNINSTALLING_TITLE ${LANG_SIMPCHINESE} "正在卸载"
@@ -118,15 +118,17 @@ Function .onInit
 
   ; Upgrade mode: run directly from the install directory (no copy-to-temp).
   ${If} $UpgradeMode == "1"
+    StrCpy $KeepLogs "1"
+    StrCpy $KeepDumps "1"
     Return
   ${EndIf}
 
   ${If} $FromTemp != "1"
     CopyFiles /SILENT "$EXEPATH" "$TEMP\WinCraft-AllUsers-Uninstall.exe"
     ${If} ${Silent}
-      Exec '"$TEMP\WinCraft-AllUsers-Uninstall.exe" /fromtemp /S /D=$INSTDIR'
+      Exec '"$TEMP\WinCraft-AllUsers-Uninstall.exe" /fromtemp /S /D="$INSTDIR"'
     ${Else}
-      Exec '"$TEMP\WinCraft-AllUsers-Uninstall.exe" /fromtemp /D=$INSTDIR'
+      Exec '"$TEMP\WinCraft-AllUsers-Uninstall.exe" /fromtemp /D="$INSTDIR"'
     ${EndIf}
     SetErrorLevel 0
     Quit
