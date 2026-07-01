@@ -131,7 +131,7 @@
     border: 1px dashed rgba(88,166,255,0.36); border-radius: 8px; padding: 0.7rem 0.9rem;
     margin-bottom: 1rem; color: var(--text-muted); font-size: 0.82rem;
     background: rgba(88,166,255,0.045);
-    display: flex; align-items: center; justify-content: center; gap: 0.65rem; text-align: left;
+    display: flex; align-items: center; justify-content: flex-start; gap: 0.65rem; text-align: left;
     min-height: 3.25rem;
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   }
@@ -145,32 +145,42 @@
   .release-message { display: flex; align-items: center; min-height: 1.7rem; line-height: 1.45; }
   .release-note .lgi { align-items: center; }
   .release-note .lgi > * { align-self: center; }
-  .release-note.ready { color: var(--text); border-style: solid; border-color: rgba(35,134,54,0.55); background: rgba(35,134,54,0.08); }
-  .release-note.ready .release-kicker { color: var(--green-bright); border-color: rgba(35,134,54,0.42); background: rgba(35,134,54,0.1); }
-  .downloads { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.5rem; }
-  .secondary-downloads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .release-note.ready { color: var(--text-muted); border-style: solid; border-color: rgba(35,134,54,0.32); background: rgba(35,134,54,0.04); }
+  .release-note.ready .release-kicker { color: var(--green-bright); border-color: rgba(35,134,54,0.28); background: rgba(35,134,54,0.07); }
+  .downloads { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin-bottom: 2.5rem; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .card {
-    border: 1px solid var(--border); border-radius: 8px; padding: 1.125rem 1.25rem;
-    text-align: left; display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid var(--border); border-radius: 8px; padding: 0.95rem 1rem;
+    min-height: 9.35rem; text-align: left; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 0.75rem;
     background: rgba(255,255,255,0.02);
+    position: relative;
     animation: fadeUp 0.5s ease both;
     transition: background-color 0.25s ease, border-color 0.25s, color 0.25s ease, transform 0.25s, box-shadow 0.25s, opacity 0.25s ease;
   }
   .card:nth-child(1) { animation-delay: 0.1s; }
   .card:nth-child(2) { animation-delay: 0.2s; }
   .card:nth-child(3) { animation-delay: 0.3s; }
-  .card:hover { border-color: var(--accent); transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
   .card.primary { border-color: var(--green); background: rgba(35,134,54,0.08); }
   .card.primary:hover { border-color: var(--green-bright); }
+  .recommend-badge {
+    position: absolute; top: 0.7rem; right: 0.75rem;
+    display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem;
+    border: 1px solid rgba(63,185,80,0.28); border-radius: 50%;
+    color: var(--green-bright); background: transparent;
+    pointer-events: none;
+    transition: color 0.28s ease, border-color 0.28s ease;
+  }
+  .recommend-badge svg { width: 0.95rem; height: 0.95rem; fill: currentColor; }
+  .card.primary .card-info { padding-right: 1.8rem; }
   .card.secondary {
     border-color: rgba(48,54,61,0.48); background: rgba(255,255,255,0.012);
-    padding: 0.95rem 1rem; flex-direction: column; align-items: flex-start; gap: 0.75rem;
   }
-  .card.secondary:hover { transform: translateX(2px); box-shadow: none; }
+  .card.secondary:hover { transform: translateY(-2px); box-shadow: none; }
   .card-info { flex: 1; }
   .card-title { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 1.45rem; }
   .card-icon {
@@ -182,11 +192,13 @@
     -webkit-mask-size: contain; mask-size: contain;
   }
   .icon-package { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/package.svg"); }
+  .icon-building-2 { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/building-2.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/building-2.svg"); }
   .icon-file-down { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/file-down.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/file-down.svg"); }
   .icon-history { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/history.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/history.svg"); }
   .card.primary .card-icon { color: var(--green-bright); opacity: 1; }
   .card.secondary .card-icon { color: var(--text-dim); opacity: 0.78; }
-  .card.secondary .icon-file-down { color: #4c8eda; }
+  .card.secondary .icon-building-2 { color: var(--accent); }
+  .card.secondary .icon-file-down { color: #2aa198; }
   .card.secondary .icon-history { color: #7c6bd6; }
   .card.secondary:hover .card-icon { opacity: 0.92; }
   .card-name { font-size: 0.95rem; color: var(--text-heading); font-weight: 600; line-height: 1.35; min-height: 1.29rem; }
@@ -195,17 +207,17 @@
   .card.secondary .card-meta { font-size: 0.76rem; color: var(--text-dim); }
   .card.secondary .card-info { opacity: 0.86; transition: opacity 0.25s ease; }
   .card.secondary:hover .card-info { opacity: 1; }
-  .card.secondary .action { align-self: flex-end; margin-left: 0; }
+  .card.secondary .action, .card.primary .action { align-self: flex-end; margin-left: 0; }
   .card .action {
     display: inline-grid; place-items: center; min-width: 5.6rem; height: 2.125rem; padding: 0 1rem;
     border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600;
-    line-height: 1; white-space: nowrap; margin-left: 1rem;
+    line-height: 1; white-space: nowrap; margin-left: 0;
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s;
   }
   .card .action > [data-lang] { grid-area: 1 / 1; }
   .action.dl { background: var(--green); color: #fff; user-select: none; }
   a.action.dl:hover { background: var(--green-hover); transform: scale(1.05); }
-  .action.dl-alt { border: 1px solid var(--border); color: var(--text); user-select: none; }
+  .action.dl-alt { border: 1px solid var(--border); color: var(--text-dim); user-select: none; }
   a.action.dl-alt:hover { border-color: var(--accent); color: var(--accent); }
   .action.disabled {
     color: var(--text-dim); border: 1px solid var(--border); background: rgba(255,255,255,0.03);
@@ -218,20 +230,26 @@
   .badges a { transition: transform 0.2s; display: inline-block; }
   .badges a:hover { transform: translateY(-2px); }
   .foot { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; min-height: 1.3rem; }
-  .foot a { font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .foot a { font-size: 0.85rem; line-height: 1.5; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
   .foot a:hover { color: var(--accent); }
   .share {
     margin-top: 1.1rem; display: flex; align-items: center; justify-content: center;
     gap: 0.6rem; min-height: 2rem;
   }
   .share-toggle {
-    display: inline-grid; place-items: center; min-width: 4.8rem; height: 1.8rem; padding: 0 0.65rem;
-    border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,0.025);
-    color: var(--text-muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+    display: inline-grid; place-items: center; width: 2rem; height: 2rem; padding: 0;
+    border: 1px solid rgba(139,148,158,0.28); border-radius: 50%; background: rgba(255,255,255,0.018);
+    color: var(--text-dim); font-family: inherit;
     cursor: pointer; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s;
   }
-  .share-toggle:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
-  .share-toggle > [data-lang] { grid-area: 1 / 1; }
+  .share-toggle:hover { color: var(--accent); border-color: rgba(88,166,255,0.6); background: rgba(88,166,255,0.055); transform: translateY(-1px); }
+  .share-icon {
+    width: 0.95rem; height: 0.95rem; background-color: currentColor;
+    -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/share-2.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/share-2.svg");
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
   .share-list {
     display: flex; align-items: center; gap: 0.55rem;
     opacity: 0; max-width: 0; width: max-content; overflow: hidden;
@@ -248,7 +266,7 @@
   .qr-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 10; align-items: center; justify-content: center; }
   .qr-overlay.show { display: flex; }
   .qr-box { background: #fff; border-radius: 8px; padding: 0.25rem; box-shadow: 0 16px 40px rgba(0,0,0,0.28); }
-  .qr-box svg { width: 200px; height: 200px; display: block; border-radius: 6px; }
+  .qr-box img { width: 200px; height: 200px; display: block; border-radius: 6px; }
   footer { margin-top: 2rem; font-size: 0.75rem; line-height: 1.4; color: var(--text-dim); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
   @media (max-width: 520px) {
@@ -257,22 +275,28 @@
     .header-text { text-align: center; }
     h1 { font-size: 1.75rem; }
     .release-note { align-items: flex-start; justify-content: flex-start; flex-direction: column; gap: 0.5rem; }
-    .secondary-downloads { grid-template-columns: 1fr; }
-    .card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .downloads { grid-template-columns: 1fr; }
+    .card { min-height: 0; }
     .card .action { margin-left: 0; align-self: flex-end; }
     .share { flex-direction: column; gap: 0.5rem; }
-.theme-toggle { top: 0.5rem; left: 0.75rem; }
+    .theme-toggle { top: 0.5rem; left: 0.75rem; }
     .lang-switch { top: 0.5rem; right: 0.75rem; }
   }
   @media (min-width: 768px) {
-    main { max-width: 560px; }
+    main { zoom: 1.25; max-width: 760px; }
+    /* Firefox 不支持 zoom，用 transform 回退；scale 不改变布局盒，降级效果可接受 */
+    @supports not (zoom: 1) {
+      main { zoom: 1; transform: scale(1.25); transform-origin: top center; }
+    }
+  }
+  @media (min-width: 521px) and (max-width: 767px) {
+    .downloads { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   /* 语言切换 — CSS 驱动初始状态防闪烁 */
   [data-lang] { visibility: hidden; }
   [data-lang].active { visibility: visible; }
   html.lang-en [data-lang="en"] { visibility: visible; }
   html.lang-zh [data-lang="zh"] { visibility: visible; }
-
   @media (prefers-reduced-motion: reduce) {
     .card { animation: none; }
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -349,10 +373,23 @@
   [data-theme="light"] .card.secondary { border-color: rgba(208,215,222,0.58); background: rgba(0,0,0,0.01); }
   [data-theme="light"] .card.secondary .action.disabled { border-color: rgba(139,148,158,0.48); }
   [data-theme="light"] .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  [data-theme="light"] .recommend-badge { border-color: rgba(26,127,55,0.22); color: #1a7f37; }
   [data-theme="light"] .release-note { background: rgba(9,105,218,0.05); }
   [data-theme="light"] .release-note.ready { background: rgba(35,134,54,0.06); }
   [data-theme="light"] .share-toggle { background: rgba(0,0,0,0.015); }
   [data-theme="light"] .qr-overlay { background: rgba(0,0,0,0.32); }
+
+  [data-theme="dark"] .downloads > .card:nth-child(2) { border-color: rgba(48,54,61,0.54); background: rgba(255,255,255,0.016); }
+  [data-theme="dark"] .downloads > .card:nth-child(3) { border-color: rgba(48,54,61,0.44); background: rgba(255,255,255,0.012); }
+  [data-theme="dark"] .downloads > .card:nth-child(4) { border-color: rgba(48,54,61,0.36); background: rgba(255,255,255,0.009); }
+  [data-theme="light"] .downloads > .card:nth-child(2) { border-color: rgba(208,215,222,0.64); background: rgba(0,0,0,0.014); }
+  [data-theme="light"] .downloads > .card:nth-child(3) { border-color: rgba(208,215,222,0.56); background: rgba(0,0,0,0.010); }
+  [data-theme="light"] .downloads > .card:nth-child(4) { border-color: rgba(208,215,222,0.48); background: rgba(0,0,0,0.007); }
+  .downloads > .card:nth-child(2) .card-info { opacity: 0.92; }
+  .downloads > .card:nth-child(3) .card-info { opacity: 0.84; }
+  .downloads > .card:nth-child(4) .card-info { opacity: 0.76; }
+  .downloads > .card:nth-child(3) .action.disabled { opacity: 0.70; }
+  .downloads > .card:nth-child(4) .action.disabled { opacity: 0.62; }
   /* 主题切换按钮 */
   .theme-toggle { position: absolute; top: 1rem; left: 1.5rem; }
   .theme-toggle button {
@@ -360,8 +397,19 @@
     color: var(--text-muted); background: rgba(255,255,255,0.04); cursor: pointer;
     font-family: inherit; font-size: 0.95rem; line-height: 1; transition: color 0.2s, border-color 0.2s, transform 0.2s;
     backdrop-filter: blur(12px);
+    display: inline-flex; align-items: center; justify-content: center;
   }
   .theme-toggle button:hover { color: var(--text-heading); border-color: var(--accent); transform: translateY(-1px); }
+
+  .theme-icon {
+    width: 1rem; height: 1rem; background-color: currentColor;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+  .icon-sun { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/sun.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/sun.svg"); }
+  .icon-moon { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/moon.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/moon.svg"); }
+  [data-theme="dark"] .icon-sun, [data-theme="light"] .icon-moon { display: none; }
   body,
   h1,
   .desc,
@@ -381,6 +429,7 @@
     transition-duration: 0.28s;
     transition-timing-function: ease;
   }
+
 </style>
 <noscript>
   <style>[data-lang="en"] { visibility: visible !important; }</style>
@@ -419,6 +468,7 @@
   var latestRelease = null;
   var releaseAssets = {
     setup: 'WinCraft-Setup.exe',
+    msi: 'WinCraft-Setup.msi',
     standard: 'WinCraft-Standard.exe',
     legacy: 'WinCraft-Legacy.exe'
   };
@@ -431,8 +481,8 @@
     var isZh = document.documentElement.lang === 'zh';
     var kicker = isZh ? '最新版本' : 'Release';
     var message = isZh
-      ? tag + (date ? ' · 发布于 ' + date : '') + '。请选择适合的安装包下载。'
-      : tag + (date ? ' · released ' + date : '') + '. Choose the package that fits your system.';
+      ? tag + (date ? ' · 发布于 ' + date : '') + '。请选择适合的安装包或便携版下载。'
+      : tag + (date ? ' · released ' + date : '') + '. Choose the installer or portable package that fits your system.';
     note.innerHTML = '<span class="release-kicker">' + kicker + '</span><span class="release-message">' + message + '</span>';
   }
 
@@ -476,6 +526,8 @@
   }
 
   var shareUrl = 'https://yeahoss.github.io/WinCraft/';
+  var shareImageUrl = 'https://yeahoss.github.io/WinCraft/assets/social-preview.png';
+  var shareDesc = 'Windows 调优工具箱 · Craft Windows your way';
   var isMobile = /iphone|ipad|android|mobile/i.test(navigator.userAgent);
 
   var shareTexts = {
@@ -496,25 +548,33 @@
   }
 
   function popup(u) { window.open(u, '_blank', 'noopener,noreferrer,width=600,height=420'); }
+  function openMobileSchemeOrWeb(scheme, web, timeout) {
+    if (!isMobile) {
+      popup(web);
+      return;
+    }
+    var started = Date.now();
+    window.location.href = scheme;
+    setTimeout(function() {
+      if (Date.now() - started < timeout) window.location.href = web;
+    }, timeout - 500);
+  }
   function shareX() { popup('https://twitter.com/intent/tweet?text=' + encodeURIComponent(getShareText('en')) + '&url=' + encodeURIComponent(shareUrl)); }
   function shareFB() { popup('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl)); }
   function shareReddit() { popup('https://www.reddit.com/submit?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(getShareText('en'))); }
   function shareTelegram() { popup('https://t.me/share/url?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(getShareText('en'))); }
   function shareBluesky() { popup('https://bsky.app/intent/compose?text=' + encodeURIComponent(getShareText('en') + ' ' + shareUrl)); }
-  function shareWeibo() { popup('https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(getShareText('zh'))); }
+  function shareWeibo() {
+    var text = getShareText('zh');
+    var scheme = 'weibo://share?title=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(shareUrl) + '&imageUrl=' + encodeURIComponent(shareImageUrl);
+    var web = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text) + '&pic=' + encodeURIComponent(shareImageUrl);
+    openMobileSchemeOrWeb(scheme, web, 2500);
+  }
   function shareQQ() {
     var text = getShareText('zh');
-    var scheme = 'mqqapi://share/to_fri?src_type=web&version=1&file_type=news&url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text);
-    var web = 'https://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text);
-    if (isMobile) {
-      var started = Date.now();
-      window.location.href = scheme;
-      setTimeout(function() {
-        if (Date.now() - started < 2000) window.location.href = web;
-      }, 1500);
-    } else {
-      popup(web);
-    }
+    var scheme = 'mqqapi://share/to_fri?thirdSource=' + encodeURIComponent('WinCraft') + '&title=' + encodeURIComponent(text) + '&desc=' + encodeURIComponent(shareDesc) + '&url=' + encodeURIComponent(shareUrl) + '&imageUrl=' + encodeURIComponent(shareImageUrl) + '&previewImageUrl=' + encodeURIComponent(shareImageUrl) + '&shareType=0';
+    var web = 'https://connect.qq.com/widget/shareqq/index.html?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(text) + '&desc=' + encodeURIComponent(shareDesc) + '&summary=' + encodeURIComponent(shareDesc) + '&pics=' + encodeURIComponent(shareImageUrl);
+    openMobileSchemeOrWeb(scheme, web, 2000);
   }
   function shareWeChat() {
     if (isMobile) {
@@ -550,7 +610,6 @@
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     var btn = document.getElementById('theme-btn'); if (btn) {
-    btn.textContent = t === 'light' ? '☀' : '🌙';
     btn.setAttribute('aria-label', t === 'light' ? 'Switch to dark mode' : 'Switch to light mode') }
   }
   function toggleTheme() {
@@ -558,12 +617,13 @@
     localStorage.setItem('theme', t);
     applyTheme(t);
   }
-  document.addEventListener('DOMContentLoaded', function() { applyTheme(getTheme()); });</script>
+  document.addEventListener('DOMContentLoaded', function() { applyTheme(getTheme()); });
+</script>
 </head>
 <body>
 
 <div class="theme-toggle">
-  <button id="theme-btn" onclick="toggleTheme()" aria-label="Switch theme"></button>
+  <button id="theme-btn" onclick="toggleTheme()" aria-label="Switch theme"><span class="theme-icon icon-sun" aria-hidden="true"></span><span class="theme-icon icon-moon" aria-hidden="true"></span></button>
 </div>
 <div class="lang-switch" role="group" aria-label="语言切换">
   <button id="lang-zh" onclick="switchLang('zh')">中文</button><span aria-hidden="true">|</span><button id="lang-en" onclick="switchLang('en')">EN</button>
@@ -571,7 +631,7 @@
 
 <div id="qr-overlay" class="qr-overlay" onclick="closeQR.call(this, event)">
   <div class="qr-box">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="1 1 35 35" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#000000" d="M4 4.5h7m4 0h2m1 0h1m2 0h4m1 0h7M4 5.5h1m5 0h1m1 0h2m3 0h1m4 0h2m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h4m2 0h1m2 0h3m1 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m3 0h1m1 0h2m4 0h2m2 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h1m4 0h1m2 0h4m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m2 0h1m4 0h4m1 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h2m1 0h1m3 0h5M4 12.5h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m2 0h3m6 0h1m2 0h1M5 13.5h1m5 0h5m1 0h1m6 0h3m2 0h1m2 0h1M6 14.5h2m1 0h2m2 0h1m2 0h1m1 0h1m1 0h2m2 0h2m2 0h1m1 0h3M4 15.5h1m6 0h1m3 0h9m2 0h3m2 0h1M5 16.5h1m1 0h4m2 0h2m1 0h1m1 0h1m2 0h6m2 0h1m1 0h2M4 17.5h2m1 0h2m3 0h1m1 0h2m2 0h1m1 0h1m3 0h1m1 0h1m2 0h1m2 0h1M4 18.5h1m1 0h1m2 0h9m2 0h2m2 0h1m1 0h4m1 0h2M6 19.5h3m2 0h1m2 0h1m1 0h1m3 0h5m1 0h2m1 0h1m1 0h1M4 20.5h1m3 0h3m2 0h2m5 0h1m4 0h2m2 0h1m1 0h2M6 21.5h1m1 0h2m3 0h2m2 0h1m2 0h3m1 0h1m1 0h1m2 0h2m1 0h1M4 22.5h1m1 0h2m2 0h2m4 0h1m1 0h1m2 0h1m4 0h3m2 0h2M5 23.5h4m7 0h4m1 0h3m2 0h1m2 0h1m1 0h1M4 24.5h1m1 0h2m2 0h2m1 0h2m3 0h1m1 0h2m1 0h6M12 25.5h1m1 0h3m1 0h1m1 0h1m2 0h2m3 0h1m1 0h3M4 26.5h7m2 0h1m1 0h3m2 0h1m1 0h3m1 0h1m1 0h2m1 0h2M4 27.5h1m5 0h1m3 0h1m1 0h1m4 0h2m1 0h1m3 0h2m2 0h1M4 28.5h1m1 0h3m1 0h1m1 0h5m4 0h1m2 0h5m3 0h1M4 29.5h1m1 0h3m1 0h1m3 0h1m2 0h1m2 0h1m3 0h2m1 0h2m1 0h3M4 30.5h1m1 0h3m1 0h1m1 0h4m1 0h1m3 0h1m1 0h2m2 0h3m2 0h1M4 31.5h1m5 0h1m5 0h3m2 0h1m1 0h2m1 0h1m4 0h1M4 32.5h7m1 0h1m3 0h1m1 0h1m1 0h1m2 0h2m4 0h1m1 0h2"/></svg>
+    <img src="assets/qrcode.svg" alt="WinCraft QR Code" width="200" height="200">
   </div>
 </div>
 
@@ -600,42 +660,57 @@
 
   <div class="downloads">
     <div class="card primary">
+      <span class="recommend-badge" role="img" aria-label="Recommended">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2.75l2.77 5.61 6.2 0.9-4.48 4.37 1.06 6.17L12 16.88 6.45 19.8l1.06-6.17-4.48-4.37 6.2-0.9L12 2.75z"/>
+        </svg>
+      </span>
       <div class="card-info">
         <div class="card-name">
           <span class="card-title">
             <span class="card-icon icon-package" aria-hidden="true"></span>
-            <span class="lgi"><span data-lang="en">Installer</span><span data-lang="zh">安装版</span></span>
+            <span class="lgi"><span data-lang="en">Installer</span><span data-lang="zh">安装程序</span></span>
           </span>
         </div>
-        <div class="card-meta"><span class="lgi"><span data-lang="en">Broad compatibility · Windows Vista ~ 11 · Faster launch · Recommended</span><span data-lang="zh">广泛兼容 · Windows Vista ~ 11 · 启动更快 · 推荐</span></span></div>
+        <div class="card-meta"><span class="lgi"><span data-lang="en">Broad compatibility · Windows Vista ~ 11 · Faster launch</span><span data-lang="zh">广泛兼容 · Windows Vista ~ 11 · 启动更快</span></span></div>
       </div>
       <span class="action disabled" data-download="setup" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
     </div>
-    <div class="secondary-downloads">
-      <div class="card secondary">
-        <div class="card-info">
-          <div class="card-name">
-            <span class="card-title">
-              <span class="card-icon icon-file-down" aria-hidden="true"></span>
-              <span class="lgi"><span data-lang="en">Portable</span><span data-lang="zh">标准版</span></span>
-            </span>
-          </div>
-          <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows 8 ~ 11</span><span data-lang="zh">单文件便携 · Windows 8 ~ 11</span></span></div>
+    <div class="card secondary">
+      <div class="card-info">
+        <div class="card-name">
+          <span class="card-title">
+            <span class="card-icon icon-building-2" aria-hidden="true"></span>
+            <span class="lgi"><span data-lang="en">MSI</span><span data-lang="zh">MSI 包</span></span>
+          </span>
         </div>
-        <span class="action disabled" data-download="standard" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
+        <div class="card-meta"><span class="lgi"><span data-lang="en">Managed deployment · Group Policy</span><span data-lang="zh">集中部署 · 组策略分发</span></span></div>
       </div>
-      <div class="card secondary">
-        <div class="card-info">
-          <div class="card-name">
-            <span class="card-title">
-              <span class="card-icon icon-history" aria-hidden="true"></span>
-              <span class="lgi"><span data-lang="en">Legacy</span><span data-lang="zh">兼容版</span></span>
-            </span>
-          </div>
-          <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows Vista ~ 7</span><span data-lang="zh">单文件便携 · Windows Vista ~ 7</span></span></div>
+      <span class="action disabled" data-download="msi" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
+    </div>
+    <div class="card secondary">
+      <div class="card-info">
+        <div class="card-name">
+          <span class="card-title">
+            <span class="card-icon icon-file-down" aria-hidden="true"></span>
+            <span class="lgi"><span data-lang="en">Portable</span><span data-lang="zh">标准版</span></span>
+          </span>
         </div>
-        <span class="action disabled" data-download="legacy" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
+        <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows 8 ~ 11</span><span data-lang="zh">单文件便携 · Windows 8 ~ 11</span></span></div>
       </div>
+      <span class="action disabled" data-download="standard" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
+    </div>
+    <div class="card secondary">
+      <div class="card-info">
+        <div class="card-name">
+          <span class="card-title">
+            <span class="card-icon icon-history" aria-hidden="true"></span>
+            <span class="lgi"><span data-lang="en">Legacy</span><span data-lang="zh">兼容版</span></span>
+          </span>
+        </div>
+        <div class="card-meta"><span class="lgi"><span data-lang="en">Single-file · Windows Vista ~ 7</span><span data-lang="zh">单文件便携 · Windows Vista ~ 7</span></span></div>
+      </div>
+      <span class="action disabled" data-download="legacy" aria-disabled="true"><span data-lang="en">Coming soon</span><span data-lang="zh">即将发布</span></span>
     </div>
   </div>
 
@@ -646,18 +721,18 @@
   </div>
 
   <div id="share" class="share">
-    <button id="share-toggle" class="share-toggle" type="button" onclick="toggleShare()" aria-expanded="false" aria-controls="share-list">
-      <span data-lang="en">Share</span><span data-lang="zh">分享</span>
+    <button id="share-toggle" class="share-toggle" type="button" onclick="toggleShare()" aria-label="Share" aria-expanded="false" aria-controls="share-list">
+      <span class="share-icon" aria-hidden="true"></span>
     </button>
     <div id="share-list" class="share-list">
-      <a href="javascript:void(0)" onclick="shareX()" aria-label="Share on X"><img src="https://cdn.simpleicons.org/x/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareFB()" aria-label="Share on Facebook"><img src="https://cdn.simpleicons.org/facebook/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareReddit()" aria-label="Share on Reddit"><img src="https://cdn.simpleicons.org/reddit/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareTelegram()" aria-label="Share on Telegram"><img src="https://cdn.simpleicons.org/telegram/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareBluesky()" aria-label="Share on Bluesky"><img src="https://cdn.simpleicons.org/bluesky/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareWeibo()" aria-label="在新浪微博分享"><img src="https://cdn.simpleicons.org/sinaweibo/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareQQ()" aria-label="Share on QQ"><img src="https://cdn.simpleicons.org/qq/8b949e" alt="" loading="lazy"></a>
-      <a href="javascript:void(0)" onclick="shareWeChat()" aria-label="Share on WeChat"><img src="https://cdn.simpleicons.org/wechat/8b949e" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareX()" aria-label="Share on X"><img src="https://cdn.simpleicons.org/x/71767B" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareFB()" aria-label="Share on Facebook"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareReddit()" aria-label="Share on Reddit"><img src="https://cdn.simpleicons.org/reddit/FF4500" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareTelegram()" aria-label="Share on Telegram"><img src="https://cdn.simpleicons.org/telegram/26A5E4" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareBluesky()" aria-label="Share on Bluesky"><img src="https://cdn.simpleicons.org/bluesky/1185FE" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareWeibo()" aria-label="在新浪微博分享"><img src="https://cdn.simpleicons.org/sinaweibo/E6162D" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareQQ()" aria-label="Share on QQ"><img src="https://cdn.simpleicons.org/qq/12B7F5" alt="" loading="lazy"></a>
+      <a href="javascript:void(0)" onclick="shareWeChat()" aria-label="Share on WeChat"><img src="https://cdn.simpleicons.org/wechat/07C160" alt="" loading="lazy"></a>
     </div>
   </div>
 
