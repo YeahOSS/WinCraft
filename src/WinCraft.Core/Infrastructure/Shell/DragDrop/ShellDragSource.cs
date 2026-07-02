@@ -2,8 +2,6 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Input;
-using WinCraft.Infrastructure;
-using WinCraft.Infrastructure.Shell;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -140,7 +138,10 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
                 {
                     unsafe
                     {
-                        var hWnd = new HWND(*(IntPtr*)PInvoke.GlobalLock(hMem));
+                        var ptr = PInvoke.GlobalLock(hMem);
+                        if (ptr == null)
+                            return false;
+                        var hWnd = new HWND(*(IntPtr*)ptr);
                         return PInvoke.IsWindow(hWnd)
                             && PInvoke.PostMessage(hWnd, PInvoke.WM_USER + 3 /* DDWM_UPDATEWINDOW */, 0, 0);
                     }
