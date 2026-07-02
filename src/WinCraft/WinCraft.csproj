@@ -19,16 +19,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\third_party\LzmaSdk\**\*.cs"
-             Exclude="..\third_party\LzmaSdk\Common\CRC.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\IMatchFinder.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\LzBinTree.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\LzInWindow.cs;
-                      ..\third_party\LzmaSdk\Compress\LZMA\LzmaEncoder.cs"
-             LinkBase="Overlay\Lzma" />
+    <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest"
+                      PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +33,5 @@
 
   <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
     <Compile Remove="Overlay\AssemblyResolver.cs" />
-    <Compile Remove="..\third_party\LzmaSdk\**\*.cs" />
   </ItemGroup>
 </Project>

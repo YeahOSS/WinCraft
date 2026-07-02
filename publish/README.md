@@ -69,6 +69,9 @@ NSIS uninstallers embed a merged file manifest at compile time — no external
 file or registry dependency at uninstall time.  The MSI uses standard
 Windows Installer file tracking and cleanup custom actions.
 
+Portable single-file executable design notes live in
+[`docs/portable-single-file.md`](../docs/portable-single-file.md).
+
 Packaging scripts write temporary staging files under `publish/output/staging/`.
 That directory is removed at the start of each build and after a successful
 build.  The installer license RTF is generated from the repository `LICENSE`;

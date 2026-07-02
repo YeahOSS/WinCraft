@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 
@@ -9,32 +10,20 @@ namespace WinCraft.Overlay
 {
     /// <summary>
     /// Loads dependency assemblies from a compressed container appended to the
-    /// WinCraft.exe PE file, keeping the PE metadata in its original form.
-    ///
-    /// LZMA overlay format (appended after the last PE section):
-    ///   [LZMA compressed container]
-    ///   [5 bytes: LZMA properties]
-    ///   [8 bytes LE: decompressed container length]
-    ///   [4 bytes LE: compressed container length]
-    ///   [4 bytes: magic "WOLZ" = 0x5A4C4F57]
-    ///
-    /// The decompressed container is a flat sequence:
-    ///   [4 bytes: entry count]
-    ///   For each entry:
-    ///     [2 bytes LE: name length in UTF-8 bytes]
-    ///     [name UTF-8 bytes]
-    ///     [4 bytes LE: data length]
-    ///     [data bytes]
+    /// WinCraft.exe PE file.
     /// </summary>
     internal static class AssemblyResolver
     {
-        private const uint LzmaOverlayMagic = 0x5A4C4F57; // "WOLZ"
+        private const uint HybridOverlayMagic = 0x59484F57; // "WOHY"
+        private const string LzmaAssemblyName = "WinCraft.Lzma";
+        private const string InnerDependenciesKey = "__dependencies";
 
         [ThreadStatic]
         private static bool _resolving;
 
         private static readonly object _lock = new();
         private static volatile Dictionary<string, byte[]> _cache;
+        private static volatile Assembly _lzmaAssembly;
 
         public static void Register()
         {
@@ -81,21 +70,30 @@ namespace WinCraft.Overlay
                 }
             }
 
-            if (_cache.TryGetValue(name, out var bytes))
+            if (_lzmaAssembly != null
+                && string.Equals(name, LzmaAssemblyName, StringComparison.OrdinalIgnoreCase))
             {
-                try
-                {
-                    return Assembly.Load(bytes);
-                }
-                catch (Exception ex)
-                {
-                    lock (_lock) { _cache.Remove(name); }
-                    Trace.TraceError($"{nameof(AssemblyResolver)}: failed to load {name} from overlay, evicting — {ex.Message}");
-                    return null;
-                }
+                return _lzmaAssembly;
             }
 
-            return null;
+            byte[] bytes;
+            lock (_lock)
+            {
+                if (!_cache.TryGetValue(name, out bytes))
+                    return null;
+            }
+
+            try
+            {
+                return Assembly.Load(bytes);
+            }
+            catch (Exception ex)
+            {
+                lock (_lock) { _cache.Remove(name); }
+                Trace.TraceError($"{nameof(AssemblyResolver)}: failed to load {name} from overlay, evicting — {ex.Message}");
+                return null;
+            }
+
         }
 
         private static Dictionary<string, byte[]> ReadOverlay()
@@ -117,13 +115,14 @@ namespace WinCraft.Overlay
                     if (fs.Read(magicBytes, 0, 4) != 4)
                         return [];
 
-                    if (BitConverter.ToUInt32(magicBytes, 0) != LzmaOverlayMagic)
+                    if (BitConverter.ToUInt32(magicBytes, 0) != HybridOverlayMagic)
                         return [];
 
-                    containerBytes = ReadLzmaOverlay(fs);
+                    containerBytes = ReadDeflateOverlay(fs);
                 }
 
-                return ReadContainer(containerBytes);
+                var outerEntries = ReadContainer(containerBytes);
+                return ReadInnerContainer(outerEntries);
             }
             catch (Exception ex)
             {
@@ -132,17 +131,13 @@ namespace WinCraft.Overlay
             }
         }
 
-        private static byte[] ReadLzmaOverlay(FileStream fs)
+        private static byte[] ReadDeflateOverlay(FileStream fs)
         {
-            const int footerSize = 21;
+            const int footerSize = 16;
             if (fs.Length < footerSize)
                 return [];
 
             fs.Seek(-footerSize, SeekOrigin.End);
-            var properties = new byte[5];
-            if (fs.Read(properties, 0, properties.Length) != properties.Length)
-                return [];
-
             var rawLengthBytes = new byte[8];
             if (fs.Read(rawLengthBytes, 0, rawLengthBytes.Length) != rawLengthBytes.Length)
                 return [];
@@ -167,11 +162,53 @@ namespace WinCraft.Overlay
                 return [];
 
             using var compressedStream = new MemoryStream(compressedBytes);
+            using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
             using var outputStream = new MemoryStream((int)rawLength);
-            var decoder = new SevenZip.Compression.LZMA.Decoder();
-            decoder.SetDecoderProperties(properties);
-            decoder.Code(compressedStream, outputStream, compressedLength, rawLength, null);
+            CopyStream(deflateStream, outputStream);
+            if (outputStream.Length != rawLength)
+                return [];
+
             return outputStream.ToArray();
+        }
+
+        private static Dictionary<string, byte[]> ReadInnerContainer(Dictionary<string, byte[]> outerEntries)
+        {
+            if (!outerEntries.TryGetValue(LzmaAssemblyName, out var lzmaBytes)
+                || !outerEntries.TryGetValue(InnerDependenciesKey, out var innerPayload))
+            {
+                return outerEntries;
+            }
+
+            var lzmaAssembly = Assembly.Load(lzmaBytes);
+            var codecType = lzmaAssembly.GetType("WinCraft.Lzma.LzmaCodec", throwOnError: true);
+            var decompress = codecType.GetMethod(
+                "Decompress",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                [typeof(byte[])],
+                null)
+                ?? throw new MissingMethodException("WinCraft.Lzma.LzmaCodec", "Decompress");
+            var innerContainerBytes = (byte[])decompress.Invoke(null, [innerPayload]);
+            var innerEntries = ReadContainer(innerContainerBytes);
+
+            _lzmaAssembly = lzmaAssembly;
+
+            // Preserve outer entries that aren't the LZMA bootstrap payloads.
+            foreach (var kv in outerEntries)
+            {
+                if (kv.Key != LzmaAssemblyName && kv.Key != InnerDependenciesKey)
+                    innerEntries[kv.Key] = kv.Value;
+            }
+
+            return innerEntries;
+        }
+
+        private static void CopyStream(Stream source, Stream destination)
+        {
+            var buffer = new byte[81920];
+            int read;
+            while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
+                destination.Write(buffer, 0, read);
         }
 
         private static Dictionary<string, byte[]> ReadContainer(byte[] containerBytes)
@@ -191,7 +228,7 @@ namespace WinCraft.Overlay
 
                         var entryName = Encoding.UTF8.GetString(reader.ReadBytes(nameLen));
                         var dataLen = reader.ReadInt32();
-                        if (dataLen <= 0)
+                        if (dataLen <= 0 || dataLen > ms.Length - ms.Position)
                             break;
 
                         var data = reader.ReadBytes(dataLen);
