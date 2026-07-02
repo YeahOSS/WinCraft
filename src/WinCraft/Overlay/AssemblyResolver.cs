@@ -1,3 +1,4 @@
+#if !INSTALLER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -251,3 +252,4 @@ namespace WinCraft.Overlay
         }
     }
 }
+#endif

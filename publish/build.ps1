@@ -25,6 +25,7 @@ $script:LegacyArtifactName = "WinCraft-Legacy.exe"
 $script:StandardArtifactName = "WinCraft-Standard.exe"
 $script:FullInstallerArtifactName = "WinCraft-Setup.exe"
 $script:MSIArtifactName = "WinCraft-Setup.msi"
+$script:OverlayStats = @{}
 $script:ResolvedProjectPath = $null
 $script:ProjectRoot = $null
 
@@ -162,13 +163,14 @@ function Invoke-ProjectRestore {
     Write-Step "Restoring project"
 
     if ($Builder.Type -eq "MSBuild") {
-        & $Builder.Path $ProjectPath "/nologo" "/verbosity:minimal" "/t:Restore" | Out-Host
+        $output = & $Builder.Path $ProjectPath "/nologo" "/verbosity:quiet" "/t:Restore" 2>&1
     }
     else {
-        & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:minimal" "/t:Restore" | Out-Host
+        $output = & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:quiet" "/t:Restore" 2>&1
     }
 
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($output | Out-String)
         throw "Project restore failed."
     }
 }
@@ -193,13 +195,14 @@ function Invoke-ProjectBuild {
     $extraProperties += $ExtraBuildProperties
 
     if ($Builder.Type -eq "MSBuild") {
-        & $Builder.Path $ProjectPath "/nologo" "/verbosity:minimal" "/p:Configuration=$Configuration" $extraProperties "/t:Build" | Out-Host
+        $output = & $Builder.Path $ProjectPath "/nologo" "/verbosity:quiet" "/p:Configuration=$Configuration" $extraProperties "/t:Build" 2>&1
     }
     else {
-        & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:minimal" "/p:Configuration=$Configuration" $extraProperties "/t:Build" | Out-Host
+        $output = & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:quiet" "/p:Configuration=$Configuration" $extraProperties "/t:Build" 2>&1
     }
 
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($output | Out-String)
         throw "$ProjectLabel build failed."
     }
 }
@@ -230,7 +233,7 @@ if (-not $BuildOnly) {
         # --- Overlay: Standard ---
         if (Clear-OutputFile $script:StandardArtifactName) {
             try {
-                New-OverlayExe -BuildLabel "net45" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName | Out-Null
+                $script:OverlayStats[$script:StandardArtifactName] = New-OverlayExe -BuildLabel "net45" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName
             }
             catch {
                 $packagingErrors.Add("$($script:StandardArtifactName) : $_")
@@ -243,7 +246,7 @@ if (-not $BuildOnly) {
         # --- Overlay: Legacy ---
         if (Clear-OutputFile $script:LegacyArtifactName) {
             try {
-                New-OverlayExe -BuildLabel "net30" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName | Out-Null
+                $script:OverlayStats[$script:LegacyArtifactName] = New-OverlayExe -BuildLabel "net30" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName
             }
             catch {
                 $packagingErrors.Add("$($script:LegacyArtifactName) : $_")
@@ -268,7 +271,7 @@ if (-not $BuildOnly) {
         $installerBuildOk = $false
         if ($nsisOk -or $msiOk) {
             try {
-                Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "installer" -ExtraBuildProperties @("/p:InstallerBuild=true")
+                Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "installer" -ExtraBuildProperties @("/p:InstallerBuild=true", "/p:BuildProjectReferences=false")
                 $installerBuildOk = $true
             }
             catch {
@@ -330,7 +333,12 @@ if (-not $BuildOnly) {
             $artifactPath = Join-Path $script:PublishOutputPath $artifact
             if (Test-Path -LiteralPath $artifactPath) {
                 $size = [math]::Round((Get-Item -LiteralPath $artifactPath).Length / 1KB, 1)
-                Write-Host "  $artifact ($size KB)"
+                $ratioSuffix = ""
+                if ($script:OverlayStats.ContainsKey($artifact) -and $null -ne $script:OverlayStats[$artifact]) {
+                    $ratio = $script:OverlayStats[$artifact].OverallRatio
+                    $ratioSuffix = ", ${ratio}% of original"
+                }
+                Write-Host "  $artifact ($size KB${ratioSuffix})"
             }
         }
 

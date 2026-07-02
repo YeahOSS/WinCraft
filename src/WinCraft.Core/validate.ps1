@@ -23,16 +23,16 @@ if ($LASTEXITCODE -ne 0 -or -not $vsPath) {
 }
 $msbuild = Join-Path $vsPath.Trim() "MSBuild\Current\Bin\MSBuild.exe"
 
-# Build net30 only — net45 was already compiled by dotnet build.
+# Build both TFMs via VS MSBuild — net45 is incremental, net30 is the validation.
 # Net30ValidationBuild=true prevents the post-build event from re-entering.
 $projectFile = Join-Path $srcRoot "WinCraft\WinCraft.csproj"
 Write-Host "Validating net30 ..." -ForegroundColor Cyan
-& $msbuild $projectFile /t:Build /p:Configuration=$Configuration /p:TargetFramework=net30 /nologo /verbosity:minimal /p:Net30ValidationBuild=true
+& $msbuild $projectFile /t:Build /p:Configuration=$Configuration /nologo /verbosity:minimal /p:Net30ValidationBuild=true
 if ($LASTEXITCODE -ne 0) { throw "Build failed." }
 
 # Test
 if ($Test) {
-    $testBin = Join-Path $srcRoot "WinCraft.Tests\bin\$Configuration\net45\WinCraft.Tests.exe"
+    $testBin = Join-Path $srcRoot "bin\$Configuration\net45\WinCraft.Tests.exe"
     if (Test-Path $testBin) {
         Write-Host "Running tests ..." -ForegroundColor Cyan
         & $testBin

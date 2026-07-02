@@ -31,7 +31,4 @@
   </ItemGroup>
 
 
-  <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
-    <Compile Remove="Overlay\AssemblyResolver.cs" />
-  </ItemGroup>
 </Project>

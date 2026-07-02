@@ -106,9 +106,9 @@ function New-NSISInstaller {
         "/DVersion=$version"
     )
 
-    & $makensisPath $currentUserUninstallerArgs $currentUserUninstallerScriptPath | Out-Host
-
+    $nsisOutput = & $makensisPath $currentUserUninstallerArgs $currentUserUninstallerScriptPath 2>&1
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($nsisOutput | Out-String)
         throw "NSIS current-user uninstaller build failed."
     }
 
@@ -120,9 +120,9 @@ function New-NSISInstaller {
         "/DVersion=$version"
     )
 
-    & $makensisPath $allUsersUninstallerArgs $allUsersUninstallerScriptPath | Out-Host
-
+    $nsisOutput = & $makensisPath $allUsersUninstallerArgs $allUsersUninstallerScriptPath 2>&1
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($nsisOutput | Out-String)
         throw "NSIS all-users uninstaller build failed."
     }
 
@@ -140,9 +140,9 @@ function New-NSISInstaller {
     if (@(Get-ChildItem -Path $commonDirectory -File -ErrorAction SilentlyContinue).Count -gt 0) {
         $nsisArgs += "/DHasCommon"
     }
-    & $makensisPath $nsisArgs $scriptPath | Out-Host
-
+    $nsisOutput = & $makensisPath $nsisArgs $scriptPath 2>&1
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($nsisOutput | Out-String)
         throw "NSIS installer build failed."
     }
 

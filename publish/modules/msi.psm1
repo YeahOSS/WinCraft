@@ -353,13 +353,9 @@ function New-MSIInstaller {
     $fileCount         = $staging.FileCount
     $licenseRtf        = $staging.LicenseRtfPath
 
-    Write-Host "==> Staged $fileCount file(s) to MSI staging"
-
     # -- Generate WiX source fragment -----------------------------------
     # Pure PowerShell — no heat.exe required.
     $filesWxs = Join-Path $stagingDir "Files.wxs"
-
-    Write-Host "==> Generating component fragment ($fileCount files)..."
     $fileSets = @(
         [pscustomobject]@{
             Name = "Common"
@@ -426,16 +422,13 @@ function New-MSIInstaller {
         $filesWxs
     )
 
-    Write-Host "==> Building English MSI with wix (version $version)..."
-    & $wixExe $buildArgs | Out-Host
+    $wixOutput = & $wixExe $buildArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($wixOutput | Out-String)
         throw "wix build failed (exit code $LASTEXITCODE)."
     }
     Assert-PathExists -Path $outputMsi -Description "MSI artifact"
     Update-WinCraftMsiUiTables -MsiPath $outputMsi
-
-    $size = [math]::Round((Get-Item -LiteralPath $outputMsi).Length / 1KB, 1)
-    Write-Host "==> MSI created: $ArtifactName ($size KB)"
 }
 
 Export-ModuleMember -Function New-MSIInstaller

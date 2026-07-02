@@ -2,6 +2,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $script:RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:SourceRoot = Join-Path $script:RepoRoot "src"
 $script:VersionPropsPath = Join-Path (Split-Path -Parent $PSScriptRoot) "version.props"
 
 function Write-Step {
@@ -201,8 +202,8 @@ function New-InstallerStaging {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
     }
 
-    $standardBuildDir = Join-Path $ProjectRoot "bin\$Configuration\net45"
-    $legacyBuildDir   = Join-Path $ProjectRoot "bin\$Configuration\net30"
+    $standardBuildDir = Join-Path $script:SourceRoot "bin\$Configuration\net45"
+    $legacyBuildDir   = Join-Path $script:SourceRoot "bin\$Configuration\net30"
     Assert-PathExists -Path $standardBuildDir -Description "net45 build output directory"
     Assert-PathExists -Path $legacyBuildDir -Description "net30 build output directory"
 
@@ -223,20 +224,13 @@ function New-InstallerStaging {
     }
 
     # Deduplicate identical files across both TFM directories into Common.
-    $dedupCount = 0
     foreach ($file in Get-ChildItem -LiteralPath $standardDir -File) {
         $legacyPath = Join-Path $legacyDir $file.Name
         if ((Test-Path -LiteralPath $legacyPath) -and
             ((Get-FileHash -LiteralPath $file.FullName).Hash -eq (Get-FileHash -LiteralPath $legacyPath).Hash)) {
             Move-Item -LiteralPath $file.FullName -Destination (Join-Path $commonDir $file.Name) -Force
             Remove-Item -LiteralPath $legacyPath -Force
-            $dedupCount++
         }
-    }
-
-    if ($dedupCount -gt 0) {
-        $labelSuffix = if ($Label) { " $Label" } else { "" }
-        Write-Host "==> Deduplicated $dedupCount file(s) to Common${labelSuffix} staging"
     }
 
     # Bundle documentation files alongside the binaries.
@@ -253,7 +247,6 @@ function New-InstallerStaging {
         LegacyDirectory   = $legacyDir
         CommonDirectory   = $commonDir
         FileCount         = $fileCount
-        DedupCount        = $dedupCount
         LicenseRtfPath    = $licenseRtf
     }
 }

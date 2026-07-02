@@ -186,7 +186,7 @@ function New-OverlayExe {
 
     Write-Step "Building $BuildLabel single-file executable with dependency overlay"
 
-    $buildOutputDirectory = Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
+    $buildOutputDirectory = Join-Path $script:SourceRoot "bin\$Configuration\$TargetSubdirectory"
     $exePath = Join-Path $buildOutputDirectory "WinCraft.exe"
     $artifactPath = Join-Path $script:OutputPath $ArtifactName
 
@@ -208,10 +208,9 @@ function New-OverlayExe {
         "__dependencies.wclz" = $innerLzmaPayload
     }
     $compressedBytes = Compress-Deflate -RawBytes $rawBytes
-    $dllCount = $dllPaths.Count
-    $innerRatio = [math]::Round($innerLzmaPayload.Length / [math]::Max(1, $innerRawBytes.Length) * 100, 1)
-    $outerRatio = [math]::Round($compressedBytes.Length / [math]::Max(1, $rawBytes.Length) * 100, 1)
-    Write-Host "==> Overlay: $dllCount DLL(s), inner LZMA $($innerRawBytes.Length) -> $($innerLzmaPayload.Length) bytes (${innerRatio}%), outer Deflate $($rawBytes.Length) -> $($compressedBytes.Length) bytes (${outerRatio}%)"
+    $totalRaw = (Get-Item -LiteralPath $exePath).Length + ($dllPaths | ForEach-Object { (Get-Item -LiteralPath $_).Length } | Measure-Object -Sum).Sum
+    $totalCompressed = (Get-Item -LiteralPath $exePath).Length + $compressedBytes.Length + 16
+    $overallRatio = [math]::Round($totalCompressed / [math]::Max(1, $totalRaw) * 100, 1)
 
     # Append overlay: [Deflate data] [8 bytes raw len] [4 bytes compressed len] [4 bytes magic "WOHY"]
     $magic = [System.BitConverter]::GetBytes([uint32]0x59484F57)
@@ -235,6 +234,8 @@ function New-OverlayExe {
     [System.IO.File]::WriteAllBytes($artifactPath, $exeBytes)
 
     Assert-PathExists -Path $artifactPath -Description "$BuildLabel single-file artifact"
+
+    return @{ OverallRatio = $overallRatio }
 }
 
 Export-ModuleMember -Function New-OverlayExe

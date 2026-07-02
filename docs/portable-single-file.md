@@ -79,11 +79,11 @@ Implementations: `src/WinCraft/Overlay/AssemblyResolver.cs` (runtime loader),
 
 ## Explored Paths
 
-| Approach | net45 ratio | net30 ratio | Complexity | Why not selected |
-|----------|------------|------------|------------|-----------------|
-| Deflate-only | 38.7% | 33.7% | Lowest | Payload too large |
-| LZMA decoder in exe | 27.2% | 24.5% | Low | Puts LZMA SDK source back into the executable project |
-| **Deflate outer + LZMA inner** | **27.2%** | **24.5%** | Medium | — (current design) |
+| Approach | Size vs baseline | Complexity | Why not selected |
+|----------|-----------------|------------|-----------------|
+| Deflate-only | ~1.4× | Lowest | Payload too large |
+| LZMA decoder in exe | Same as baseline | Low | Puts LZMA SDK source back into the executable project |
+| **Deflate outer + LZMA inner** | **Baseline** | Medium | — (current design) |
 
 ## External Tools Considered
 

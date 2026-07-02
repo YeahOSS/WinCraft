@@ -16,7 +16,7 @@ Run with:
 
 ```powershell
 dotnet build -f net45 src/WinCraft.Tests/WinCraft.Tests.csproj
-src/WinCraft.Tests/bin/Debug/net45/WinCraft.Tests.exe
+src/bin/Debug/net45/WinCraft.Tests.exe
 ```
 
 Results are written to `TestResult.xml` next to the executable.  Supply
