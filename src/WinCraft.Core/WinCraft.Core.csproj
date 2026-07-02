@@ -21,8 +21,8 @@
     Net30ValidationBuild guard prevents re-entry when validate.ps1 calls MSBuild.
   -->
   <Target Name="ValidateNet30" AfterTargets="Build"
-          Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true'">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\validate.ps1&quot;" />
+          Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true' And '$(BuildingInsideVisualStudio)' != 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)validate.ps1&quot;" />
   </Target>
 
   <ItemGroup>

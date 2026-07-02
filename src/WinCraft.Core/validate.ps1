@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-Quick build validation for both target frameworks.
-Uses VS MSBuild to support net30 and net45.
+Validates net30 build via VS MSBuild (dotnet SDK cannot resolve net30).
+Called by Core post-build after dotnet build completes net45.
 #>
 [CmdletBinding()]
 param(
@@ -10,7 +10,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$srcRoot = $PSScriptRoot
+$srcRoot = Split-Path $PSScriptRoot -Parent
 
 # Find VS MSBuild
 $vsWhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
@@ -23,16 +23,11 @@ if ($LASTEXITCODE -ne 0 -or -not $vsPath) {
 }
 $msbuild = Join-Path $vsPath.Trim() "MSBuild\Current\Bin\MSBuild.exe"
 
-# Build
-# Pass Net30ValidationBuild=true so post-build events skip re-entrant validation.
+# Build net30 only — net45 was already compiled by dotnet build.
+# Net30ValidationBuild=true prevents the post-build event from re-entering.
 $projectFile = Join-Path $srcRoot "WinCraft\WinCraft.csproj"
-if (-not (Test-Path $projectFile)) {
-    throw "Main project not found at $projectFile"
-}
-Write-Host "Building ($Configuration) ..." -ForegroundColor Cyan
-& $msbuild $projectFile /t:Restore /nologo /verbosity:quiet /p:Net30ValidationBuild=true
-if ($LASTEXITCODE -ne 0) { throw "Restore failed." }
-& $msbuild $projectFile /t:Build /p:Configuration=$Configuration /nologo /verbosity:minimal /p:Net30ValidationBuild=true
+Write-Host "Validating net30 ..." -ForegroundColor Cyan
+& $msbuild $projectFile /t:Build /p:Configuration=$Configuration /p:TargetFramework=net30 /nologo /verbosity:minimal /p:Net30ValidationBuild=true
 if ($LASTEXITCODE -ne 0) { throw "Build failed." }
 
 # Test

@@ -33,16 +33,17 @@ Use these validation paths instead:
 
 | Path | Command | Use |
 |------|---------|-----|
-| Quick validation | `src/validate.ps1` | Day-to-day CI check; locates VS MSBuild via `vswhere.exe` |
-| Quick + tests | `src/validate.ps1 -Test` | Pre-commit validation |
+| Quick validation | `src/WinCraft.Core/validate.ps1` | Day-to-day CI check; locates VS MSBuild via `vswhere.exe` |
+| Quick + tests | `src/WinCraft.Core/validate.ps1 -Test` | Pre-commit validation |
 | Full publish build | `publish/build.ps1 -BuildOnly` | Release readiness |
 
-Inside Visual Studio, a post-build event in `WinCraft.Core.csproj` validates
-net30 automatically after every net45 build.  The event carries a
-`Net30ValidationBuild=true` guard to prevent re-entrant loops.
+When building outside Visual Studio (such as `dotnet build -f net45`), a
+post-build event in `WinCraft.Core.csproj` validates net30 automatically.
+The event carries a `Net30ValidationBuild=true` guard to prevent re-entrant
+loops and is skipped inside Visual Studio since the IDE compiles both TFMs.
 
 Do not report a standalone `dotnet build` net30 failure as a bug, regression,
-or testing gap.  Only report a build problem when `src/validate.ps1` or
+or testing gap.  Only report a build problem when `src/WinCraft.Core/validate.ps1` or
 `publish/build.ps1` fails.
 
 ## Compatibility Helpers
