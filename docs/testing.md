@@ -39,6 +39,16 @@ Results are written to `TestResult.xml` next to the executable.  Supply
 - Environments that depend on specific service states (TrustedInstaller).
 - Network I/O (flaky; prefer hand-testing or a separate harness).
 
+## When to test
+
+When adding or modifying code, assess whether it contains testable logic:
+parsing, mapping, state machines, validation, algorithms, structured data
+transformation, or public/internal APIs with defined behaviour.  If it does, add
+or update the corresponding test in the same commit.
+
+Trivial types (enums, constants, pure-DTO classes, generated interop files) are
+exempt.
+
 ## TFM coverage
 
 The tested code has no TFM-conditional branches, so a single `net45` test run is

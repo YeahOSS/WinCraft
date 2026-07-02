@@ -28,22 +28,17 @@ Constants and types belong in the group that owns their domain.
 
 ## Authoring Decision Flow
 
-For every new Win32 API, follow this order.  The same flow applies whether
-you are a human developer or an AI assistant.
+For every new Win32 API, follow this order:
 
-1. **Add the API name to `NativeMethods.txt`** in the appropriate functional group.
-2. **Build** (at minimum `dotnet build -f net45`).
-3. **Check the result**:
-
-   | Outcome | Action |
-   |---------|--------|
-   | Build succeeds | Use the CsWin32-generated types.  Inspect `obj/.../Microsoft.Windows.CsWin32/` for exact namespaces and signatures. |
-   | `PInvoke001` (not found) | The API is absent from win32metadata.  Hand-write in `Interop/`. |
-   | `CS0103: Unsafe` or `CS0117: AggressiveInlining` | The API pulls in COM interface generation (see "CsWin32 COM Interface Limitations" below).  Hand-write in `Interop/`. |
-   | Duplicate definition | You already hand-wrote this API.  Remove your hand-written copy and use CsWin32's version. |
-
-4. **When hand-writing**, place files in `Interop/` following the conventions
-   in "CsWin32 COM Interface Limitations" below.
+```mermaid
+flowchart TD
+    A[Add API name to NativeMethods.txt] --> B[Build: dotnet build -f net45]
+    B --> C{Check result}
+    C -->|Success| D[Use CsWin32-generated types<br/>Inspect obj/.../CsWin32/]
+    C -->|PInvoke001: not found| E[Hand-write in Interop/]
+    C -->|CS0103: Unsafe<br/>or CS0117: AggressiveInlining| F[COM generation triggered<br/>Hand-write in Interop/]
+    C -->|Duplicate definition| G[Remove hand-written copy<br/>Use CsWin32 version]
+```
 
 **Quick recognition — an API triggers COM generation if its signature
 directly or transitively references any of these**:
@@ -90,7 +85,6 @@ CsWin32-generated COM interfaces are viable only when `net30` support is
 dropped or when the affected APIs are guarded with `#if NET45`.
 
 **Conventions for hand-written types**:
-- Every hand-written type gets a one-line `<summary>` — describe purpose, not parameters.
 - Namespace matches CsWin32 (COM types in `Windows.Win32.UI.Shell`, P/Invoke in `Windows.Win32`).
 - P/Invoke files named `PInvoke.{DllName}.cs` extend the `PInvoke` partial class with a `private const string` for the DLL name.
 - COM interface and coclass files named after the type (`IShellLink.cs`, `CShellLink.cs`).

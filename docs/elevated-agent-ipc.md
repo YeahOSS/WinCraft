@@ -37,72 +37,47 @@ The product model is therefore:
 
 ### Normal launch
 
-1. The user starts WinCraft normally.
-2. The unelevated UI starts and owns the named pipe server.
-3. The first `Administrator` or `TrustedInstaller` request causes the UI to
-   launch the privileged host with `runas`.
-4. The host connects back to the UI-owned pipe and stays alive for the rest of
-   the UI session.
-
-The user sees UAC once for that session.
+```mermaid
+flowchart TD
+    A[User starts WinCraft] --> B[Unelevated UI starts<br/>owns named pipe server]
+    B --> C{First privileged request?}
+    C -->|Yes| D[UI launches privileged host<br/>with runas]
+    D --> E[UAC prompt shown once per session]
+    C -->|No| F[Host already running]
+    E --> G[Host connects to UI pipe]
+    F --> G
+    G --> H[Host stays alive for<br/>remainder of UI session]
+```
 
 ### Manual "Run as administrator"
 
-1. The initial elevated process does not create the WPF main window.
-2. It becomes the privileged host for that session.
-3. The host launches a separate unelevated UI by using the shell token.
-4. The unelevated UI starts with `--attach-elevated-agent`, connects to the
-   existing host, and becomes the only visible instance.
-
-This keeps drag-and-drop and shell integration available without paying a
-second UAC prompt later in the session.
+```mermaid
+flowchart TD
+    A[User runs WinCraft elevated] --> B[Elevated process:<br/>no WPF main window]
+    B --> C[Becomes privileged host]
+    C --> D[Launches unelevated UI<br/>via shell token]
+    D --> E[Unelevated UI starts with<br/>--attach-elevated-agent]
+    E --> F[Connects to existing host<br/>becomes visible instance]
+```
 
 ### Built-in Administrator
 
-When WinCraft starts under a non split-token administrator account, such as the
-built-in Administrator account with Admin Approval Mode disabled, it keeps the
-current process as the UI process. Explorer already runs with equivalent
-administrator capability in this model, so relaunching from the shell token
-would not create a lower-privilege UI. `Administrator` requests execute locally;
-`TrustedInstaller` requests still use the short-lived TI hop.
+```mermaid
+flowchart TD
+    A[WinCraft starts under<br/>non split-token admin] --> B[Current process = UI process]
+    B --> C[Explorer already runs with<br/>equivalent admin capability]
+    C --> D[Admin requests execute locally]
+    D --> E[TrustedInstaller requests<br/>still use short-lived TI hop]
+```
 
 ## Process Roles
 
-### Unelevated UI
-
-- owns the named pipe server
-- handles single-instance activation
-- handles shell interaction and drag-and-drop
-- routes privileged work through `PrivilegeBroker`
-
-### Privileged host
-
-- has no main window
-- runs either because the UI launched it with `runas` or because the user
-  explicitly started WinCraft elevated
-- connects as the named pipe client
-- executes `Administrator` requests locally
-- upgrades individual `System` requests through a one-shot SYSTEM process
-- upgrades individual `TrustedInstaller` requests through the TI hop
-
-### SYSTEM and TrustedInstaller hops
-
-For one `System` request, the privileged host duplicates the active-session
-`winlogon.exe` token, starts a temporary SYSTEM execute process, runs the
-operation, returns the result through a dedicated pipe, and lets that process
-exit.
-
-The host does not stay in the `TrustedInstaller` context.
-For one TI request it does this:
-
-1. duplicate the active-session `winlogon.exe` token and start a temporary
-   SYSTEM hop process
-2. ensure the `TrustedInstaller` service is running
-3. duplicate the `TrustedInstaller.exe` token and start a one-shot TI execute
-   process
-4. run the requested operation and send the result back through a dedicated
-   pipe
-5. let the temporary TI process exit immediately after the request
+| Role | Pipe | Responsibilities |
+|------|------|-----------------|
+| **Unelevated UI** | Server | Single-instance activation, shell interaction / drag-and-drop, routes privileged work through `PrivilegeBroker` |
+| **Privileged host** | Client | No main window; executes `Administrator` requests locally; upgrades `System` requests via one-shot SYSTEM process; upgrades `TrustedInstaller` requests via TI hop |
+| **SYSTEM hop** | Dedicated | Duplicates `winlogon.exe` token, runs one operation, returns result, exits |
+| **TrustedInstaller hop** | Dedicated | Duplicates `winlogon.exe` → SYSTEM hop → duplicate `TrustedInstaller.exe` token → run one operation → exit |
 
 ## IPC
 

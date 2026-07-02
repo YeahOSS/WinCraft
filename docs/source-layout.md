@@ -3,7 +3,7 @@
 ## Purpose
 This project should group code by product feature first and by low-level capability second.
 Do not use broad dump folders such as `Helpers`, `Utils`, or `Managers`.
-This document defines code placement and directory boundaries only. Keep development behavior and naming policy in `AGENTS.md`; compatibility and interop policy live in their dedicated docs.
+This document defines code placement and directory boundaries only. Keep development behavior and naming policy in `docs/coding-style.md`; compatibility and interop policy live in their dedicated docs.
 
 ## Project Boundaries
 
@@ -19,45 +19,32 @@ logic into Core keeps the executable PE small so publish packaging can bundle
 Core into the compressed overlay.
 
 ## Main Directories
-- `Compatibility/`
-  Stores framework compatibility shims only.
-  Put code here only when it exists to bridge differences between `net30` and `net45`.
-- `UI/`
-  Stores windows, dialogs, view models, and other presentation-layer files.
-- `Features/`
-  Stores business logic grouped by product area such as file associations, context menus, Explorer, and system settings.
-- `Startup/`
-  Stores process-mode routing and startup composition that sits below the thin executable entry point.
-- `Infrastructure/`
-  Stores reusable low-level services such as registry access, file system access, diagnostics, and security helpers.
-- `Infrastructure/Ipc/`
-  Stores reusable cross-process contracts, endpoints, and transport helpers.
-- `src/third_party/LzmaSdk/`
-  Stores the vendored LZMA SDK source subset. Repository-specific source, layout, and update notes live in `src/third_party/LzmaSdk/README.md`.
-- `Interop/`
-  Stores hand-written Win32 COM interfaces, `[ComImport]` coclasses, and P/Invoke
-  declarations that CsWin32 cannot generate (see `docs/win32-interop.md` § "CsWin32
-  COM Interface Limitations").  Types use CsWin32-matching namespaces such as
-  `Windows.Win32.UI.Shell`.  Place each type in its own file.
-- `Constants/`
-  Stores shared constants such as known registry paths, ProgIDs, CLSIDs, and system option names.
+
+| Directory | Purpose |
+|-----------|---------|
+| `Compatibility/` | Framework compatibility shims — only code bridging `net30` ↔ `net45` gaps |
+| `UI/` | Windows, dialogs, view models, presentation-layer files |
+| `Features/` | Business logic grouped by product area (file associations, context menus, Explorer, system settings) |
+| `Startup/` | Process-mode routing and startup composition below the thin executable entry point |
+| `Infrastructure/` | Reusable low-level services (registry access, file system, diagnostics, security) |
+| `Infrastructure/Ipc/` | Cross-process contracts, endpoints, transport helpers |
+| `Interop/` | Hand-written Win32 COM interfaces, `[ComImport]` coclasses, P/Invoke CsWin32 can't generate |
+| `Constants/` | Shared constants (registry paths, ProgIDs, CLSIDs, system option names) |
+| `src/third_party/LzmaSdk/` | Vendored LZMA SDK source subset |
+| `src/WinCraft/` | Thin executable project: WPF assets, entry point, overlay resolver |
 
 ## Placement Rules
-- Put framework-gap code in `Compatibility/`, not in `Infrastructure/` or `Features/`.
-- Put registry read/write primitives in `Infrastructure/RegistryAccess/`.
-- Put cross-process contracts and endpoint helpers in `Infrastructure/Ipc/`.
-- Put elevation, token, and permission helpers in `Infrastructure/Security/`.
-- Put reusable shell-command formatting or parsing helpers in `Infrastructure/Shell/`.
-- Put process-mode routing, UI startup composition, and elevated host startup orchestration in `Startup/`.
-- Put feature-specific registry rules near the feature that owns them.
-- Keep high-level interop usage in product code, but configure generated Win32 bindings through the project-level `NativeMethods.txt` and `NativeMethods.json` files in the project that owns the Win32 call sites. The CsWin32 workflow is documented in `docs/win32-interop.md`.
-- Put UI event handling and presentation logic in `UI/`.
-- Put product behavior in `Features/`, even when it touches registry, shell, Win32, or file paths.
 
-## Examples
-- File association behavior: `Features/FileAssociations/`
-- Context menu behavior: `Features/ContextMenu/`
-- Explorer tweaks: `Features/Explorer/`
-- Startup routing: `Startup/ProgramHost.cs`
-- Shared registry wrapper: `Infrastructure/RegistryAccess/RegistryWriter.cs`
-- Missing string APIs: `Compatibility/StringCompat.cs`
+| What | Where |
+|------|-------|
+| Framework-gap code | `Compatibility/` |
+| Registry read/write primitives | `Infrastructure/RegistryAccess/` |
+| Cross-process contracts and endpoints | `Infrastructure/Ipc/` |
+| Elevation, token, permission helpers | `Infrastructure/Security/` |
+| Shell-command formatting or parsing | `Infrastructure/Shell/` |
+| Process-mode routing, UI startup composition | `Startup/` |
+| Feature-specific registry rules | Feature that owns them |
+| UI event handling, presentation logic | `UI/` |
+| Product behavior (even touching registry/Win32) | `Features/` |
+| High-level interop usage | Product code; configure bindings via project-level `NativeMethods.txt` / `NativeMethods.json` |
+
