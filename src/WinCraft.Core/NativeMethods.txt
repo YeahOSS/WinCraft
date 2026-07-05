@@ -124,6 +124,12 @@ WritePrivateProfileString
 // ── Shell — Resources ──
 SHLoadIndirectString
 
+// ── Shell Link ──
+SLGP_FLAGS
+STGM
+SHOW_WINDOW_CMD
+SHELL_LINK_DATA_FLAGS
+
 // ── Shell Drag-and-Drop ──
 CLSID_DragDropHelper
 DSH_FLAGS
