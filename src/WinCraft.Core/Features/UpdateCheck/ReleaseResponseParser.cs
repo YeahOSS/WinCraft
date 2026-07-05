@@ -10,11 +10,10 @@ namespace WinCraft.Features.UpdateCheck
     /// </summary>
     public static class ReleaseResponseParser
     {
-        public static ReleaseInfo Parse(string json)
+        public static ReleaseInfo Parse(string json, string targetAssetName)
         {
             object root = JsonMiniParser.Parse(json);
-            var dict = root as Dictionary<string, object>;
-            if (dict == null)
+            if (root is not Dictionary<string, object> dict)
                 throw new FormatException("Expected a JSON object at the root of the release response.");
 
             var info = new ReleaseInfo();
@@ -37,7 +36,7 @@ namespace WinCraft.Features.UpdateCheck
                         continue;
 
                     string name = GetString(asset, "name") ?? string.Empty;
-                    if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(name, targetAssetName, StringComparison.OrdinalIgnoreCase))
                     {
                         info.AssetName = name;
                         info.DownloadUrl = GetString(asset, "browser_download_url");

@@ -1,8 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 using System.Threading.Tasks;
+using WinCraft.Infrastructure;
 using WinCraft.Infrastructure.Net;
 
 namespace WinCraft.Features.UpdateCheck
@@ -14,13 +13,9 @@ namespace WinCraft.Features.UpdateCheck
     /// </summary>
     public class UpdateChecker
     {
-#pragma warning disable S1075 // Public API endpoints, not local paths
-        private const string GitHubApiUrl =
-            "https://api.github.com/repos/YeahOSS/WinCraft/releases/latest";
+        private static string GitHubApiUrl => BuildApiUrl("https://api.github.com/repos/", "/releases/latest");
 
-        private const string GiteeApiUrl =
-            "https://gitee.com/api/v5/repos/YeahOSS/WinCraft/releases/latest";
-#pragma warning restore S1075
+        private static string GiteeApiUrl => BuildApiUrl("https://gitee.com/api/v5/repos/", "/releases/latest");
 
         /// <summary>
         /// Check both sources for an available update, trying the preferred
@@ -47,19 +42,26 @@ namespace WinCraft.Features.UpdateCheck
         {
             try
             {
-                var exePath = Assembly.GetEntryAssembly().Location;
-                var info = FileVersionInfo.GetVersionInfo(exePath);
-                var current = new Version(info.ProductVersion);
+                Version current = ProductInfo.ProductVersion;
+                string targetAssetName = CurrentReleaseAsset.GetAssetName();
                 using var downloader = new HttpDownloader();
-                downloader.UserAgent = "WinCraft/" + current.ToString(3);
+                downloader.UserAgent = ProductInfo.ProductName + "/" + current.ToString(3);
                 downloader.Timeout = 15_000; // 15 s is enough for a small JSON response
 
                 string json = await downloader.FetchStringAsync(new Uri(apiUrl));
 
-                var release = ReleaseResponseParser.Parse(json);
+                var release = ReleaseResponseParser.Parse(json, targetAssetName);
 
                 if (release.Version > current)
+                {
+                    if (string.IsNullOrEmpty(release.DownloadUrl))
+                    {
+                        return UpdateCheckOutcome.Failed(
+                            string.Format("[{0}] The latest release does not contain {1}.", sourceName, targetAssetName));
+                    }
+
                     return UpdateCheckOutcome.UpdateFound(release, sourceName);
+                }
 
                 return UpdateCheckOutcome.UpToDate();
             }
@@ -80,6 +82,11 @@ namespace WinCraft.Features.UpdateCheck
             if (RegionInfo.CurrentRegion.Name == "CN")
                 return [(GiteeApiUrl, "Gitee"), (GitHubApiUrl, "GitHub")];
             return [(GitHubApiUrl, "GitHub"), (GiteeApiUrl, "Gitee")];
+        }
+
+        private static string BuildApiUrl(string prefix, string suffix)
+        {
+            return $"{prefix}{ProductInfo.Publisher}/{ProductInfo.ProductName}{suffix}";
         }
     }
 }
