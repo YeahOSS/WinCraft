@@ -5,6 +5,9 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace Windows.Win32.UI.Shell
 {
+    /// <summary>
+    /// COM interface for rendering a drag image with additional flags support.
+    /// </summary>
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("83E07D0D-0C5F-4163-BF1A-60B274051E40")]

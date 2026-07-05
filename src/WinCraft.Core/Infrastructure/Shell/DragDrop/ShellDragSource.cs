@@ -2,8 +2,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Input;
-using WinCraft.Infrastructure;
-using WinCraft.Infrastructure.Shell;
+using WinCraft.Compatibility;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -22,7 +21,7 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
         /// </summary>
         public static bool ShowDragImageWhenNotSupported { get; set; } = true;
 
-        private static readonly IDragSourceHelper2 _helper = (IDragSourceHelper2)new DragDropHelper();
+        private static readonly IDragSourceHelper2 _helper = (IDragSourceHelper2)new CDragDropHelper();
 
         // Only accessed on the UI thread.
         private static IDataObject _data;
@@ -36,14 +35,11 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
             Bitmap dragImage,
             Point? dragImageOffset = null)
         {
-            if (element == null)
-                throw new ArgumentNullException(nameof(element));
+            ThrowCompat.IfNull(element, nameof(element));
 
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
+            ThrowCompat.IfNull(data, nameof(data));
 
-            if (dragImage == null)
-                throw new ArgumentNullException(nameof(dragImage));
+            ThrowCompat.IfNull(dragImage, nameof(dragImage));
 
             SetDragImage(data, dragImage, dragImageOffset);
 
@@ -140,7 +136,10 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
                 {
                     unsafe
                     {
-                        var hWnd = new HWND(*(IntPtr*)PInvoke.GlobalLock(hMem));
+                        var ptr = PInvoke.GlobalLock(hMem);
+                        if (ptr == null)
+                            return false;
+                        var hWnd = new HWND(*(IntPtr*)ptr);
                         return PInvoke.IsWindow(hWnd)
                             && PInvoke.PostMessage(hWnd, PInvoke.WM_USER + 3 /* DDWM_UPDATEWINDOW */, 0, 0);
                     }

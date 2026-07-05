@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using WinCraft.Infrastructure.Shell;
+using WinCraft.Interop;
 using Windows.Win32;
 using Windows.Win32.System.Memory;
 using Windows.Win32.UI.Shell;
@@ -14,7 +14,7 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
     /// </summary>
     public static class ShellDropTarget
     {
-        private static readonly IDropTargetHelper _helper = (IDropTargetHelper)new DragDropHelper();
+        private static readonly IDropTargetHelper _helper = (IDropTargetHelper)new CDragDropHelper();
 
         // Only accessed on the UI thread.
         private static IDataObject _data;
@@ -94,8 +94,8 @@ namespace WinCraft.Infrastructure.Shell.DragDrop
             {
                 type = ResolveDropImageType(effect),
             };
-            desc.szMessage.SetString(message);
-            desc.szInsert.SetString(insert);
+            StringBuffer.CopyTo(ref desc.szMessage, message);
+            StringBuffer.CopyTo(ref desc.szInsert, insert);
 
             int size = Marshal.SizeOf(typeof(DROPDESCRIPTION));
             var hMem = PInvoke.GlobalAlloc(GLOBAL_ALLOC_FLAGS.GMEM_MOVEABLE, (nuint)size);
