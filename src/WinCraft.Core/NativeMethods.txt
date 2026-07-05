@@ -92,6 +92,7 @@ MAX_PATH
 // ── Shell — File Associations ──
 AssocQueryString
 AssocGetPerceivedType
+SHChangeNotify
 
 // ── Shell — Path Utilities ──
 SearchPath
@@ -99,9 +100,26 @@ PathParseIconLocation
 PathCompactPathEx
 PathGetArgs
 PathIsExe
+PathMakeSystemFolder
 PathQuoteSpaces
 PathRemoveBackslash
 PathUnExpandEnvStrings
+
+// ── Shell — Folder Custom Settings ──
+SHGetSetFolderCustomSettings
+FCS_READ
+FCS_FORCEWRITE
+FCSM_VIEWID
+FCSM_WEBVIEWTEMPLATE
+FCSM_INFOTIP
+FCSM_CLSID
+FCSM_ICONFILE
+FCSM_LOGO
+FCSM_FLAGS
+
+// ── Shell — INI File ──
+GetPrivateProfileString
+WritePrivateProfileString
 
 // ── Shell — Resources ──
 SHLoadIndirectString
