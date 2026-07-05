@@ -66,8 +66,8 @@ namespace WinCraft.Infrastructure.Diagnostics
 
         private static void WriteCrashDump(Exception ex)
         {
-            var fileName = $"Crash_{DateTime.Now:yyyyMMdd_HHmmss}_{ex.GetType().Name}.dmp";
-            var dumpPath = Path.Combine(AppDataPaths.Dumps, fileName);
+            var fileName = $"{DateTime.Now:yyyyMMdd_HHmmss}_{ex.GetType().Name}.dmp";
+            var dumpPath = Path.Combine(ProductInfo.DumpsDir, fileName);
 
             if (CrashDump.TryWrite(dumpPath))
                 Log.Info($"Crash dump written to {dumpPath}");

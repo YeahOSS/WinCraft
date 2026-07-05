@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using WinCraft.Compatibility;
 
 namespace WinCraft.Infrastructure.Diagnostics
 {
@@ -18,8 +19,7 @@ namespace WinCraft.Infrastructure.Diagnostics
         /// </summary>
         public FileLogger(string logFilePath)
         {
-            if (logFilePath == null)
-                throw new ArgumentNullException(nameof(logFilePath));
+            ThrowCompat.IfNull(logFilePath, nameof(logFilePath));
 
             var directory = Path.GetDirectoryName(logFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -40,8 +40,8 @@ namespace WinCraft.Infrastructure.Diagnostics
         /// </summary>
         public static FileLogger CreateDefault()
         {
-            var fileName = $"{nameof(WinCraft)}_{DateTime.Now:yyyyMMdd}.log";
-            var logPath = Path.Combine(AppDataPaths.Logs, fileName);
+            var fileName = $"{DateTime.Now:yyyyMMdd}.log";
+            var logPath = Path.Combine(ProductInfo.LogsDir, fileName);
 
             return new FileLogger(logPath);
         }

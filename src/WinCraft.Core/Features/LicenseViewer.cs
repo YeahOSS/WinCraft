@@ -1,17 +1,18 @@
-using System;
 using System.Diagnostics;
 using System.IO;
+using WinCraft.Infrastructure;
 
 namespace WinCraft.Features
 {
     public static class LicenseViewer
     {
-        private const string LicenseFileName = "LICENSE.txt";
+        private const string LicenseFileName = "LICENSE.rtf";
         private const string OpenSourceLicensesFileName = "OPEN-SOURCE-LICENSES.md";
-#pragma warning disable S1075
-        private const string LicenseFallbackUrl = "https://raw.githubusercontent.com/YeahOSS/WinCraft/master/LICENSE";
-        private const string OpenSourceLicensesFallbackUrl = "https://raw.githubusercontent.com/YeahOSS/WinCraft/master/docs/OPEN-SOURCE-LICENSES.md";
-#pragma warning restore S1075
+        private static string LicenseFallbackUrl =>
+            BuildRawGitHubUrl("LICENSE");
+
+        private static string OpenSourceLicensesFallbackUrl =>
+            BuildRawGitHubUrl("docs/OPEN-SOURCE-LICENSES.md");
 
         public static void OpenLicense()
         {
@@ -25,13 +26,18 @@ namespace WinCraft.Features
 
         private static void OpenFileOrUrl(string fileName, string fallbackUrl)
         {
-            string localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+            string localPath = Path.Combine(ProductInfo.StartupPath, fileName);
 
             Process.Start(new ProcessStartInfo
             {
                 FileName = File.Exists(localPath) ? localPath : fallbackUrl,
                 UseShellExecute = true
             });
+        }
+
+        private static string BuildRawGitHubUrl(string path)
+        {
+            return $"https://raw.githubusercontent.com/{ProductInfo.Publisher}/{ProductInfo.ProductName}/master/{path}";
         }
     }
 }

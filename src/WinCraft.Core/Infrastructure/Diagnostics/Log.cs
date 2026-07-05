@@ -1,4 +1,5 @@
 using System;
+using WinCraft.Compatibility;
 
 namespace WinCraft.Infrastructure.Diagnostics
 {
@@ -18,7 +19,7 @@ namespace WinCraft.Infrastructure.Diagnostics
         /// </summary>
         public static void Initialize(ILogger logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = ThrowCompat.IfNull(logger, nameof(logger));
         }
 
         /// <summary>
