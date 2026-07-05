@@ -1,4 +1,4 @@
-!ifndef WINCRAFT_UNINSTALL_COMMON_NSH
+﻿!ifndef WINCRAFT_UNINSTALL_COMMON_NSH
 !define WINCRAFT_UNINSTALL_COMMON_NSH
 
 ; Shared uninstall logic for standalone current-user and all-users uninstallers.
@@ -29,7 +29,7 @@ Function ${FUNCTION_PREFIX}RuntimeDataPageCreate
   Pop $KeepConfigCheckbox
   ${NSD_Check} $KeepConfigCheckbox
 
-  ${NSD_CreateCheckbox} 20u 48u 260u 12u "$(RUNTIMEDATA_LOGS_DUMPS)"
+  ${NSD_CreateCheckbox} 20u 48u 260u 12u "$(RUNTIMEDATA_CLEAN_LOGS_DUMPS)"
   Pop $KeepLogsDumpsCheckbox
   ${NSD_Check} $KeepLogsDumpsCheckbox
 
@@ -46,11 +46,11 @@ Function ${FUNCTION_PREFIX}RuntimeDataPageLeave
 
   ${NSD_GetState} $KeepLogsDumpsCheckbox $0
   ${If} $0 == ${BST_CHECKED}
-    StrCpy $KeepLogs "1"
-    StrCpy $KeepDumps "1"
-  ${Else}
     StrCpy $KeepLogs "0"
     StrCpy $KeepDumps "0"
+  ${Else}
+    StrCpy $KeepLogs "1"
+    StrCpy $KeepDumps "1"
   ${EndIf}
 FunctionEnd
 !macroend
@@ -64,7 +64,15 @@ Function ${FUNCTION_PREFIX}DeleteInstalledFiles
     ClearErrors
     FileRead $0 $2
     IfErrors fileClose
-    StrCpy $2 $2 -2
+    ; Strip trailing newline (handles CRLF, LF, or CR).
+    StrCpy $3 $2 1 -1
+    ${If} $3 == "$\n"
+        StrCpy $2 $2 -1
+        StrCpy $3 $2 1 -1
+        ${If} $3 == "$\r"
+            StrCpy $2 $2 -1
+        ${EndIf}
+    ${EndIf}
     ${If} $2 != ""
       Delete "$INSTDIR\$2"
     ${EndIf}
@@ -88,18 +96,21 @@ Function ${FUNCTION_PREFIX}DeleteRuntimeData
 
       StrCpy $5 "$PROFILE\..\$4\AppData\Local\WinCraft"
       ${If} $KeepConfig != "1"
-        RMDir /r "$5\Config"
+      ${AndIf} $KeepLogs != "1"
+      ${AndIf} $KeepDumps != "1"
+        RMDir /r "$5"
+      ${Else}
+        ${If} $KeepConfig != "1"
+          RMDir /r "$5\Config"
+        ${EndIf}
+        ${If} $KeepLogs != "1"
+          RMDir /r "$5\Logs"
+        ${EndIf}
+        ${If} $KeepDumps != "1"
+          RMDir /r "$5\Dumps"
+        ${EndIf}
+        RMDir "$5"
       ${EndIf}
-
-      ${If} $KeepLogs != "1"
-        RMDir /r "$5\Logs"
-      ${EndIf}
-
-      ${If} $KeepDumps != "1"
-        RMDir /r "$5\Dumps"
-      ${EndIf}
-
-      RMDir "$5"
 
       nextUser:
         FindNext $3 $4
@@ -109,18 +120,21 @@ Function ${FUNCTION_PREFIX}DeleteRuntimeData
       FindClose $3
   !else
     ${If} $KeepConfig != "1"
-      RMDir /r "$LOCALAPPDATA\WinCraft\Config"
+    ${AndIf} $KeepLogs != "1"
+    ${AndIf} $KeepDumps != "1"
+      RMDir /r "$LOCALAPPDATA\WinCraft"
+    ${Else}
+      ${If} $KeepConfig != "1"
+        RMDir /r "$LOCALAPPDATA\WinCraft\Config"
+      ${EndIf}
+      ${If} $KeepLogs != "1"
+        RMDir /r "$LOCALAPPDATA\WinCraft\Logs"
+      ${EndIf}
+      ${If} $KeepDumps != "1"
+        RMDir /r "$LOCALAPPDATA\WinCraft\Dumps"
+      ${EndIf}
+      RMDir "$LOCALAPPDATA\WinCraft"
     ${EndIf}
-
-    ${If} $KeepLogs != "1"
-      RMDir /r "$LOCALAPPDATA\WinCraft\Logs"
-    ${EndIf}
-
-    ${If} $KeepDumps != "1"
-      RMDir /r "$LOCALAPPDATA\WinCraft\Dumps"
-    ${EndIf}
-
-    RMDir "$LOCALAPPDATA\WinCraft"
   !endif
 FunctionEnd
 !macroend

@@ -2,7 +2,9 @@
 param(
     [string]$Configuration = "Release",
     [string]$ProjectPath,
-    [switch]$BuildOnly
+    [switch]$BuildOnly,
+    [switch]$SkipNSIS,
+    [switch]$SkipMSI
 )
 
 Set-StrictMode -Version Latest
@@ -12,17 +14,45 @@ $ErrorActionPreference = "Stop"
 
 Import-Module (Join-Path $PSScriptRoot "modules\common.psm1") -Force
 Import-Module (Join-Path $PSScriptRoot "modules\overlay.psm1") -Force
-Import-Module (Join-Path $PSScriptRoot "modules\installer.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "modules\nsis.psm1") -Force
 
 $script:PublishRoot = $PSScriptRoot
 $script:RepositoryRoot = Split-Path -Parent $script:PublishRoot
 $script:SourceRoot = Join-Path $script:RepositoryRoot "src"
 $script:PublishOutputPath = Join-Path $script:PublishRoot "output"
+$script:PublishStagingPath = Join-Path $script:PublishOutputPath "staging"
 $script:LegacyArtifactName = "WinCraft-Legacy.exe"
 $script:StandardArtifactName = "WinCraft-Standard.exe"
 $script:FullInstallerArtifactName = "WinCraft-Setup.exe"
+$script:MSIArtifactName = "WinCraft-Setup.msi"
+$script:OverlayStats = @{}
 $script:ResolvedProjectPath = $null
 $script:ProjectRoot = $null
+
+function Clear-PublishStagingDirectory {
+    if (Test-Path -LiteralPath $script:PublishStagingPath) {
+        Remove-Item -LiteralPath $script:PublishStagingPath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Clear-OutputFile {
+    <#
+    .SYNOPSIS
+    Deletes a previous output artifact before repackaging.  Returns $true if
+    the file does not exist or was removed successfully; returns $false if
+    the file exists but cannot be deleted (locked by another process).
+    #>
+    param([string]$ArtifactName)
+    $path = Join-Path $script:PublishOutputPath $ArtifactName
+    if (-not (Test-Path -LiteralPath $path)) { return $true }
+    try {
+        Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
 
 function Resolve-ProjectFilePath {
     if (-not [string]::IsNullOrWhiteSpace($ProjectPath)) {
@@ -133,13 +163,14 @@ function Invoke-ProjectRestore {
     Write-Step "Restoring project"
 
     if ($Builder.Type -eq "MSBuild") {
-        & $Builder.Path $ProjectPath "/nologo" "/verbosity:minimal" "/t:Restore" | Out-Host
+        $output = & $Builder.Path $ProjectPath "/nologo" "/verbosity:quiet" "/t:Restore" 2>&1
     }
     else {
-        & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:minimal" "/t:Restore" | Out-Host
+        $output = & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:quiet" "/t:Restore" 2>&1
     }
 
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($output | Out-String)
         throw "Project restore failed."
     }
 }
@@ -155,20 +186,23 @@ function Invoke-ProjectBuild {
     Write-Step "Building $ProjectLabel"
 
     # Pass ContinuousIntegrationBuild for Release to enable full deterministic build semantics.
-    $extraProperties = @()
+    # Net30ValidationBuild suppresses the post-build validation target since this
+    # script already builds both TFMs via VS MSBuild.
+    $extraProperties = @("/p:Net30ValidationBuild=true")
     if ($Configuration -eq "Release") {
         $extraProperties += "/p:ContinuousIntegrationBuild=true"
     }
     $extraProperties += $ExtraBuildProperties
 
     if ($Builder.Type -eq "MSBuild") {
-        & $Builder.Path $ProjectPath "/nologo" "/verbosity:minimal" "/p:Configuration=$Configuration" $extraProperties "/t:Build" | Out-Host
+        $output = & $Builder.Path $ProjectPath "/nologo" "/verbosity:quiet" "/p:Configuration=$Configuration" $extraProperties "/t:Build" 2>&1
     }
     else {
-        & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:minimal" "/p:Configuration=$Configuration" $extraProperties "/t:Build" | Out-Host
+        $output = & $Builder.Path "msbuild" $ProjectPath "/nologo" "/verbosity:quiet" "/p:Configuration=$Configuration" $extraProperties "/t:Build" 2>&1
     }
 
     if ($LASTEXITCODE -ne 0) {
+        Write-Host ($output | Out-String)
         throw "$ProjectLabel build failed."
     }
 }
@@ -185,30 +219,135 @@ Invoke-ProjectRestore -Builder $builder -ProjectPath $script:ResolvedProjectPath
 
 Write-Step "Preparing the publish output directory"
 
-if (Test-Path -LiteralPath $script:PublishOutputPath) {
-    Remove-Item -LiteralPath $script:PublishOutputPath -Recurse -Force
-}
-
+Clear-PublishStagingDirectory
 New-Item -ItemType Directory -Path $script:PublishOutputPath -Force | Out-Null
+New-Item -ItemType Directory -Path $script:PublishStagingPath -Force | Out-Null
 
 # First build — with overlay/resolver code for standalone single-file EXEs.
 Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "standalone"
 
 if (-not $BuildOnly) {
-    New-OverlayExe -BuildLabel "net45" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName | Out-Null
-    New-OverlayExe -BuildLabel "net30" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName | Out-Null
+    try {
+        $packagingErrors = [System.Collections.Generic.List[string]]::new()
 
-    # Second build — without overlay/resolver code for the NSIS installer.
-    Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "installer" -ExtraBuildProperties @("/p:InstallerBuild=true")
-
-    New-NSISInstaller -Configuration $Configuration -ProjectRoot $script:ProjectRoot -ArtifactName $script:FullInstallerArtifactName | Out-Null
-
-    Write-Step "Build completed"
-    foreach ($artifact in @($script:LegacyArtifactName, $script:StandardArtifactName, $script:FullInstallerArtifactName)) {
-        $artifactPath = Join-Path $script:PublishOutputPath $artifact
-        if (Test-Path -LiteralPath $artifactPath) {
-            $size = [math]::Round((Get-Item -LiteralPath $artifactPath).Length / 1KB, 1)
-            Write-Host "  $artifact ($size KB)"
+        # --- Overlay: Standard ---
+        if (Clear-OutputFile $script:StandardArtifactName) {
+            try {
+                $script:OverlayStats[$script:StandardArtifactName] = New-OverlayExe -BuildLabel "net45" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net45" -ArtifactName $script:StandardArtifactName
+            }
+            catch {
+                $packagingErrors.Add("$($script:StandardArtifactName) : $_")
+            }
         }
+        else {
+            $packagingErrors.Add("$($script:StandardArtifactName) is locked by another process.")
+        }
+
+        # --- Overlay: Legacy ---
+        if (Clear-OutputFile $script:LegacyArtifactName) {
+            try {
+                $script:OverlayStats[$script:LegacyArtifactName] = New-OverlayExe -BuildLabel "net30" -Configuration $Configuration -ProjectRoot $script:ProjectRoot -TargetSubdirectory "net30" -ArtifactName $script:LegacyArtifactName
+            }
+            catch {
+                $packagingErrors.Add("$($script:LegacyArtifactName) : $_")
+            }
+        }
+        else {
+            $packagingErrors.Add("$($script:LegacyArtifactName) is locked by another process.")
+        }
+
+        # --- Pre-clear installer outputs to decide whether to build ---
+        $nsisOk = if (-not $SkipNSIS) { Clear-OutputFile $script:FullInstallerArtifactName } else { $false }
+        $msiOk  = if (-not $SkipMSI)  { Clear-OutputFile $script:MSIArtifactName }          else { $false }
+
+        if (-not $nsisOk -and -not $SkipNSIS) {
+            $packagingErrors.Add("$($script:FullInstallerArtifactName) is locked by another process.")
+        }
+        if (-not $msiOk -and -not $SkipMSI) {
+            $packagingErrors.Add("$($script:MSIArtifactName) is locked by another process.")
+        }
+
+        # Second build — only if at least one installer will actually proceed.
+        $installerBuildOk = $false
+        if ($nsisOk -or $msiOk) {
+            try {
+                Invoke-ProjectBuild -Builder $builder -ProjectPath $script:ResolvedProjectPath -ProjectLabel "installer" -ExtraBuildProperties @("/p:InstallerBuild=true", "/p:BuildProjectReferences=false")
+                $installerBuildOk = $true
+            }
+            catch {
+                $packagingErrors.Add("Installer build failed: $_")
+            }
+        }
+
+        # --- NSIS ---
+        if (-not $SkipNSIS) {
+            if ($nsisOk -and $installerBuildOk) {
+                try {
+                    New-NSISInstaller -Configuration $Configuration -ProjectRoot $script:ProjectRoot -ArtifactName $script:FullInstallerArtifactName | Out-Null
+                }
+                catch {
+                    $packagingErrors.Add("$($script:FullInstallerArtifactName) : $_")
+                }
+            }
+        }
+        else {
+            Write-Warning "NSIS installer build skipped (-SkipNSIS)"
+        }
+
+        # --- MSI ---
+        if (-not $SkipMSI) {
+            if ($msiOk -and $installerBuildOk) {
+                $msiModule = Join-Path $script:PublishRoot "modules\msi.psm1"
+                try {
+                    Import-Module $msiModule -Force
+                }
+                catch {
+                    $packagingErrors.Add("Failed to import MSI module: $_")
+                }
+                try {
+                    New-MSIInstaller -Configuration $Configuration -ProjectRoot $script:ProjectRoot -ArtifactName $script:MSIArtifactName
+                }
+                catch {
+                    $packagingErrors.Add("$($script:MSIArtifactName) : $_")
+                }
+            }
+        }
+        else {
+            Write-Warning "MSI build skipped (-SkipMSI)"
+        }
+
+        # --- Report errors ---
+
+        Write-Step "Build completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        $builtArtifacts = [System.Collections.Generic.List[string]]::new()
+        [void]$builtArtifacts.Add($script:StandardArtifactName)
+        [void]$builtArtifacts.Add($script:LegacyArtifactName)
+        if (-not $SkipNSIS) {
+            [void]$builtArtifacts.Add($script:FullInstallerArtifactName)
+        }
+        if (-not $SkipMSI) {
+            [void]$builtArtifacts.Add($script:MSIArtifactName)
+        }
+
+        foreach ($artifact in $builtArtifacts) {
+            $artifactPath = Join-Path $script:PublishOutputPath $artifact
+            if (Test-Path -LiteralPath $artifactPath) {
+                $size = [math]::Round((Get-Item -LiteralPath $artifactPath).Length / 1KB, 1)
+                $ratioSuffix = ""
+                if ($script:OverlayStats.ContainsKey($artifact) -and $null -ne $script:OverlayStats[$artifact]) {
+                    $ratio = $script:OverlayStats[$artifact].OverallRatio
+                    $ratioSuffix = ", ${ratio}% of original"
+                }
+                Write-Host "  $artifact ($size KB${ratioSuffix})"
+            }
+        }
+
+        if ($packagingErrors.Count -gt 0) {
+            $message = "One or more packaging steps failed:`n" + ($packagingErrors -join "`n")
+            throw $message
+        }
+    }
+    finally {
+        Clear-PublishStagingDirectory
     }
 }

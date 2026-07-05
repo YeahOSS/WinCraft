@@ -1,0 +1,75 @@
+<WixLocalization Culture="en" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <!-- Welcome -->
+  <String Id="WelcomeDlgTitle"       Value="Welcome to WinCraft Setup" />
+  <String Id="WelcomeDlgDescription" Value="Craft Windows your way." />
+
+  <!-- Install scope -->
+  <String Id="InstallScopeDlgTitle"       Value="Choose Users" />
+  <String Id="InstallScopeDlgDescription" Value="Choose who can use WinCraft on this computer." />
+  <String Id="InstallScopeDlgPerUser"     Value="Only for me (&amp;current user)" />
+  <String Id="InstallScopeDlgPerMachine"  Value="Everyone who uses this computer (&amp;all users)" />
+
+  <!-- Licence -->
+  <String Id="LicenseAgreementDlgTitle"       Value="Licence Agreement" />
+  <String Id="LicenseAgreementDlgDescription" Value="Please read and accept the licence terms before continuing." />
+
+  <!-- Install directory -->
+  <String Id="InstallDirDlgTitle"       Value="Install Location" />
+  <String Id="InstallDirDlgDescription" Value="Choose where WinCraft will be installed." />
+
+  <!-- Feature selection -->
+  <String Id="FeaturesDlgTitle"       Value="Shortcuts" />
+  <String Id="FeaturesDlgDescription" Value="Choose the shortcuts you would like to create." />
+
+  <!-- Verify -->
+  <String Id="VerifyReadyDlgTitle"       Value="Ready to Install" />
+  <String Id="VerifyReadyDlgDescription" Value="Setup is ready to install WinCraft on your computer." />
+
+  <!-- Progress -->
+  <String Id="ProgressDlgTitle"       Value="Installing WinCraft" />
+  <String Id="ProgressDlgDescription" Value="Please wait while WinCraft is being installed." />
+
+  <!-- Exit -->
+  <String Id="ExitDlgTitle"       Value="Ready to Go" />
+  <String Id="ExitDlgDescription" Value="WinCraft is now installed on your computer." />
+
+  <!-- Maintenance -->
+  <String Id="MaintenanceWelcomeDlgTitle"       Value="WinCraft Setup" />
+  <String Id="MaintenanceWelcomeDlgDescription" Value="Remove your WinCraft installation." />
+  <String Id="MaintenanceTypeDlgTitle"          Value="Maintenance" />
+  <String Id="MaintenanceTypeDlgDescription"    Value="Choose the operation you want to perform." />
+
+  <!-- Cancel -->
+  <String Id="CancelDlgTitle"       Value="Cancel Setup" />
+  <String Id="CancelDlgDescription" Value="Are you sure you want to cancel the WinCraft installation?" />
+
+  <!-- User exit -->
+  <String Id="UserExitDlgTitle"       Value="Setup Cancelled" />
+  <String Id="UserExitDlgDescription" Value="WinCraft setup was cancelled before completion." />
+
+  <!-- Fatal error -->
+  <String Id="FatalErrorDlgTitle"       Value="Setup Failed" />
+  <String Id="FatalErrorDlgDescription" Value="An error occurred while installing WinCraft. Please try again." />
+
+  <!-- Files in use -->
+  <String Id="FilesInUseDlgTitle"       Value="Files in Use" />
+  <String Id="FilesInUseDlgDescription" Value="One or more files required by the installer are currently in use. Close the applications listed below and retry." />
+
+  <!-- Uninstall cleanup -->
+  <String Id="CleanupOptionsDlgTitle"       Value="Uninstall Cleanup" />
+  <String Id="CleanupOptionsDlgDescription" Value="Choose what to keep or remove during uninstall." />
+  <String Id="CleanupOptionsDlgKeepConfig"  Value="Keep configuration" />
+  <String Id="CleanupOptionsDlgDeleteLogs"  Value="Delete logs and crash dumps" />
+
+  <!-- Buttons -->
+  <String Id="WixUIBack"    Value="&amp;Back" />
+  <String Id="WixUINext"    Value="&amp;Next" />
+  <String Id="WixUICancel"  Value="Cancel" />
+  <String Id="WixUIInstall" Value="&amp;Install" />
+  <String Id="WixUIRemove"  Value="&amp;Remove" />
+  <String Id="WixUIRepair"  Value="&amp;Repair" />
+  <String Id="WixUIOK"      Value="OK" />
+  <String Id="WixUIBrowse"  Value="&amp;Browse..." />
+
+</WixLocalization>

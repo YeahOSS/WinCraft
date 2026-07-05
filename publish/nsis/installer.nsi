@@ -27,12 +27,15 @@ SetCompressorDictSize 32
   !error "CurrentUserUninstallerPath define is required."
 !endif
 
+!ifndef LicensePath
+  !error "LicensePath define is required."
+!endif
+
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "FileFunc.nsh"
 !include "nsDialogs.nsh"
 !include "x64.nsh"
-
 !define DOTNET45_RELEASE 378389
 
 Name "WinCraft"
@@ -43,20 +46,92 @@ RequestExecutionLevel user
 !define MUI_ABORTWARNING
 !define MUI_ICON "${IconPath}"
 !define MUI_UNICON "${IconPath}"
+!define MUI_BGCOLOR "FBFDFF"
 
+!ifdef BannerBitmapPath
+  !define MUI_HEADERIMAGE
+  !define MUI_HEADERIMAGE_RIGHT
+  !define MUI_HEADERIMAGE_BITMAP "${BannerBitmapPath}"
+  !define MUI_HEADERIMAGE_UNBITMAP "${BannerBitmapPath}"
+!endif
+
+!ifdef DialogBitmapPath
+  !define MUI_WELCOMEFINISHPAGE_BITMAP "${DialogBitmapPath}"
+!endif
+
+; ---------------------------------------------------------------------------
+; Variables
+; ---------------------------------------------------------------------------
+Var InstallMode
+Var InstallModePage
+Var CurrentUserRadio
+Var AllUsersRadio
+Var RelaunchedElevated
+Var HasCustomInstallDir
+Var IsAdmin
+Var InstallModePageVisited
+Var DesktopShortcutCheckbox
+Var StartMenuShortcutCheckbox
+Var CreateDesktopShortcut
+Var CreateStartMenuShortcut
+Var PreviousInstallPage
+Var UpgradeRadio
+Var UninstallRadio
+Var FoundInstallDir
+Var UpgradeMode
+Var WelcomeAutoAdvanced
+Var LicenseAutoAdvanced
+Var PreviousInstallAutoAdvanced
+Var InstallerMutex
+
+; ---------------------------------------------------------------------------
+; Auto-advance callbacks for elevation restart
+; ---------------------------------------------------------------------------
+Function WelcomeSkipShow
+  ${If} $RelaunchedElevated == "1"
+  ${AndIf} $WelcomeAutoAdvanced == "0"
+    StrCpy $WelcomeAutoAdvanced "1"
+    SendMessage $HWNDPARENT 0x408 1 0
+  ${EndIf}
+FunctionEnd
+
+Function LicenseSkipShow
+  ${If} $RelaunchedElevated == "1"
+  ${AndIf} $LicenseAutoAdvanced == "0"
+    StrCpy $LicenseAutoAdvanced "1"
+    SendMessage $HWNDPARENT 0x408 1 0
+  ${EndIf}
+FunctionEnd
+
+; ---------------------------------------------------------------------------
+; Page definitions
+; ---------------------------------------------------------------------------
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW WelcomeSkipShow
+!define MUI_WELCOMEPAGE_TEXT  "$(WELCOME_TEXT)"
+!insertmacro MUI_PAGE_WELCOME
+
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW LicenseSkipShow
+!insertmacro MUI_PAGE_LICENSE "${LicensePath}"
+
+Page custom PreviousInstallPageCreate PreviousInstallPageLeave
 Page custom InstallModePageCreate InstallModePageLeave
 !insertmacro MUI_PAGE_DIRECTORY
+Page custom ShortcutOptionsPageCreate ShortcutOptionsPageLeave
+
 !define MUI_PAGE_CUSTOMFUNCTION_PRE InstFilesPre
 !insertmacro MUI_PAGE_INSTFILES
+
+!define MUI_FINISHPAGE_TITLE "$(FINISH_TITLE)"
+!define MUI_FINISHPAGE_TEXT  "$(FINISH_TEXT)"
 !define MUI_FINISHPAGE_RUN "WinCraft.exe"
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.md"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_PAGE_CUSTOMFUNCTION_SHOW FinishPageShow
-!define MUI_PAGE_CUSTOMFUNCTION_LEAVE FinishPageLeave
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "SimpChinese"
+
+!include "strings.nsh"
 
 BrandingText "WinCraft"
 
@@ -68,45 +143,114 @@ VIAddVersionKey "ProductName"      "WinCraft"
 VIAddVersionKey "ProductVersion"   "${Version}"
 VIAddVersionKey "FileVersion"      "${Version}"
 
-Var InstallMode
-Var InstallModePage
-Var CurrentUserRadio
-Var AllUsersRadio
-Var RelaunchedElevated
-Var HasCustomInstallDir
-Var IsAdmin
-Var InstallModePageVisited
-Var DesktopShortcutCheckbox
-Var StartMenuShortcutCheckbox
+; ---------------------------------------------------------------------------
+; Previous Install page
+; ---------------------------------------------------------------------------
+Function PreviousInstallPageCreate
+  ${If} $FoundInstallDir == ""
+    ; After elevation restart with no prior install, create a placeholder
+    ; page so Back navigation from InstallMode works correctly.
+    ${If} $RelaunchedElevated == "1"
+      ${If} $PreviousInstallAutoAdvanced == "0"
+        ; First forward pass — auto-advance.
+        StrCpy $PreviousInstallAutoAdvanced "1"
+        nsDialogs::Create 1018
+        Pop $PreviousInstallPage
+        System::Call 'user32::PostMessage(p $HWNDPARENT, i 0x408, i 1, i 0)'
+        nsDialogs::Show
+      ${Else}
+        ; Back navigation — page never shown; skip cleanly.
+        Abort
+      ${EndIf}
+      Return
+    ${EndIf}
+    Abort
+  ${EndIf}
 
-LangString INSTALLMODE_PAGE_TITLE ${LANG_ENGLISH} "Choose Users"
-LangString INSTALLMODE_PAGE_SUBTITLE ${LANG_ENGLISH} "Choose who can use WinCraft."
-LangString INSTALLMODE_HEADER ${LANG_ENGLISH} "Install WinCraft for:"
-LangString INSTALLMODE_CURRENT_USER ${LANG_ENGLISH} "Current user only"
-LangString INSTALLMODE_ALL_USERS ${LANG_ENGLISH} "All users"
-LangString INSTALLMODE_ALL_USERS_NOTE ${LANG_ENGLISH} "Administrator credentials are required for all-users installation."
-LangString INSTALLMODE_ELEVATION_FAILED ${LANG_ENGLISH} "Administrator elevation was cancelled or failed."
-LangString FINISH_DESKTOP_SHORTCUT ${LANG_ENGLISH} "Create &desktop shortcut"
-LangString FINISH_STARTMENU_SHORTCUT ${LANG_ENGLISH} "Create &Start Menu shortcut"
-LangString SHORTCUT_DESCRIPTION ${LANG_ENGLISH} "WinCraft ✨ Craft Windows your way"
-LangString APP_RUNNING_WARNING ${LANG_ENGLISH} "WinCraft is currently running.$\nPlease close WinCraft before continuing."
-LangString ALLUSERS_CONFLICT_WARNING ${LANG_ENGLISH} "An all-users installation of WinCraft already exists on this computer.$\nPlease run this installer as administrator to upgrade it."
+  ; After elevation restart with a previous install, auto-advance past
+  ; this page just like the placeholder path does.  The full UI is still
+  ; created so the page stays in the wizard stack for Back navigation.
+  ${If} $RelaunchedElevated == "1"
+  ${AndIf} $PreviousInstallAutoAdvanced == "0"
+    StrCpy $PreviousInstallAutoAdvanced "1"
+    !insertmacro MUI_HEADER_TEXT "$(PREVIOUSINSTALL_PAGE_TITLE)" "$(PREVIOUSINSTALL_PAGE_SUBTITLE)"
+    nsDialogs::Create 1018
+    Pop $PreviousInstallPage
+    ${If} $PreviousInstallPage == error
+      Abort
+    ${EndIf}
+    ${NSD_CreateRadioButton} 20u 10u 260u 12u "$(PREVIOUSINSTALL_UPGRADE)"
+    Pop $UpgradeRadio
+    ${NSD_OnClick} $UpgradeRadio PreviousInstallOptionChanged
+    ${NSD_CreateRadioButton} 20u 30u 260u 12u "$(PREVIOUSINSTALL_UNINSTALL)"
+    Pop $UninstallRadio
+    ${NSD_OnClick} $UninstallRadio PreviousInstallOptionChanged
+    ${NSD_Check} $UpgradeRadio
+    SendMessage $HWNDPARENT 0x408 1 0
+    nsDialogs::Show
+    Return
+  ${EndIf}
 
-LangString INSTALLMODE_PAGE_TITLE ${LANG_SIMPCHINESE} "选择用户"
-LangString INSTALLMODE_PAGE_SUBTITLE ${LANG_SIMPCHINESE} "选择可以使用 WinCraft 的用户。"
-LangString INSTALLMODE_HEADER ${LANG_SIMPCHINESE} "为以下用户安装 WinCraft："
-LangString INSTALLMODE_CURRENT_USER ${LANG_SIMPCHINESE} "仅当前用户"
-LangString INSTALLMODE_ALL_USERS ${LANG_SIMPCHINESE} "所有用户"
-LangString INSTALLMODE_ALL_USERS_NOTE ${LANG_SIMPCHINESE} "为所有用户安装需要管理员凭据。"
-LangString INSTALLMODE_ELEVATION_FAILED ${LANG_SIMPCHINESE} "管理员提权已取消或失败。"
-LangString FINISH_DESKTOP_SHORTCUT ${LANG_SIMPCHINESE} "创建桌面快捷方式"
-LangString FINISH_STARTMENU_SHORTCUT ${LANG_SIMPCHINESE} "创建开始菜单快捷方式"
-LangString SHORTCUT_DESCRIPTION ${LANG_SIMPCHINESE} "WinCraft ✨ 雕琢 Windows，如你所愿"
-LangString APP_RUNNING_WARNING ${LANG_SIMPCHINESE} "WinCraft 正在运行。$\n请先关闭 WinCraft 再继续。"
-LangString ALLUSERS_CONFLICT_WARNING ${LANG_SIMPCHINESE} "此计算机上已存在为所有用户安装的 WinCraft。$\n请以管理员身份运行此安装程序以进行升级。"
+  !insertmacro MUI_HEADER_TEXT "$(PREVIOUSINSTALL_PAGE_TITLE)" "$(PREVIOUSINSTALL_PAGE_SUBTITLE)"
 
-; Relaunch the installer as administrator when the user selects an
-; all-users installation.  Skipped if already elevated or started as admin.
+  nsDialogs::Create 1018
+  Pop $PreviousInstallPage
+  ${If} $PreviousInstallPage == error
+    Abort
+  ${EndIf}
+
+  ${NSD_CreateRadioButton} 20u 10u 260u 12u "$(PREVIOUSINSTALL_UPGRADE)"
+  Pop $UpgradeRadio
+  ${NSD_OnClick} $UpgradeRadio PreviousInstallOptionChanged
+
+  ${NSD_CreateRadioButton} 20u 30u 260u 12u "$(PREVIOUSINSTALL_UNINSTALL)"
+  Pop $UninstallRadio
+  ${NSD_OnClick} $UninstallRadio PreviousInstallOptionChanged
+
+  ${NSD_Check} $UpgradeRadio
+
+  nsDialogs::Show
+FunctionEnd
+
+Function PreviousInstallOptionChanged
+  Pop $0
+  ${If} $0 == $UpgradeRadio
+    StrCpy $UpgradeMode "Upgrade"
+  ${Else}
+    StrCpy $UpgradeMode "Uninstall"
+  ${EndIf}
+FunctionEnd
+
+Function PreviousInstallPageLeave
+  ${If} $UpgradeMode != "Uninstall"
+    Return
+  ${EndIf}
+
+  ; Run the uninstaller and quit — use UninstallString so the full
+  ; command line (including the per-user / all-users flag) is respected.
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "UninstallString"
+  ${If} $0 != ""
+    ExecWait '$0' $R2
+    ${If} $R2 != 0
+      MessageBox MB_ICONSTOP|MB_OK "$(UNINSTALL_FAILED)"
+      Abort
+    ${EndIf}
+    Quit
+  ${EndIf}
+  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "UninstallString"
+  ${If} $0 != ""
+    ExecWait '$0' $R2
+    ${If} $R2 != 0
+      MessageBox MB_ICONSTOP|MB_OK "$(UNINSTALL_FAILED)"
+      Abort
+    ${EndIf}
+    Quit
+  ${EndIf}
+FunctionEnd
+
+; ---------------------------------------------------------------------------
+; Elevation
+; ---------------------------------------------------------------------------
 Function EnsureElevated
   ${If} $InstallMode == "AllUsers"
   ${AndIf} $RelaunchedElevated != "1"
@@ -115,7 +259,13 @@ Function EnsureElevated
     ${If} ${Silent}
       SetErrorLevel 740
     ${Else}
-      ExecShell "runas" "$EXEPATH" "/allusers /elevated /D=$INSTDIR"
+      ; Release single-instance mutex so the elevated instance can acquire it.
+      ${If} $InstallerMutex != 0
+        System::Call 'kernel32::ReleaseMutex(i $InstallerMutex)'
+        System::Call 'kernel32::CloseHandle(i $InstallerMutex)'
+        StrCpy $InstallerMutex 0
+      ${EndIf}
+      ExecShell "runas" "$EXEPATH" '/allusers /elevated /D="$INSTDIR"'
       ${If} ${Errors}
         MessageBox MB_ICONSTOP "$(INSTALLMODE_ELEVATION_FAILED)"
         Abort
@@ -125,11 +275,49 @@ Function EnsureElevated
   ${EndIf}
 FunctionEnd
 
+; ---------------------------------------------------------------------------
+; .onInit
+; ---------------------------------------------------------------------------
 Function .onInit
+  ; Single-instance check using a named mutex.
+  ; Uses the canonical NSIS pattern: ?e captures GetLastError() inside the
+  ; same System::Call invocation, avoiding any race with LogicLib expansion.
+  ; CreateMutexW is explicit — Unicode NSIS passes t as wchar_t*.
+  System::Call 'kernel32::CreateMutexW(i 0, i 0, t "WinCraft-Setup-Mutex") i.r1 ?e'
+  Pop $R0
+  ${If} $1 != 0
+    ${If} $R0 != 0  ; ERROR_ALREADY_EXISTS (183) — another instance is running
+      System::Call 'kernel32::CloseHandle(i $1)'
+      ; Find and activate the existing installer window.
+      StrLen $R0 "$(^Name)"
+      IntOp $R0 $R0 + 1
+      FindWindow $R1 '#32770' '' 0 $R1
+      ${DoWhile} $R1 != 0
+        System::Call 'user32::GetWindowTextW(i $R1, t .r2, i $R0) i.'
+        ${If} $2 == "$(^Name)"
+          System::Call 'user32::ShowWindow(i $R1, i 9) i.'   ; SW_RESTORE
+          System::Call 'user32::SetForegroundWindow(i $R1) i.'
+          Abort
+        ${EndIf}
+        FindWindow $R1 '#32770' '' 0 $R1
+      ${Loop}
+      ; Window not found — fall back to a message.
+      MessageBox MB_ICONSTOP|MB_OK "$(INSTALLER_ALREADY_RUNNING)"
+      Abort
+    ${EndIf}
+    StrCpy $InstallerMutex $1
+  ${EndIf}
+
   StrCpy $InstallMode "CurrentUser"
   StrCpy $RelaunchedElevated "0"
   StrCpy $HasCustomInstallDir "0"
   StrCpy $InstallModePageVisited "0"
+  StrCpy $WelcomeAutoAdvanced "0"
+  StrCpy $LicenseAutoAdvanced "0"
+  StrCpy $PreviousInstallAutoAdvanced "0"
+  StrCpy $UpgradeMode "Upgrade"
+  StrCpy $CreateDesktopShortcut ${BST_CHECKED}
+  StrCpy $CreateStartMenuShortcut ${BST_CHECKED}
 
   ; Detect whether the installer is already running elevated (right-click
   ; Run as administrator) and default to an all-users install without a
@@ -166,29 +354,67 @@ Function .onInit
   ${EndIf}
 
   Call CheckPreviousInstall
+
+  ; Store any previous install location for the upgrade/overwrite page.
+  ReadRegStr $FoundInstallDir HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+  ${If} $FoundInstallDir == ""
+    ReadRegStr $FoundInstallDir HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+  ${EndIf}
+
+  ; Default install mode to match the previous installation scope.
+  ; Skip on elevation restart — the user already explicitly chose AllUsers
+  ; before the restart, and /allusers was passed on the command line.
+  ${If} $FoundInstallDir != ""
+  ${AndIf} $RelaunchedElevated == "0"
+    ; Determine previous install scope from registry hive.
+    ClearErrors
+    ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+    ${IfNot} ${Errors}
+    ${AndIf} $0 != ""
+      StrCpy $InstallMode "CurrentUser"
+    ${Else}
+      ClearErrors
+      ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+      ${IfNot} ${Errors}
+      ${AndIf} $0 != ""
+        StrCpy $InstallMode "AllUsers"
+      ${EndIf}
+    ${EndIf}
+    Call ApplyInstallMode
+  ${EndIf}
+
+  ; Default install directory to the previous location unless overridden by /D=.
+  ${If} $FoundInstallDir != ""
+  ${AndIf} $HasCustomInstallDir == "0"
+    StrCpy $INSTDIR $FoundInstallDir
+  ${EndIf}
 FunctionEnd
 
+; ---------------------------------------------------------------------------
 ; Silently remove any previous installation before copying new files.
 ; Called from the Install section, so cancellation before this point
 ; preserves the old installation.
+; ---------------------------------------------------------------------------
 Function UninstallPreviousVersion
-  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "UninstallString"
   ${If} $0 != ""
-    DetailPrint "Removing previous per-user installation..."
-    ExecWait '"$0\Uninstall.exe" /S /currentuser /upgrade /D=$0' $R2
+    DetailPrint "Removing previous installation..."
+    ExecWait '$0 /upgrade /S' $R2
   ${EndIf}
 
-  ; Remove any existing all-users installation.
-  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
+  ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "UninstallString"
   ${If} $0 != ""
     ${If} $RelaunchedElevated == "1"
     ${OrIf} $IsAdmin == "1"
-      DetailPrint "Removing previous all-users installation..."
-      ExecWait '"$0\Uninstall.exe" /allusers /S /upgrade /D=$0' $R2
+      DetailPrint "Removing previous installation..."
+      ExecWait '$0 /upgrade /S' $R2
     ${EndIf}
   ${EndIf}
 FunctionEnd
 
+; ---------------------------------------------------------------------------
+; Pre-flight checks
+; ---------------------------------------------------------------------------
 Function CheckPreviousInstall
   ; Warn if the application is running before we begin.
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "InstallLocation"
@@ -220,6 +446,9 @@ Function CheckAppRunningAt
   done:
 FunctionEnd
 
+; ---------------------------------------------------------------------------
+; Install-mode helpers
+; ---------------------------------------------------------------------------
 Function ApplyInstallMode
   ${If} $HasCustomInstallDir == "1"
     ${If} $InstallMode == "AllUsers"
@@ -244,6 +473,9 @@ Function ApplyInstallMode
   ${EndIf}
 FunctionEnd
 
+; ---------------------------------------------------------------------------
+; Install Mode page
+; ---------------------------------------------------------------------------
 Function InstallModePageCreate
   !insertmacro MUI_HEADER_TEXT "$(INSTALLMODE_PAGE_TITLE)" "$(INSTALLMODE_PAGE_SUBTITLE)"
 
@@ -301,8 +533,9 @@ Function InstallModePageLeave
   Call EnsureElevated
 FunctionEnd
 
-; Ensure the install directory ends with "WinCraft".  Walks backwards
-; through $INSTDIR to extract the last path component for comparison.
+; ---------------------------------------------------------------------------
+; Install directory — ensure path ends with "WinCraft"
+; ---------------------------------------------------------------------------
 Function InstFilesPre
   StrLen $0 $INSTDIR
   findBackslash:
@@ -323,6 +556,9 @@ Function InstFilesPre
   ${EndIf}
 FunctionEnd
 
+; ---------------------------------------------------------------------------
+; Install
+; ---------------------------------------------------------------------------
 Section "Install"
   Call UninstallPreviousVersion
   SetOutPath "$INSTDIR"
@@ -355,27 +591,39 @@ Section "Install"
   WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "NoModify" 1
   WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\WinCraft" "NoRepair" 1
 
+  ${If} $CreateDesktopShortcut == ${BST_CHECKED}
+    CreateShortCut "$DESKTOP\WinCraft.lnk" "$INSTDIR\WinCraft.exe" "" "" "" "" "" "$(SHORTCUTOPTIONS_DESCRIPTION)"
+  ${EndIf}
+  ${If} $CreateStartMenuShortcut == ${BST_CHECKED}
+    CreateShortCut "$SMPROGRAMS\WinCraft.lnk" "$INSTDIR\WinCraft.exe" "" "" "" "" "" "$(SHORTCUTOPTIONS_DESCRIPTION)"
+  ${EndIf}
+
 SectionEnd
 
-Function FinishPageShow
-  ${NSD_CreateCheckbox} 120u 140u 260u 12u "$(FINISH_DESKTOP_SHORTCUT)"
+; ---------------------------------------------------------------------------
+; Shortcut Options page
+; ---------------------------------------------------------------------------
+Function ShortcutOptionsPageCreate
+  !insertmacro MUI_HEADER_TEXT "$(SHORTCUTOPTIONS_PAGE_TITLE)" "$(SHORTCUTOPTIONS_PAGE_SUBTITLE)"
+
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+
+  ${NSD_CreateCheckbox} 20u 28u 260u 12u "$(SHORTCUTOPTIONS_DESKTOP)"
   Pop $DesktopShortcutCheckbox
-  SetCtlColors $DesktopShortcutCheckbox "" 0xFFFFFF   ; match MUI2 white background
-  ${NSD_CreateCheckbox} 120u 160u 260u 12u "$(FINISH_STARTMENU_SHORTCUT)"
+  ${NSD_CreateCheckbox} 20u 48u 260u 12u "$(SHORTCUTOPTIONS_STARTMENU)"
   Pop $StartMenuShortcutCheckbox
-  SetCtlColors $StartMenuShortcutCheckbox "" 0xFFFFFF
-  SendMessage $DesktopShortcutCheckbox ${BM_SETCHECK} ${BST_CHECKED} 0
-  SendMessage $StartMenuShortcutCheckbox ${BM_SETCHECK} ${BST_CHECKED} 0
+
+  ${NSD_Check} $DesktopShortcutCheckbox
+  ${NSD_Check} $StartMenuShortcutCheckbox
+
+  nsDialogs::Show
 FunctionEnd
 
-Function FinishPageLeave
-  ${NSD_GetState} $DesktopShortcutCheckbox $0
-  ${If} $0 == ${BST_CHECKED}
-    CreateShortCut "$DESKTOP\WinCraft.lnk" "$INSTDIR\WinCraft.exe" "" "" "" "" "" "$(SHORTCUT_DESCRIPTION)"
-  ${EndIf}
-
-  ${NSD_GetState} $StartMenuShortcutCheckbox $0
-  ${If} $0 == ${BST_CHECKED}
-    CreateShortCut "$SMPROGRAMS\WinCraft.lnk" "$INSTDIR\WinCraft.exe" "" "" "" "" "" "$(SHORTCUT_DESCRIPTION)"
-  ${EndIf}
+Function ShortcutOptionsPageLeave
+  ${NSD_GetState} $DesktopShortcutCheckbox $CreateDesktopShortcut
+  ${NSD_GetState} $StartMenuShortcutCheckbox $CreateStartMenuShortcut
 FunctionEnd
