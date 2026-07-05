@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Input;
+using WinCraft.Compatibility;
 
 namespace WinCraft.UI.Mvvm
 {
@@ -12,7 +13,7 @@ namespace WinCraft.UI.Mvvm
     {
         private Func<bool> _canExecuteFunc;
 
-        public Action ExecuteAction { get; set; } = action ?? throw new ArgumentNullException(nameof(action));
+        public Action ExecuteAction { get; set; } = ThrowCompat.IfNull(action, nameof(action));
 
         public Func<bool> CanExecuteFunc
         {

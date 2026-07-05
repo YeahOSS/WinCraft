@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using WinCraft.Compatibility;
 
 namespace WinCraft.Infrastructure.Net
 {
@@ -15,8 +16,7 @@ namespace WinCraft.Infrastructure.Net
     {
         public static object Parse(string json)
         {
-            if (json == null)
-                throw new ArgumentNullException(nameof(json));
+            ThrowCompat.IfNull(json, nameof(json));
 
             int pos = 0;
             object result = ParseValue(json, ref pos);

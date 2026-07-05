@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WinCraft.Compatibility;
 
 namespace WinCraft.UI.Mvvm
 {
@@ -17,7 +18,7 @@ namespace WinCraft.UI.Mvvm
     /// </param>
     public sealed class AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null) : ICommand
     {
-        private readonly Func<Task> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        private readonly Func<Task> _execute = ThrowCompat.IfNull(execute, nameof(execute));
         private readonly Func<bool> _canExecute = canExecute;
         private bool _isExecuting;
 
@@ -83,7 +84,7 @@ namespace WinCraft.UI.Mvvm
     /// </param>
     public sealed class AsyncRelayCommand<T>(Func<T, Task> execute, Func<T, bool> canExecute = null) : ICommand
     {
-        private readonly Func<T, Task> _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        private readonly Func<T, Task> _execute = ThrowCompat.IfNull(execute, nameof(execute));
         private readonly Func<T, bool> _canExecute = canExecute;
         private bool _isExecuting;
 

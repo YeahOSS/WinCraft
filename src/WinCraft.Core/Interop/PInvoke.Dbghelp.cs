@@ -11,10 +11,8 @@ namespace Windows.Win32
         /// Writes a user-mode minidump to a file.
         /// </summary>
         /// <remarks>
-        /// Hand-written — the parameter structures contain pointer-sized fields
-        /// whose binary layout differs between x86 and x64.  CsWin32 cannot emit
-        /// the binding under AnyCPU (PInvoke005).  See docs/win32-interop.md
-        /// § CsWin32 COM Interface Limitations.
+        /// The parameter structures contain pointer-sized fields whose binary layout
+        /// differs between x86 and x64.  CsWin32 cannot emit the binding under AnyCPU.
         /// </remarks>
         [DllImport(Dbghelp, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
