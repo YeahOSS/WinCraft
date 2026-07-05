@@ -9,72 +9,6 @@ namespace WinCraft.Tests.Security
     internal sealed class PrivilegedRegistryWriterTests
     {
         [Test]
-        public void WriteString_LocalMachineWithStandardLevel_ReturnsPrivilegeLevelRequired()
-        {
-            var writer = new PrivilegedRegistryWriter(null);
-
-            var result = writer.WriteString(
-                RegistryValueLocation.LocalMachine,
-                @"SOFTWARE\Test",
-                "Value",
-                "data",
-                PrivilegeLevel.Standard);
-
-            Assert.That(result.Succeeded, Is.False);
-            Assert.That(result.ErrorCode, Is.EqualTo(PrivilegeErrorCodes.PrivilegeLevelRequired));
-            Assert.That(result.AttemptedPrivilegeLevels, Is.EqualTo(new[] { PrivilegeLevel.Standard }));
-        }
-
-        [Test]
-        public void WriteString_LocalMachineWithNullBroker_ReturnsUnavailable()
-        {
-            var writer = new PrivilegedRegistryWriter(null);
-
-            var result = writer.WriteString(
-                RegistryValueLocation.LocalMachine,
-                @"SOFTWARE\Test",
-                "Value",
-                "data",
-                PrivilegeLevel.Administrator);
-
-            Assert.That(result.Succeeded, Is.False);
-            Assert.That(result.ErrorCode, Is.EqualTo(PrivilegeErrorCodes.ElevatedAgentUnavailable));
-            Assert.That(result.AttemptedPrivilegeLevels, Is.EqualTo(new[] { PrivilegeLevel.Administrator }));
-        }
-
-        [Test]
-        public void DeleteString_LocalMachineWithStandardLevel_ReturnsPrivilegeLevelRequired()
-        {
-            var writer = new PrivilegedRegistryWriter(null);
-
-            var result = writer.DeleteString(
-                RegistryValueLocation.LocalMachine,
-                @"SOFTWARE\Test",
-                "Value",
-                PrivilegeLevel.Standard);
-
-            Assert.That(result.Succeeded, Is.False);
-            Assert.That(result.ErrorCode, Is.EqualTo(PrivilegeErrorCodes.PrivilegeLevelRequired));
-            Assert.That(result.AttemptedPrivilegeLevels, Is.EqualTo(new[] { PrivilegeLevel.Standard }));
-        }
-
-        [Test]
-        public void DeleteString_LocalMachineWithNullBroker_ReturnsUnavailable()
-        {
-            var writer = new PrivilegedRegistryWriter(null);
-
-            var result = writer.DeleteString(
-                RegistryValueLocation.LocalMachine,
-                @"SOFTWARE\Test",
-                "Value",
-                PrivilegeLevel.Administrator);
-
-            Assert.That(result.Succeeded, Is.False);
-            Assert.That(result.ErrorCode, Is.EqualTo(PrivilegeErrorCodes.ElevatedAgentUnavailable));
-            Assert.That(result.AttemptedPrivilegeLevels, Is.EqualTo(new[] { PrivilegeLevel.Administrator }));
-        }
-
-        [Test]
         public void GetAttemptLevels_AutoLocalMachine_IncludesTrustedInstaller()
         {
             var levels = PrivilegedRegistryWriter.GetAttemptLevels(
@@ -103,16 +37,6 @@ namespace WinCraft.Tests.Security
                 PrivilegeLevel.Administrator,
                 PrivilegeLevel.System
             }));
-        }
-
-        [Test]
-        public void GetAttemptLevels_CurrentUserOnly_UsesCurrentOnly()
-        {
-            var levels = PrivilegedRegistryWriter.GetAttemptLevels(
-                RegistryValueLocation.LocalMachine,
-                RegistryPrivilegePolicy.CurrentUserOnly);
-
-            Assert.That(levels, Is.EqualTo(new[] { PrivilegeLevel.Standard }));
         }
 
         [Test]

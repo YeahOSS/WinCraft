@@ -74,7 +74,7 @@ namespace WinCraft.Infrastructure.Security
 
         public CommandResult Execute(ElevatedCommandRequest request)
         {
-            if (request == null || string.IsNullOrEmpty(request.OperationName))
+            if (string.IsNullOrEmpty(request?.OperationName))
             {
                 return CommandResult.Failure(
                     PrivilegeErrorCodes.InvalidRequest,

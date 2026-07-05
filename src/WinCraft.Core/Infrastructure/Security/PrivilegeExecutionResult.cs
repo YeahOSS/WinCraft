@@ -5,7 +5,7 @@ namespace WinCraft.Infrastructure.Security
     /// </summary>
     internal sealed class PrivilegeExecutionResult
     {
-        private static readonly PrivilegeLevel[] EmptyAttemptedPrivilegeLevels = new PrivilegeLevel[0];
+        private static readonly PrivilegeLevel[] EmptyAttemptedPrivilegeLevels = [];
 
         public PrivilegeExecutionStatus Status { get; private set; }
 
