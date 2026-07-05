@@ -43,33 +43,33 @@ namespace WinCraft.Tests.Shell
         }
 
         [Test]
-        public void GetInt32Value_ValidInteger_ReturnsValue()
+        public void GetFlagInt32Value_ValidInteger_ReturnsValue()
         {
-            var result = CommandLineArguments.GetInt32Value(new[] { "--count", "42" }, "--count");
+            var result = CommandLineArguments.GetFlagInt32Value(new[] { "--count", "42" }, "--count");
 
             Assert.That(result, Is.EqualTo(42));
         }
 
         [Test]
-        public void GetInt32Value_NonInteger_ReturnsZero()
+        public void GetFlagInt32Value_NonInteger_ReturnsZero()
         {
-            var result = CommandLineArguments.GetInt32Value(new[] { "--count", "abc" }, "--count");
+            var result = CommandLineArguments.GetFlagInt32Value(new[] { "--count", "abc" }, "--count");
 
             Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
-        public void GetInt32Value_MissingFlag_ReturnsZero()
+        public void GetFlagInt32Value_MissingFlag_ReturnsZero()
         {
-            var result = CommandLineArguments.GetInt32Value(new[] { "--other", "42" }, "--count");
+            var result = CommandLineArguments.GetFlagInt32Value(new[] { "--other", "42" }, "--count");
 
             Assert.That(result, Is.EqualTo(0));
         }
 
         [Test]
-        public void TryGetInt32Value_ValidInteger_ReturnsTrueWithValue()
+        public void TryGetFlagInt32Value_ValidInteger_ReturnsTrueWithValue()
         {
-            var success = CommandLineArguments.TryGetInt32Value(
+            var success = CommandLineArguments.TryGetFlagInt32Value(
                 new[] { "--pid", "1234" }, "--pid", out int value);
 
             Assert.That(success, Is.True);
@@ -77,9 +77,9 @@ namespace WinCraft.Tests.Shell
         }
 
         [Test]
-        public void TryGetInt32Value_NonInteger_ReturnsFalse()
+        public void TryGetFlagInt32Value_NonInteger_ReturnsFalse()
         {
-            var success = CommandLineArguments.TryGetInt32Value(
+            var success = CommandLineArguments.TryGetFlagInt32Value(
                 new[] { "--pid", "xyz" }, "--pid", out int value);
 
             Assert.That(success, Is.False);
@@ -87,9 +87,9 @@ namespace WinCraft.Tests.Shell
         }
 
         [Test]
-        public void TryGetInt32Value_MissingFlag_ReturnsFalse()
+        public void TryGetFlagInt32Value_MissingFlag_ReturnsFalse()
         {
-            var success = CommandLineArguments.TryGetInt32Value(
+            var success = CommandLineArguments.TryGetFlagInt32Value(
                 new[] { "--other" }, "--pid", out int value);
 
             Assert.That(success, Is.False);
@@ -98,7 +98,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void GetValue_MatchingFlag_ReturnsNextArg()
         {
-            var result = CommandLineArguments.GetValue(new[] { "--name", "test-pipe" }, "--name");
+            var result = CommandLineArguments.GetFlagValue(new[] { "--name", "test-pipe" }, "--name");
 
             Assert.That(result, Is.EqualTo("test-pipe"));
         }
@@ -106,7 +106,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void GetValue_FlagAtEnd_ReturnsNull()
         {
-            var result = CommandLineArguments.GetValue(new[] { "--name" }, "--name");
+            var result = CommandLineArguments.GetFlagValue(new[] { "--name" }, "--name");
 
             Assert.That(result, Is.Null);
         }
@@ -114,7 +114,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void GetValue_MissingFlag_ReturnsNull()
         {
-            var result = CommandLineArguments.GetValue(new[] { "--other" }, "--name");
+            var result = CommandLineArguments.GetFlagValue(new[] { "--other" }, "--name");
 
             Assert.That(result, Is.Null);
         }
@@ -122,7 +122,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void GetValue_NullArgs_ReturnsNull()
         {
-            var result = CommandLineArguments.GetValue(null, "--name");
+            var result = CommandLineArguments.GetFlagValue(null, "--name");
 
             Assert.That(result, Is.Null);
         }
@@ -130,7 +130,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void GetValue_NullName_ReturnsNull()
         {
-            var result = CommandLineArguments.GetValue(new[] { "--name", "x" }, null);
+            var result = CommandLineArguments.GetFlagValue(new[] { "--name", "x" }, null);
 
             Assert.That(result, Is.Null);
         }

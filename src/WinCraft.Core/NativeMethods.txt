@@ -3,7 +3,6 @@ OpenProcessToken
 GetTokenInformation
 IsUserAnAdmin
 TOKEN_ACCESS_MASK
-TOKEN_ELEVATION
 TOKEN_ELEVATION_TYPE
 TOKEN_INFORMATION_CLASS
 TOKEN_TYPE
@@ -87,8 +86,25 @@ DV_E_LINDEX
 DV_E_TYMED
 DV_E_DVASPECT
 
-// ── Shell ──
+// ── Shell — Constants ──
 MAX_PATH
+
+// ── Shell — File Associations ──
+AssocQueryString
+AssocGetPerceivedType
+
+// ── Shell — Path Utilities ──
+SearchPath
+PathParseIconLocation
+PathCompactPathEx
+PathGetArgs
+PathIsExe
+PathQuoteSpaces
+PathRemoveBackslash
+PathUnExpandEnvStrings
+
+// ── Shell — Resources ──
+SHLoadIndirectString
 
 // ── Shell Drag-and-Drop ──
 CLSID_DragDropHelper

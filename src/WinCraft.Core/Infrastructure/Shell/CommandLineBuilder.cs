@@ -3,9 +3,9 @@ using System.Text;
 namespace WinCraft.Infrastructure.Shell
 {
     /// <summary>
-    /// Formats command-line argument text for legacy process launching scenarios.
+    /// Builds command-line argument strings for process launching.
     /// </summary>
-    internal static class ShellCommandLine
+    internal static class CommandLineBuilder
     {
         public static string BuildArgumentString(string[] args)
         {

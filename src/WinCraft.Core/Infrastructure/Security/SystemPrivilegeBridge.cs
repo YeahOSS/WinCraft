@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
+using WinCraft.Compatibility;
 using WinCraft.Infrastructure.Diagnostics;
 using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.Shell;
@@ -17,8 +18,7 @@ namespace WinCraft.Infrastructure.Security
     {
         public static CommandResult Execute(ElevatedCommandRequest request)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            ThrowCompat.IfNull(request, nameof(request));
 
             var resultPipeName = string.Format(
                 "WinCraft.System.Result.{0}.{1}",
@@ -34,7 +34,7 @@ namespace WinCraft.Infrastructure.Security
 
             var executablePath = ProcessElevation.GetCurrentProcessPath();
             string[] args =
-            {
+            [
                 ElevatedAgentArguments.SystemExecuteMode,
                 ElevatedAgentArguments.PipeName,
                 resultPipeName,
@@ -42,7 +42,7 @@ namespace WinCraft.Infrastructure.Security
                 requestPipeName,
                 ElevatedAgentArguments.RequestId,
                 request.RequestId ?? string.Empty
-            };
+            ];
 
             if (!TokenProcessLauncher.TryStartProcessFromTrustedSource(
                 "winlogon.exe",
@@ -98,9 +98,9 @@ namespace WinCraft.Infrastructure.Security
 
         public static int RunSystemExecute(string[] args)
         {
-            var pipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
-            var requestPipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestPipeName);
-            var requestId = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestId);
+            var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
+            var requestPipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestPipeName);
+            var requestId = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestId);
 
             try
             {

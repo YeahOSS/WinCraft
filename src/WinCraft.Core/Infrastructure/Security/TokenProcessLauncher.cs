@@ -237,7 +237,7 @@ namespace WinCraft.Infrastructure.Security
             if (processHandle == null || processHandle.IsInvalid)
                 return false;
 
-            var bufferLength = 260;
+            var bufferLength = PInvoke.MAX_PATH;
             while (true)
             {
                 char[] buffer = new char[bufferLength];
@@ -321,7 +321,7 @@ namespace WinCraft.Infrastructure.Security
             process = null;
 
             if (string.IsNullOrEmpty(executablePath))
-                throw new ArgumentException("The executable path is required.", nameof(executablePath));
+                throw new ArgumentException(Errors.ExecutablePathRequired, nameof(executablePath));
 
             SafeFileHandle sourceProcessHandle = null;
             SafeFileHandle sourceTokenHandle = null;
@@ -385,7 +385,7 @@ namespace WinCraft.Infrastructure.Security
                 if (!PInvoke.CreateEnvironmentBlock(out environmentBlock, duplicateTokenHandle, false))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                var commandLine = ShellCommandLine.BuildArgumentString(BuildCommandLineArgs(executablePath, args));
+                var commandLine = CommandLineBuilder.BuildArgumentString(BuildCommandLineArgs(executablePath, args));
                 var creationFlags = PROCESS_CREATION_FLAGS.NORMAL_PRIORITY_CLASS
                     | PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT;
 
@@ -540,7 +540,7 @@ namespace WinCraft.Infrastructure.Security
 
         private static bool IsRecoverableLaunchException(Exception exception)
         {
-            return exception is Win32Exception || exception is InvalidOperationException;
+            return exception is Win32Exception or InvalidOperationException;
         }
 
         private static string GetProcessIdOrUnknown(Process process)

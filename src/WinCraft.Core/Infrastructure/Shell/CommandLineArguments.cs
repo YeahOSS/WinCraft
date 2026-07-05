@@ -22,27 +22,27 @@ namespace WinCraft.Infrastructure.Shell
             return false;
         }
 
-        public static int GetInt32Value(string[] args, string name)
+        public static int GetFlagInt32Value(string[] args, string name)
         {
-            var value = GetValue(args, name);
+            var value = GetFlagValue(args, name);
             if (string.IsNullOrEmpty(value))
                 return 0;
 
             return int.TryParse(value, out int parsedValue) ? parsedValue : 0;
         }
 
-        public static bool TryGetInt32Value(string[] args, string name, out int value)
+        public static bool TryGetFlagInt32Value(string[] args, string name, out int value)
         {
             value = 0;
 
-            var rawValue = GetValue(args, name);
+            var rawValue = GetFlagValue(args, name);
             if (string.IsNullOrEmpty(rawValue))
                 return false;
 
             return int.TryParse(rawValue, out value);
         }
 
-        public static string GetValue(string[] args, string name)
+        public static string GetFlagValue(string[] args, string name)
         {
             if (args == null || string.IsNullOrEmpty(name))
                 return null;

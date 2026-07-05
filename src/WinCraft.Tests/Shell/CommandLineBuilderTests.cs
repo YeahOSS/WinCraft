@@ -4,12 +4,12 @@ using WinCraft.Infrastructure.Shell;
 namespace WinCraft.Tests.Shell
 {
     [TestFixture]
-    internal sealed class ShellCommandLineTests
+    internal sealed class CommandLineBuilderTests
     {
         [Test]
         public void BuildArgumentString_Null_ReturnsEmpty()
         {
-            var result = ShellCommandLine.BuildArgumentString(null);
+            var result = CommandLineBuilder.BuildArgumentString(null);
 
             Assert.That(result, Is.EqualTo(string.Empty));
         }
@@ -17,7 +17,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void BuildArgumentString_Empty_ReturnsEmpty()
         {
-            var result = ShellCommandLine.BuildArgumentString(new string[0]);
+            var result = CommandLineBuilder.BuildArgumentString(new string[0]);
 
             Assert.That(result, Is.EqualTo(string.Empty));
         }
@@ -25,7 +25,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void BuildArgumentString_SinglePlainArg_ReturnsUnchanged()
         {
-            var result = ShellCommandLine.BuildArgumentString(new[] { "hello" });
+            var result = CommandLineBuilder.BuildArgumentString(new[] { "hello" });
 
             Assert.That(result, Is.EqualTo("hello"));
         }
@@ -33,7 +33,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void BuildArgumentString_MultipleArgs_JoinsWithSpaces()
         {
-            var result = ShellCommandLine.BuildArgumentString(new[] { "a", "b", "c" });
+            var result = CommandLineBuilder.BuildArgumentString(new[] { "a", "b", "c" });
 
             Assert.That(result, Is.EqualTo("a b c"));
         }
@@ -41,7 +41,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_Empty_ReturnsQuotedEmpty()
         {
-            var result = ShellCommandLine.QuoteArgument(string.Empty);
+            var result = CommandLineBuilder.QuoteArgument(string.Empty);
 
             Assert.That(result, Is.EqualTo("\"\""));
         }
@@ -49,7 +49,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_NoSpecialCharacters_ReturnsUnchanged()
         {
-            var result = ShellCommandLine.QuoteArgument("simple");
+            var result = CommandLineBuilder.QuoteArgument("simple");
 
             Assert.That(result, Is.EqualTo("simple"));
         }
@@ -57,7 +57,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_ContainsSpace_WrapsInQuotes()
         {
-            var result = ShellCommandLine.QuoteArgument("has space");
+            var result = CommandLineBuilder.QuoteArgument("has space");
 
             Assert.That(result, Is.EqualTo("\"has space\""));
         }
@@ -65,7 +65,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_ContainsTab_WrapsInQuotes()
         {
-            var result = ShellCommandLine.QuoteArgument("has\ttab");
+            var result = CommandLineBuilder.QuoteArgument("has\ttab");
 
             Assert.That(result, Is.EqualTo("\"has\ttab\""));
         }
@@ -73,7 +73,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_ContainsQuote_EscapesWithBackslash()
         {
-            var result = ShellCommandLine.QuoteArgument("say \"hello\"");
+            var result = CommandLineBuilder.QuoteArgument("say \"hello\"");
 
             Assert.That(result, Is.EqualTo("\"say \\\"hello\\\"\""));
         }
@@ -81,7 +81,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_TrailingBackslashWithoutSpace_ReturnsUnchanged()
         {
-            var result = ShellCommandLine.QuoteArgument("path\\");
+            var result = CommandLineBuilder.QuoteArgument("path\\");
 
             Assert.That(result, Is.EqualTo("path\\"));
         }
@@ -89,7 +89,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_TrailingBackslashWithSpace_DoublesBeforeClose()
         {
-            var result = ShellCommandLine.QuoteArgument("C:\\Program Files\\");
+            var result = CommandLineBuilder.QuoteArgument("C:\\Program Files\\");
 
             Assert.That(result, Is.EqualTo("\"C:\\Program Files\\\\\""));
         }
@@ -97,7 +97,7 @@ namespace WinCraft.Tests.Shell
         [Test]
         public void QuoteArgument_BackslashBeforeQuote_Doubles()
         {
-            var result = ShellCommandLine.QuoteArgument("a\\\\\"b");
+            var result = CommandLineBuilder.QuoteArgument("a\\\\\"b");
 
             Assert.That(result, Is.EqualTo("\"a\\\\\\\\\\\"b\""));
         }
@@ -106,7 +106,7 @@ namespace WinCraft.Tests.Shell
         public void QuoteArgument_NullElement_QuotesEmpty()
         {
             var args = new string[] { null };
-            var result = ShellCommandLine.BuildArgumentString(args);
+            var result = CommandLineBuilder.BuildArgumentString(args);
 
             Assert.That(result, Is.EqualTo("\"\""));
         }

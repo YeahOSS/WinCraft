@@ -2,11 +2,12 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Win32.SafeHandles;
+using System.Runtime.InteropServices;
 using Windows.Win32;
+using WinCraft.Compatibility;
 using WinCraft.Infrastructure.Diagnostics;
 using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.Shell;
-using System.Runtime.InteropServices;
 
 namespace WinCraft.Infrastructure.Security
 {
@@ -17,8 +18,7 @@ namespace WinCraft.Infrastructure.Security
     {
         public static CommandResult Execute(ElevatedCommandRequest request)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            ThrowCompat.IfNull(request, nameof(request));
 
             var resultPipeName = string.Format(
                 "WinCraft.TrustedInstaller.Result.{0}.{1}",
@@ -34,7 +34,7 @@ namespace WinCraft.Infrastructure.Security
 
             var executablePath = ProcessElevation.GetCurrentProcessPath();
             string[] args =
-            {
+            [
                 ElevatedAgentArguments.TrustedInstallerHopMode,
                 ElevatedAgentArguments.PipeName,
                 resultPipeName,
@@ -42,7 +42,7 @@ namespace WinCraft.Infrastructure.Security
                 requestPipeName,
                 ElevatedAgentArguments.RequestId,
                 request.RequestId ?? string.Empty
-            };
+            ];
 
             if (!TokenProcessLauncher.TryStartProcessFromTrustedSource(
                 "winlogon.exe",
@@ -111,9 +111,9 @@ namespace WinCraft.Infrastructure.Security
 
         public static int RunTrustedInstallerHop(string[] args)
         {
-            var callerResultPipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
-            var requestPipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestPipeName);
-            var requestId = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestId);
+            var callerResultPipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
+            var requestPipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestPipeName);
+            var requestId = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestId);
             var executeResultPipeName = string.Format(
                 "WinCraft.TrustedInstaller.Result.{0}.{1}",
                 PInvoke.GetCurrentProcessId(),
@@ -139,7 +139,7 @@ namespace WinCraft.Infrastructure.Security
 
                 var executablePath = ProcessElevation.GetCurrentProcessPath();
                 string[] executeArgs =
-                {
+                [
                     ElevatedAgentArguments.TrustedInstallerExecuteMode,
                     ElevatedAgentArguments.PipeName,
                     executeResultPipeName,
@@ -147,7 +147,7 @@ namespace WinCraft.Infrastructure.Security
                     executeRequestPipeName,
                     ElevatedAgentArguments.RequestId,
                     request.RequestId ?? string.Empty
-                };
+                ];
 
                 using var executeResultPipeHandle = ElevatedAgentPipeServer.Create(executeResultPipeName);
                 using var executeRequestPipeHandle = ElevatedAgentPipeServer.Create(executeRequestPipeName);
@@ -230,9 +230,9 @@ namespace WinCraft.Infrastructure.Security
 
         public static int RunTrustedInstallerExecute(string[] args)
         {
-            var pipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
-            var requestPipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestPipeName);
-            var requestId = CommandLineArguments.GetValue(args, ElevatedAgentArguments.RequestId);
+            var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
+            var requestPipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestPipeName);
+            var requestId = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.RequestId);
 
             try
             {

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using WinCraft.Compatibility;
 using WinCraft.Infrastructure.Shell;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -23,11 +24,17 @@ namespace WinCraft.Infrastructure.Security
             return GetCurrentProcessElevationState() != ProcessElevationState.Standard;
         }
 
+        /// <summary>
+        /// Returns the current process identifier.
+        /// </summary>
         public static uint GetCurrentProcessId()
         {
             return PInvoke.GetCurrentProcessId();
         }
 
+        /// <summary>
+        /// Returns the elevation state of the current process.
+        /// </summary>
         internal static ProcessElevationState GetCurrentProcessElevationState()
         {
             var isCurrentTokenAdministrator = IsCurrentTokenAdministrator();
@@ -41,6 +48,9 @@ namespace WinCraft.Infrastructure.Security
             return ClassifyElevationState(isCurrentTokenAdministrator, null);
         }
 
+        /// <summary>
+        /// Classifies elevation state from token administrator status and elevation kind.
+        /// </summary>
         internal static ProcessElevationState ClassifyElevationState(
             bool isCurrentTokenAdministrator,
             TokenElevationKind? elevationKind)
@@ -60,8 +70,7 @@ namespace WinCraft.Infrastructure.Security
         }
 
         /// <summary>
-        /// Restarts the current executable as administrator.
-        /// Returns false when the user cancels the UAC prompt.
+        /// Restarts the current executable as administrator via the <c>runas</c> verb.
         /// </summary>
         public static bool TryRelaunchElevated(string[] args, out Process elevatedProcess)
         {
@@ -69,7 +78,7 @@ namespace WinCraft.Infrastructure.Security
             var startInfo = new ProcessStartInfo
             {
                 FileName = executablePath,
-                Arguments = ShellCommandLine.BuildArgumentString(args),
+                Arguments = CommandLineBuilder.BuildArgumentString(args),
                 UseShellExecute = true,
                 Verb = "runas",
                 WorkingDirectory = Path.GetDirectoryName(executablePath)
@@ -91,6 +100,9 @@ namespace WinCraft.Infrastructure.Security
             }
         }
 
+        /// <summary>
+        /// Restarts the current executable unelevated via the active shell token.
+        /// </summary>
         public static bool TryLaunchUnelevatedFromShell(string[] args, out Process uiProcess)
         {
             var executablePath = GetCurrentProcessPath();
@@ -98,16 +110,23 @@ namespace WinCraft.Infrastructure.Security
         }
 
         /// <summary>
-        /// Returns the full path of the current process executable
-        /// via <c>GetModuleFileName(NULL)</c> rather than the BCL
-        /// <see cref="Process.MainModule"/> which allocates a
-        /// <see cref="ProcessModule"/> and may throw
-        /// <see cref="Win32Exception"/> on access-denied.
+        /// Configures <paramref name="startInfo"/> to bypass <c>requireAdministrator</c> manifest elevation.
+        /// </summary>
+        public static void SetRunAsInvoker(ProcessStartInfo startInfo)
+        {
+            ThrowCompat.IfNull(startInfo, nameof(startInfo));
+
+            startInfo.UseShellExecute = false;
+            startInfo.EnvironmentVariables["__COMPAT_LAYER"] = "RUNASINVOKER";
+        }
+
+        /// <summary>
+        /// Returns the full path of the current executable.  Uses <c>GetModuleFileName</c>
+        /// to avoid <see cref="Process.MainModule"/> allocations and access-denied errors.
         /// </summary>
         internal static unsafe string GetCurrentProcessPath()
         {
-            const int initialBufferLength = 260;
-            var bufferLength = initialBufferLength;
+            var bufferLength = (int)PInvoke.MAX_PATH;
 
             while (true)
             {
@@ -152,44 +171,21 @@ namespace WinCraft.Infrastructure.Security
 
         private static unsafe bool TryGetTokenElevationKind(SafeHandle tokenHandle, out TokenElevationKind elevationKind)
         {
-            // Use stack-allocated int to receive the DWORD-sized elevation type value.
-            // Marshal.SizeOf fails on the CsWin32-generated TOKEN_ELEVATION_TYPE type,
-            // but the underlying data is always a 4-byte DWORD.
-            int elevationTypeValue = 0;
+            int value = 0;
 
-            if (!PInvoke.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType, (void*)(&elevationTypeValue), sizeof(int), out _))
+            if (!PInvoke.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevationType, &value, sizeof(int), out _))
             {
                 elevationKind = TokenElevationKind.Default;
                 return false;
             }
 
-            return TryMapTokenElevationKind((TOKEN_ELEVATION_TYPE)elevationTypeValue, out elevationKind);
-        }
-
-        private static bool TryMapTokenElevationKind(
-            TOKEN_ELEVATION_TYPE elevationType,
-            out TokenElevationKind elevationKind)
-        {
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeDefault)
+            elevationKind = ((TOKEN_ELEVATION_TYPE)value) switch
             {
-                elevationKind = TokenElevationKind.Default;
-                return true;
-            }
-
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeFull)
-            {
-                elevationKind = TokenElevationKind.Full;
-                return true;
-            }
-
-            if (elevationType == TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited)
-            {
-                elevationKind = TokenElevationKind.Limited;
-                return true;
-            }
-
-            elevationKind = TokenElevationKind.Default;
-            return false;
+                TOKEN_ELEVATION_TYPE.TokenElevationTypeFull => TokenElevationKind.Full,
+                TOKEN_ELEVATION_TYPE.TokenElevationTypeLimited => TokenElevationKind.Limited,
+                _ => TokenElevationKind.Default,
+            };
+            return true;
         }
     }
 }

@@ -64,8 +64,8 @@ namespace WinCraft.Startup
         {
             if (CommandLineArguments.Contains(args, ElevatedAgentArguments.AttachElevatedAgentMode))
             {
-                var pipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
-                var agentPid = CommandLineArguments.GetInt32Value(args, ElevatedAgentArguments.AgentPid);
+                var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
+                var agentPid = CommandLineArguments.GetFlagInt32Value(args, ElevatedAgentArguments.AgentPid);
                 return CreateAttachedPrivilegeContext(agentPid, pipeName);
             }
 
@@ -111,8 +111,8 @@ namespace WinCraft.Startup
                 return;
             }
 
-            var pipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
-            var agentPid = CommandLineArguments.GetInt32Value(args, ElevatedAgentArguments.AgentPid);
+            var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
+            var agentPid = CommandLineArguments.GetFlagInt32Value(args, ElevatedAgentArguments.AgentPid);
             if (string.IsNullOrEmpty(pipeName) || agentPid <= 0)
                 return;
 

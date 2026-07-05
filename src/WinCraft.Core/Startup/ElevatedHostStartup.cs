@@ -11,7 +11,7 @@ namespace WinCraft.Startup
     {
         public static void RunElevatedAgent(string[] args)
         {
-            var pipeName = CommandLineArguments.GetValue(args, ElevatedAgentArguments.PipeName);
+            var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
             var uiPid = GetExpectedUiProcessId(args, pipeName);
             RunElevatedHost(pipeName, uiPid);
         }
@@ -83,7 +83,7 @@ namespace WinCraft.Startup
 
         private static int? GetExpectedUiProcessId(string[] args, string pipeName)
         {
-            if (CommandLineArguments.TryGetInt32Value(args, ElevatedAgentArguments.UiPid, out int uiPid)
+            if (CommandLineArguments.TryGetFlagInt32Value(args, ElevatedAgentArguments.UiPid, out int uiPid)
                 && uiPid > 0)
             {
                 return uiPid;
