@@ -19,34 +19,28 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
+    <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest"
+                      PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\third_party\LzmaSdk\**\*.cs"
-             Exclude="..\third_party\LzmaSdk\Common\CRC.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\IMatchFinder.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\LzBinTree.cs;
-                      ..\third_party\LzmaSdk\Compress\LZ\LzInWindow.cs;
-                      ..\third_party\LzmaSdk\Compress\LZMA\LzmaEncoder.cs"
-             LinkBase="third_party\LzmaSdk" />
-  </ItemGroup>
+  <!-- The overlay needs WinCraft.Lzma.dll in the shared output directory, but
+       the DLL remains owned by the WinCraft.Lzma project for clean/rebuild. -->
+  <Target Name="ExcludeLzmaProjectOutputFromClean"
+          AfterTargets="_CleanGetCurrentAndPriorFileWrites">
+    <ItemGroup>
+      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.dll" />
+      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.pdb" />
+      <_CleanPriorFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
+      <_CleanCurrentFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
-    <Compile Remove="TestBench\**" />
-    <Page Remove="TestBench\**" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(InstallerBuild)' == 'true'">
-    <Compile Remove="Infrastructure\OverlayAssemblyResolver.cs" />
-    <Compile Remove="..\third_party\LzmaSdk\**\*.cs" />
-  </ItemGroup>
 </Project>

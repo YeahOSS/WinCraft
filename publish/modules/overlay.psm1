@@ -100,7 +100,7 @@ function New-OverlayExe {
 
     Write-Step "Building $BuildLabel single-file executable with dependency overlay"
 
-    $buildOutputDirectory = Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
+    $buildOutputDirectory = Join-Path $script:SourceRoot "bin\$Configuration\$TargetSubdirectory"
     $exePath = Join-Path $buildOutputDirectory "WinCraft.exe"
     $artifactPath = Join-Path $script:OutputPath $ArtifactName
 

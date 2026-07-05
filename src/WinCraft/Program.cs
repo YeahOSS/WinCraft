@@ -10,7 +10,7 @@ namespace WinCraft
 
         static Program()
         {
-            Infrastructure.OverlayAssemblyResolver.Register();
+            Overlay.AssemblyResolver.Register();
         }
 #endif
 

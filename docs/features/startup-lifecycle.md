@@ -5,35 +5,39 @@
 This document explains the application entry point and startup ownership model.
 It stays at the composition level: process roles, WPF application setup, and
 single-instance activation. Privileged host IPC details live in
-`docs/elevated-agent-ipc.md`.
+`docs/features/elevated-agent-ipc.md`.
 
 ## Entry Point
+
+```mermaid
+flowchart TD
+    A[Program.cs] --> B[Register AssemblyResolver]
+    B --> C[Delegate to ProgramHost]
+    C --> D{Process mode?}
+    D -->|SYSTEM helper| E[SYSTEM mode]
+    D -->|TrustedInstaller helper| F[TI mode]
+    D -->|Elevated agent| G[Elevated agent mode]
+    D -->|Elevated bootstrap| H[Elevated bootstrap]
+    D -->|Full-admin UI| I[Admin UI mode]
+    D -->|Normal unelevated| J[Normal UI mode]
+```
 
 `Program.cs` is the only executable startup entry point. The project file sets
 `StartupObject` to `WinCraft.Program`, so all process modes start there before
 any WPF window is created.
 
 `Program` is intentionally a thin executable shell. It registers
-`OverlayAssemblyResolver` before touching code that may live in bundled
+`AssemblyResolver` before touching code that may live in bundled
 dependency assemblies, then delegates startup routing to `WinCraft.Startup`.
 Keep this ordering intact: the executable project should not touch
 `WinCraft.Core` types before the resolver is registered, because release
 artifacts load Core from the compressed PE overlay instead of from a sidecar
 DLL.
 
-`ProgramHost` is responsible for process-mode routing:
-
-- SYSTEM helper modes
-- TrustedInstaller helper modes
-- elevated agent mode
-- elevated bootstrap mode
-- full-administrator UI mode
-- normal unelevated UI mode
-
-Keep this high-level routing centralized in `WinCraft.Startup`. New startup
-modes should enter through `Program`, then route through `ProgramHost` and
-delegate to focused startup, infrastructure, or feature code when behavior
-grows beyond startup composition.
+`ProgramHost` routes to the mode selected above. Keep this centralized in
+`WinCraft.Startup`. New startup modes should enter through `Program`, then
+route through `ProgramHost` and delegate to focused startup, infrastructure,
+or feature code when behavior grows beyond startup composition.
 
 ## WPF Application Object
 
@@ -64,7 +68,7 @@ its main window forward and handles the incoming command-line context.
 
 This keeps shell interaction, drag-and-drop, and window activation in the
 unelevated UI process. Elevated handoff behavior is part of the privileged host
-model and is covered in `docs/elevated-agent-ipc.md`.
+model and is covered in `docs/features/elevated-agent-ipc.md`.
 
 Built-in Administrator and other non split-token administrator sessions run the
 UI directly instead of launching a separate unelevated copy. In that account

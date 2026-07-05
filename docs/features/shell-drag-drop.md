@@ -2,34 +2,34 @@
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────┐
-│  ShellDragSource                   ShellDropTarget       │
-│  (initiate drag)                   (receive drag)        │
-│       │                                  │               │
-│       ▼                                  ▼               │
-│  IDragSourceHelper2               IDropTargetHelper      │
-│  (Shell COM: drag image)          (Shell COM: drag image │
-│                                   + drop description)    │
-│       │                                  │               │
-│       └──────────┬───────────────────────┘               │
-│                  ▼                                       │
-│          DragDropHelper                                  │
-│          (CLSID COM coclass, cached)                     │
-│                  │                                       │
-│                  ▼                                       │
-│  ShellDataObject / IDataObject                           │
-│  (data payload — any format)                             │
-└──────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Application
+        SDS[ShellDragSource<br/>initiate drag]
+        SDT[ShellDropTarget<br/>receive drag]
+    end
+
+    subgraph "Shell COM Helpers"
+        DSH[IDragSourceHelper2<br/>drag image]
+        DTH[IDropTargetHelper<br/>drag image + drop description]
+    end
+
+    subgraph Data
+        SDO[ShellDataObject / IDataObject<br/>payload — any format]
+    end
+
+    SDS --> DSH
+    SDT --> DTH
+    DSH --> DDH[CLSID_DragDropHelper<br/>COM coclass, cached]
+    DTH --> DDH
+    DDH --> SDO
 ```
 
-Three layers:
-
-| Layer | Type | Role |
-|-------|------|------|
-| Application | `ShellDragSource`, `ShellDropTarget` | Public API — start / receive drag |
-| Interop | `IDragSourceHelper2`, `IDropTargetHelper` | Shell COM — render drag image |
-| Data | `ShellDataObject` (write-only) | COM data object for Shell APIs — packaging only |
+| Layer | Role |
+|-------|------|
+| Application | Public API — start / receive drag |
+| Shell COM Helpers | Render drag image via `CLSID_DragDropHelper` |
+| Data | COM data object for Shell formats, packaging only |
 
 ## Initiate a Drag
 
@@ -102,4 +102,4 @@ generate on net30.
 When `net30` support is dropped, add `SHCreateDataObject` and
 `SHParseDisplayName` to CsWin32's `NativeMethods.txt`.  Until then, a
 hand-written wrapper can be added to `Interop/` following the convention
-in `docs/win32-interop.md`.
+in `docs/rules/win32-interop.md`.

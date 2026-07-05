@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 Import-Module (Join-Path $PSScriptRoot "common.psm1")
 
 $script:RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$script:SourceRoot = Join-Path $script:RepoRoot "src"
 $script:PublishRoot = Split-Path -Parent $PSScriptRoot
 $script:OutputPath = Join-Path $script:PublishRoot "output"
 
@@ -23,7 +24,7 @@ function Get-FullPackageFiles {
         [string]$TargetSubdirectory
     )
 
-    $buildOutputDirectory = Join-Path $ProjectRoot "bin\$Configuration\$TargetSubdirectory"
+    $buildOutputDirectory = Join-Path $script:SourceRoot "bin\$Configuration\$TargetSubdirectory"
     Assert-PathExists -Path $buildOutputDirectory -Description "$TargetSubdirectory build output directory"
 
     $packagePaths = @(Get-ChildItem -Path $buildOutputDirectory -File |

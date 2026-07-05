@@ -15,7 +15,11 @@ namespace WinCraft.Compatibility
         /// </summary>
         public static string Combine(string path1, string path2, string path3)
         {
+#if NET45
+            return Path.Combine(path1, path2, path3);
+#else
             return Path.Combine(Path.Combine(path1, path2), path3);
+#endif
         }
 
         /// <summary>
@@ -23,7 +27,11 @@ namespace WinCraft.Compatibility
         /// </summary>
         public static string Combine(string path1, string path2, string path3, string path4)
         {
+#if NET45
+            return Path.Combine(path1, path2, path3, path4);
+#else
             return Path.Combine(Path.Combine(Path.Combine(path1, path2), path3), path4);
+#endif
         }
 
         /// <summary>
@@ -35,12 +43,15 @@ namespace WinCraft.Compatibility
         /// <exception cref="ArgumentException"><paramref name="paths"/> is empty.</exception>
         public static string Combine(params string[] paths)
         {
-            if (paths == null)
-                throw new ArgumentNullException(nameof(paths));
+#if NET45
+            return Path.Combine(paths);
+#else
+            ThrowCompat.IfNull(paths, nameof(paths));
             if (paths.Length == 0)
-                throw new ArgumentException("Value cannot be empty.", nameof(paths));
+                throw new ArgumentException(Errors.ValueCannotBeEmpty, nameof(paths));
 
             return paths.Aggregate(Path.Combine);
+#endif
         }
     }
 }

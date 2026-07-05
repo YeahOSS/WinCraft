@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\publish\version.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net30;net45</TargetFrameworks>
+    <RootNamespace>WinCraft.Lzma</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\third_party\LzmaSdk\**\*.cs" LinkBase="LzmaSdk" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\WinCraft\Properties\AssemblyInfo.Shared.cs" Link="Properties\AssemblyInfo.Shared.cs" />
+  </ItemGroup>
+</Project>
