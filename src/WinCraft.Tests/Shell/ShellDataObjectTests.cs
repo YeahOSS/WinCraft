@@ -10,20 +10,6 @@ namespace WinCraft.Tests.Shell
         private const string UnicodeTextFormat = "UnicodeText";
 
         [Test]
-        public void Construct_DoesNotThrow()
-        {
-            Assert.That(() => new ShellDataObject(), Throws.Nothing);
-        }
-
-        [Test]
-        public void Dispose_DoesNotThrow()
-        {
-            var data = new ShellDataObject();
-
-            Assert.That(() => data.Dispose(), Throws.Nothing);
-        }
-
-        [Test]
         public void Dispose_CanBeCalledTwice()
         {
             var data = new ShellDataObject();

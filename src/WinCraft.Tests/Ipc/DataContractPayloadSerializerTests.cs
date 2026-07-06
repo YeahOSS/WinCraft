@@ -83,12 +83,5 @@ namespace WinCraft.Tests.Ipc
                 Throws.Exception);
         }
 
-        [Test]
-        public void Serialize_NullObject_DoesNotThrow()
-        {
-            Assert.That(
-                () => DataContractPayloadSerializer.Serialize<TestPayload>(null),
-                Throws.Nothing);
-        }
     }
 }

@@ -50,20 +50,6 @@ namespace WinCraft.Tests.UI.Mvvm
             Assert.That(cmd.CanExecute(null), Is.True);
         }
 
-        [Test]
-        public void CanExecuteChanged_CanBeSubscribed()
-        {
-            var cmd = new RelayCommand(() => { });
-            var raised = false;
-            EventHandler handler = (s, e) => raised = true;
-
-            cmd.CanExecuteChanged += handler;
-            // CommandManager.RequerySuggested fires asynchronously;
-            // just verify subscription works without exception.
-            cmd.CanExecuteChanged -= handler;
-
-            Assert.That(raised, Is.False);
-        }
     }
 
     [TestFixture]

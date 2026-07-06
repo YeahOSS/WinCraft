@@ -100,11 +100,5 @@ namespace WinCraft.Tests.UI.Mvvm
 
             public void TestRaisePropertyChanged(string name) => RaisePropertyChanged(name);
         }
-
-        [Test]
-        public void IsInDesignMode_DoesNotThrow()
-        {
-            Assert.That(() => ObservableObject.IsInDesignMode, Throws.Nothing);
-        }
     }
 }

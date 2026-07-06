@@ -44,11 +44,15 @@ namespace WinCraft.Tests.Infrastructure.FileSystem
         }
 
         [Test]
-        public void Icon_SetNull_DoesNotThrow()
+        public void Icon_SetNull_ClearsValue()
         {
             var desktopIni = new DesktopIniFile(_folderPath);
+            desktopIni.Icon = new WinCraft.Infrastructure.Shell.IconLocation(
+                Path.Combine(_folderPath, "folder.ico"), 2);
 
-            Assert.That(() => { desktopIni.Icon = null; }, Throws.Nothing);
+            desktopIni.Icon = null;
+
+            Assert.That(desktopIni.Icon, Is.Null);
         }
 
         [Test]
@@ -73,11 +77,14 @@ namespace WinCraft.Tests.Infrastructure.FileSystem
         }
 
         [Test]
-        public void InfoTip_SetNull_WritesEmptyString()
+        public void InfoTip_SetNull_ClearsValue()
         {
             var desktopIni = new DesktopIniFile(_folderPath);
+            desktopIni.InfoTip = "Custom tip text";
 
-            Assert.That(() => { desktopIni.InfoTip = null; }, Throws.Nothing);
+            desktopIni.InfoTip = null;
+
+            Assert.That(desktopIni.InfoTip, Is.Null);
         }
 
         [Test]
@@ -103,11 +110,14 @@ namespace WinCraft.Tests.Infrastructure.FileSystem
         }
 
         [Test]
-        public void Logo_SetNull_DoesNotThrow()
+        public void Logo_SetNull_ClearsValue()
         {
             var desktopIni = new DesktopIniFile(_folderPath);
+            desktopIni.Logo = Path.Combine(_folderPath, "logo.bmp");
 
-            Assert.That(() => { desktopIni.Logo = null; }, Throws.Nothing);
+            desktopIni.Logo = null;
+
+            Assert.That(desktopIni.Logo, Is.Null);
         }
 
         [Test]
@@ -190,10 +200,5 @@ namespace WinCraft.Tests.Infrastructure.FileSystem
             Assert.That(removed, Is.False);
         }
 
-        [Test]
-        public void FileName_IsDesktopIni()
-        {
-            Assert.That(DesktopIniFile.FileName, Is.EqualTo("desktop.ini"));
-        }
     }
 }

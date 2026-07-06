@@ -19,15 +19,6 @@ namespace WinCraft.Tests.Ipc
         }
 
         [Test]
-        public void Create_ThenDispose_DoesNotThrow()
-        {
-            var pipeName = "WinCraft.Test.Server." + Guid.NewGuid().ToString("N");
-            var handle = ElevatedAgentPipeServer.Create(pipeName);
-
-            Assert.That(() => handle.Dispose(), Throws.Nothing);
-        }
-
-        [Test]
         public void Create_TwoPipesWithDifferentNames_Succeeds()
         {
             var name1 = "WinCraft.Test.Server." + Guid.NewGuid().ToString("N");

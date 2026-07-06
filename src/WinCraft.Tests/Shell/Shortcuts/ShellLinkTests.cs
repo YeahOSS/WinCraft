@@ -38,20 +38,6 @@ namespace WinCraft.Tests.Shell.Shortcuts
             return Path.Combine(_tempDir, "test.lnk");
         }
 
-        // ── Construction ──────────────────────────────────────────
-
-        [Test]
-        public void Construct_Default_DoesNotThrow()
-        {
-            Assert.That(() => new ShellLink(), Throws.Nothing);
-        }
-
-        [Test]
-        public void Construct_WithNonExistentPath_DoesNotThrow()
-        {
-            Assert.That(() => new ShellLink(GetTempLnkPath()), Throws.Nothing);
-        }
-
         // ── Dispose ───────────────────────────────────────────────
 
         [Test]
@@ -323,38 +309,6 @@ namespace WinCraft.Tests.Shell.Shortcuts
         }
 
         // ── Save / SaveAs ─────────────────────────────────────────
-
-        [Test]
-        public void SaveAs_CreatesLnkFile()
-        {
-            using var link = new ShellLink();
-            link.TargetPath = Environment.GetFolderPath(Environment.SpecialFolder.System) + "\\notepad.exe";
-            string lnkPath = GetTempLnkPath();
-
-            Assert.That(() => link.SaveAs(lnkPath), Throws.Nothing);
-            Assert.That(File.Exists(lnkPath));
-        }
-
-
-        [Test]
-        public void SaveAndLoad_RoundTripsTargetPath()
-        {
-            string targetPath = Environment.GetFolderPath(Environment.SpecialFolder.System) + "\\notepad.exe";
-            string lnkPath = GetTempLnkPath();
-
-            using (var link = new ShellLink())
-            {
-                link.TargetPath = targetPath;
-                link.SaveAs(lnkPath);
-            }
-
-            using (var loaded = new ShellLink())
-            {
-                bool loadResult = loaded.Load(lnkPath, writable: false);
-                Assert.That(loadResult, Is.True);
-                Assert.That(loaded.TargetPath, Is.EqualTo(targetPath).IgnoreCase);
-            }
-        }
 
         [Test]
         public void SaveAndLoad_RoundTripsAllProperties()

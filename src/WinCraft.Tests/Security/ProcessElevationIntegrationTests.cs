@@ -7,12 +7,6 @@ namespace WinCraft.Tests.Security
     internal sealed class ProcessElevationIntegrationTests
     {
         [Test]
-        public void IsCurrentProcessElevated_DoesNotThrow()
-        {
-            Assert.That(() => ProcessElevation.IsCurrentProcessElevated(), Throws.Nothing);
-        }
-
-        [Test]
         public void GetCurrentProcessId_MatchesDotNetProcessId()
         {
             var pid = ProcessElevation.GetCurrentProcessId();

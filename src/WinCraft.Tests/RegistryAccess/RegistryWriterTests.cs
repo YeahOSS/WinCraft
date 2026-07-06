@@ -7,14 +7,23 @@ namespace WinCraft.Tests.RegistryAccess
     [TestFixture]
     internal sealed class RegistryWriterTests
     {
+        private const string TestRootPrefix = @"Software\WinCraft\Tests_";
+
+        private string _testRootPath;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _testRootPath = TestRootPrefix + Guid.NewGuid().ToString("N");
+        }
+
         [TearDown]
         public void TearDown()
         {
-            // Clean up any test artifacts left under the test root key.
-            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\WinCraft\Tests", writable: true);
-            if (key != null)
-                Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\WinCraft\Tests", throwOnMissingSubKey: false);
+            if (!string.IsNullOrEmpty(_testRootPath))
+                Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(_testRootPath, throwOnMissingSubKey: false);
         }
+
         [Test]
         public void WriteValue_NullRequest_ThrowsArgumentNullException()
         {
@@ -56,33 +65,39 @@ namespace WinCraft.Tests.RegistryAccess
         }
 
         [Test]
-        public void WriteValue_Hkcu_DoesNotThrow()
+        public void WriteValue_Hkcu_WritesValue()
         {
             var request = new RegistryValueWriteRequest
             {
                 Location = RegistryValueLocation.CurrentUser,
-                SubKeyPath = @"Software\WinCraft\Tests",
+                SubKeyPath = _testRootPath,
                 ValueName = "TestValue",
                 ValueData = "hello"
             };
 
-            Assert.That(() => RegistryWriter.WriteValue(request), Throws.Nothing);
+            RegistryWriter.WriteValue(request);
+
+            Assert.That(
+                Microsoft.Win32.Registry.GetValue(ToHkcuPath(_testRootPath), "TestValue", null),
+                Is.EqualTo("hello"));
         }
 
         [Test]
-        public void DeleteValue_Hkcu_DoesNotThrow()
+        public void DeleteValue_Hkcu_RemovesValue()
         {
             var request = new RegistryValueWriteRequest
             {
                 Location = RegistryValueLocation.CurrentUser,
-                SubKeyPath = @"Software\WinCraft\Tests",
+                SubKeyPath = _testRootPath,
                 ValueName = "TestValue"
             };
 
-            // Write first so there's something to delete
             RegistryWriter.WriteValue(request);
+            RegistryWriter.DeleteValue(request);
 
-            Assert.That(() => RegistryWriter.DeleteValue(request), Throws.Nothing);
+            Assert.That(
+                Microsoft.Win32.Registry.GetValue(ToHkcuPath(_testRootPath), "TestValue", null),
+                Is.Null);
         }
 
         [Test]
@@ -91,7 +106,7 @@ namespace WinCraft.Tests.RegistryAccess
             var request = new RegistryValueWriteRequest
             {
                 Location = RegistryValueLocation.CurrentUser,
-                SubKeyPath = @"Software\WinCraft\Tests\NonExistent_" + Guid.NewGuid().ToString("N"),
+                SubKeyPath = CombineTestPath("NonExistent"),
                 ValueName = "Missing"
             };
 
@@ -101,9 +116,8 @@ namespace WinCraft.Tests.RegistryAccess
         [Test]
         public void MoveKey_Hkcu_MovesValuesAndSubKeys()
         {
-            string id = Guid.NewGuid().ToString("N");
-            string sourcePath = @"Software\WinCraft\Tests\MoveSource_" + id;
-            string destinationPath = @"Software\WinCraft\Tests\MoveDestination_" + id;
+            string sourcePath = CombineTestPath("MoveSource");
+            string destinationPath = CombineTestPath("MoveDestination");
 
             RegistryWriter.WriteValue(new RegistryValueWriteRequest
             {
@@ -130,16 +144,19 @@ namespace WinCraft.Tests.RegistryAccess
                 Recursive = true
             });
 
-            Assert.That(Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\" + sourcePath, "RootValue", null), Is.Null);
-            Assert.That(Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\" + destinationPath, "RootValue", null), Is.EqualTo("root"));
-            Assert.That(Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\" + destinationPath + @"\Child", "ChildValue", null), Is.EqualTo("child"));
+            Assert.That(Microsoft.Win32.Registry.GetValue(ToHkcuPath(sourcePath), "RootValue", null), Is.Null);
+            Assert.That(Microsoft.Win32.Registry.GetValue(ToHkcuPath(destinationPath), "RootValue", null), Is.EqualTo("root"));
+            Assert.That(Microsoft.Win32.Registry.GetValue(ToHkcuPath(destinationPath + @"\Child"), "ChildValue", null), Is.EqualTo("child"));
+        }
 
-            RegistryWriter.DeleteKey(new RegistryKeyOperationRequest
-            {
-                Location = RegistryValueLocation.CurrentUser,
-                SourceSubKeyPath = destinationPath,
-                Recursive = true
-            });
+        private string CombineTestPath(string childPath)
+        {
+            return _testRootPath + @"\" + childPath;
+        }
+
+        private static string ToHkcuPath(string subKeyPath)
+        {
+            return @"HKEY_CURRENT_USER\" + subKeyPath;
         }
     }
 }

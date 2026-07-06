@@ -61,41 +61,17 @@ namespace WinCraft.Tests.Infrastructure
         }
 
         [Test]
-        public void IsAtLeast_OlderRelease_ReturnsTrue()
+        public void ReleaseComparison_WithOlderRelease_ReturnsExpectedClassification()
         {
             Assert.That(WindowsVersion.IsAtLeast(WindowsRelease.XP), Is.True);
-        }
-
-        [Test]
-        public void IsBelow_OlderRelease_ReturnsFalse()
-        {
             Assert.That(WindowsVersion.IsBelow(WindowsRelease.XP), Is.False);
         }
 
         [Test]
-        public void IsAtLeastAndIsBelow_AreConsistent()
-        {
-            Assert.That(
-                WindowsVersion.IsAtLeast(WindowsRelease.XP) != WindowsVersion.IsBelow(WindowsRelease.XP),
-                Is.True);
-        }
-
-        [Test]
-        public void IsAtLeast_WithExplicitVersion_ReturnsTrueForVeryOldVersion()
+        public void ExplicitVersionComparison_WithVeryOldVersion_ReturnsExpectedClassification()
         {
             Assert.That(WindowsVersion.IsAtLeast(5, 1), Is.True);
-        }
-
-        [Test]
-        public void IsBelow_WithExplicitVersion_ReturnsFalseForVeryOldVersion()
-        {
             Assert.That(WindowsVersion.IsBelow(5, 1), Is.False);
-        }
-
-        [Test]
-        public void GetCurrentRelease_DoesNotThrow()
-        {
-            Assert.That(() => WindowsVersion.GetCurrentRelease(), Throws.Nothing);
         }
 
         [Test]

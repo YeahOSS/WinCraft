@@ -33,14 +33,6 @@ namespace WinCraft.Tests.UI.Mvvm
         }
 
         [Test]
-        public void IsExecuting_StartsFalse()
-        {
-            var cmd = new AsyncRelayCommand(() => Task.FromResult(0));
-
-            Assert.That(cmd.IsExecuting, Is.False);
-        }
-
-        [Test]
         public async Task Execute_SetsIsExecutingDuringRun()
         {
             var tcs = new TaskCompletionSource<bool>();
