@@ -29,3 +29,7 @@
 - Lambda: ≤5 lines, single subscription, not part of the class contract.
 - Named method: longer, reused, required by inheritance/interfaces, or an
   extensibility point.
+
+## Comment
+
+- See `documentation.md`.
