@@ -79,5 +79,13 @@ WinCraft 建立在以下开源项目的基础之上：
 - [NSIS](https://nsis.sourceforge.io/) — Nullsoft — 灵活的 Windows 安装器
 - [WiX Toolset](https://wixtoolset.org/) — .NET Foundation — Windows Installer XML (MSI) 打包
 
-[![Star History](https://api.star-history.com/svg?repos=YeahOSS/WinCraft&type=Date)](https://star-history.com/#YeahOSS/WinCraft&Date)
+## ⭐ Star History
+
+<a href="https://www.star-history.com/?type=date&repos=YeahOSS%2FWinCraft">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=YeahOSS/WinCraft&type=date&theme=dark&legend=top-left&sealed_token=Rpz3X5iXiPz8pxviAKMpDcs4dvj-0P7GDPJef13xAmTXAIbYE9bDgkquUQb-caML5lSDK8Bi9bYE4WIy5LgGilQw_C4YRQYEfGkBVM_hA5FKYPNArxEQ-RCH9Sz08AnNPV06i-6KMulDXClOrHr8pUcpX8mcY5bBlxMHOHn4Hoylun6Q3KvPMDHIuE15" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=YeahOSS/WinCraft&type=date&legend=top-left&sealed_token=Rpz3X5iXiPz8pxviAKMpDcs4dvj-0P7GDPJef13xAmTXAIbYE9bDgkquUQb-caML5lSDK8Bi9bYE4WIy5LgGilQw_C4YRQYEfGkBVM_hA5FKYPNArxEQ-RCH9Sz08AnNPV06i-6KMulDXClOrHr8pUcpX8mcY5bBlxMHOHn4Hoylun6Q3KvPMDHIuE15" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=YeahOSS/WinCraft&type=date&legend=top-left&sealed_token=Rpz3X5iXiPz8pxviAKMpDcs4dvj-0P7GDPJef13xAmTXAIbYE9bDgkquUQb-caML5lSDK8Bi9bYE4WIy5LgGilQw_C4YRQYEfGkBVM_hA5FKYPNArxEQ-RCH9Sz08AnNPV06i-6KMulDXClOrHr8pUcpX8mcY5bBlxMHOHn4Hoylun6Q3KvPMDHIuE15" />
+ </picture>
+</a>
 
