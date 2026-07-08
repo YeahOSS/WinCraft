@@ -1,4 +1,4 @@
-namespace WinCraft.UI.Mvvm
+namespace WinCraft.UI
 {
     internal static class CommandParameter
     {

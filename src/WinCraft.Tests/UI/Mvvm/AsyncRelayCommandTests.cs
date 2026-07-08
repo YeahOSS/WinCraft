@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using WinCraft.UI.Mvvm;
+using WinCraft.UI;
 
 namespace WinCraft.Tests.UI.Mvvm
 {

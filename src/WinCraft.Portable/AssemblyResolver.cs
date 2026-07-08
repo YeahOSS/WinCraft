@@ -1,4 +1,3 @@
-#if !INSTALLER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,11 +6,11 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 
-namespace WinCraft.Overlay
+namespace WinCraft
 {
     /// <summary>
     /// Loads dependency assemblies from a compressed container appended to the
-    /// WinCraft.exe PE file.
+    /// WinCraft.Portable.exe PE file.
     /// </summary>
     internal static class AssemblyResolver
     {
@@ -23,6 +22,11 @@ namespace WinCraft.Overlay
         private static bool _resolving;
 
         private static readonly object _lock = new();
+
+        // volatile ensures the double-checked lock pattern below is correct on
+        // all memory models: the lock-free null check on line 66 must see a
+        // fully-constructed Dictionary or null — never a partially-written
+        // reference. Removing volatile would reintroduce the classic DCL bug.
         private static volatile Dictionary<string, byte[]> _cache;
         private static volatile Assembly _lzmaAssembly;
 
@@ -252,4 +256,3 @@ namespace WinCraft.Overlay
         }
     }
 }
-#endif

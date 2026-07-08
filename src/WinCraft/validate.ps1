@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
 Validates net30 build via VS MSBuild (dotnet SDK cannot resolve net30).
-Called by Core post-build after dotnet build completes net45.
+Called by WinCraft post-build after dotnet build completes net45.
 #>
 [CmdletBinding()]
 param(

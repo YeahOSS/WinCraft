@@ -26,6 +26,8 @@ powershell -ExecutionPolicy Bypass -File .\publish\build.ps1
 | `-BuildOnly` | Compile only; skip overlay compression and all packaging |
 | `-SkipNSIS` | Skip the NSIS installer |
 | `-SkipMSI` | Skip the MSI |
+| `-StandaloneProjectPath` | Override the portable host project path |
+| `-InstallerProjectPath` | Override the installer executable project path |
 
 The full build requires both NSIS and WiX v4.  Without the required tools,
 use the corresponding skip switch — the build fails otherwise.

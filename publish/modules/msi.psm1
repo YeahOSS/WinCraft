@@ -309,6 +309,37 @@ function Update-WinCraftMsiUiTables {
     }
 }
 
+function Update-WinCraftMsiSummaryInformation {
+    <#
+    .SYNOPSIS
+    Updates MSI file properties shown on the Windows Details tab.
+    #>
+    param(
+        [string]$MsiPath
+    )
+
+    $installer = $null
+    $summary = $null
+
+    try {
+        $installer = New-Object -ComObject WindowsInstaller.Installer
+        $summary = $installer.SummaryInformation($MsiPath, 2)
+
+        # Windows Explorer reads these from the MSI SummaryInformation stream.
+        $summary.Property(2) = "WinCraft Installer"
+        $summary.Property(6) = "https://github.com/YeahOSS/WinCraft"
+        $summary.Persist()
+    }
+    finally {
+        if ($null -ne $summary) {
+            [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($summary) | Out-Null
+        }
+        if ($null -ne $installer) {
+            [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer) | Out-Null
+        }
+    }
+}
+
 # ------------------------------------------------------------------
 # MSI build
 # ------------------------------------------------------------------
@@ -429,6 +460,7 @@ function New-MSIInstaller {
     }
     Assert-PathExists -Path $outputMsi -Description "MSI artifact"
     Update-WinCraftMsiUiTables -MsiPath $outputMsi
+    Update-WinCraftMsiSummaryInformation -MsiPath $outputMsi
 }
 
 Export-ModuleMember -Function New-MSIInstaller

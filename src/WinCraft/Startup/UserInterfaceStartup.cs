@@ -8,22 +8,19 @@ using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.RegistryAccess;
 using WinCraft.Infrastructure.Security;
 using WinCraft.Infrastructure.Shell;
+using WinCraft.UI;
 
 namespace WinCraft.Startup
 {
     internal static class UserInterfaceStartup
     {
-        public static void Run(
-            string[] args,
-            Func<Application> createApplication,
-            Action<Application> initializeApplication,
-            Func<Window> createMainWindow)
+        public static void Run(string[] args)
         {
             var privilegeContext = CreatePrivilegeContext(args);
-            var app = createApplication();
+            var app = new App();
             GlobalExceptionHandler.RegisterDispatcher(app.Dispatcher);
-            initializeApplication(app);
-            app.MainWindow = createMainWindow();
+            app.InitializeComponent();
+            app.MainWindow = new MainWindow();
 
             InitializeApplicationServices(privilegeContext.Controller);
 
@@ -47,7 +44,13 @@ namespace WinCraft.Startup
             Application app)
         {
             HandleAttachRequest(commandLine, privilegeContext, app.Dispatcher);
-            ActivateMainWindow(app.MainWindow);
+
+            // Attach requests complete asynchronously — activating the window
+            // before the new privilege context is in place shows stale state.
+            // The window already received StartupNextInstance, so it is already
+            // visible; skip activation for attach-only invocations.
+            if (!CommandLineArguments.Contains(commandLine, ElevatedAgentArguments.AttachElevatedAgentMode))
+                ActivateMainWindow(app.MainWindow);
         }
 
         private static void ActivateMainWindow(Window window)
@@ -66,6 +69,12 @@ namespace WinCraft.Startup
             {
                 var pipeName = CommandLineArguments.GetFlagValue(args, ElevatedAgentArguments.PipeName);
                 var agentPid = CommandLineArguments.GetFlagInt32Value(args, ElevatedAgentArguments.AgentPid);
+                if (string.IsNullOrEmpty(pipeName) || agentPid <= 0)
+                {
+                    Log.Warn("AttachElevatedAgent mode requested but pipe name or agent PID is missing or invalid; falling back to default privilege context.");
+                    return new PrivilegeContext();
+                }
+
                 return CreateAttachedPrivilegeContext(agentPid, pipeName);
             }
 
@@ -124,38 +133,66 @@ namespace WinCraft.Startup
                     var attachException = task.Exception;
                     if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
                     {
-                        replacement?.Dispose();
                         if (attachException != null)
                             Log.Error(attachException, "Failed to attach the existing UI instance to the elevated host.");
+                        replacement?.Dispose();
                         return;
                     }
 
-                    dispatcher.BeginInvoke(new Action(() =>
+                    try
                     {
-                        if (attachException != null)
+                        dispatcher.BeginInvoke(new Action(() =>
                         {
-                            replacement?.Dispose();
-                            Log.Error(attachException, "Failed to attach the existing UI instance to the elevated host.");
-                            return;
-                        }
+                            // If the dispatcher shut down between the outer check
+                            // and this callback, the Exit handler already disposed
+                            // the current controller.  Discard the replacement and
+                            // return — do not touch 'previous'.
+                            if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+                            {
+                                replacement?.Dispose();
+                                return;
+                            }
 
-                        if (task.Status != TaskStatus.RanToCompletion || !task.Result)
-                        {
-                            replacement?.Dispose();
-                            Log.Warn("Failed to attach the existing UI instance to the elevated host; keeping the current privilege controller.");
-                            return;
-                        }
+                            var consumed = false;
+                            try
+                            {
+                                if (attachException != null)
+                                {
+                                    Log.Error(attachException, "Failed to attach the existing UI instance to the elevated host.");
+                                    return;
+                                }
 
-                        if (!ReferenceEquals(privilegeContext.Controller, previous))
-                        {
-                            replacement?.Dispose();
-                            return;
-                        }
+                                if (task.Status != TaskStatus.RanToCompletion || !task.Result)
+                                {
+                                    Log.Warn("Failed to attach the existing UI instance to the elevated host; keeping the current privilege controller.");
+                                    return;
+                                }
 
-                        privilegeContext.Controller = replacement;
-                        InitializeApplicationServices(replacement);
-                        previous?.Dispose();
-                    }));
+                                if (!ReferenceEquals(privilegeContext.Controller, previous))
+                                    return;
+
+                                // Initialize services before swapping the controller.
+                                // If initialization throws, 'consumed' stays false,
+                                // the finally block disposes 'replacement', and the
+                                // old controller remains in place.
+                                InitializeApplicationServices(replacement);
+                                privilegeContext.Controller = replacement;
+                                previous?.Dispose();
+                                consumed = true;
+                            }
+                            finally
+                            {
+                                if (!consumed)
+                                    replacement?.Dispose();
+                            }
+                        }));
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Dispatcher shut down between the outer HasShutdown check
+                        // and BeginInvoke — we can no longer dispatch the callback.
+                        replacement?.Dispose();
+                    }
                 }, TaskScheduler.Default);
         }
 

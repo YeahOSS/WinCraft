@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\publish\version.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>net30;net45</TargetFrameworks>
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>..\WinCraft\Properties\app.manifest</ApplicationManifest>
+    <!--
+      Keep AppConfig on the portable host. The generated .exe.config prefers
+      CLR v4 for the net30 host; without it, VS may debug that host as a CLR v2
+      WPF 3.x process, which is outside Live Visual Tree's WPF 4.0+ support.
+    -->
+    <AppConfig>..\WinCraft\Properties\app.config</AppConfig>
+    <RootNamespace>WinCraft</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\WinCraft\Properties\AssemblyInfo.Shared.cs" Link="Properties\AssemblyInfo.Shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
+    <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj" ReferenceOutputAssembly="false" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- The overlay needs WinCraft.Lzma.dll in the shared output directory, but
+       the DLL remains owned by the WinCraft.Lzma project for clean/rebuild. -->
+  <Target Name="ExcludeLzmaProjectOutputFromClean" AfterTargets="_CleanGetCurrentAndPriorFileWrites">
+    <ItemGroup>
+      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.dll" />
+      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.pdb" />
+      <_CleanPriorFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
+      <_CleanCurrentFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+  </ItemGroup>
+</Project>

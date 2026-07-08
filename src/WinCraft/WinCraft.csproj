@@ -1,46 +1,91 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\publish\version.props" />
+
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net30;net45</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--
+      Suppressed analyzer warnings grouped by rationale.
+
+      PInvoke009: CsWin32 recommends System.Memory for Span<T> overloads; net30 unsupported.
+      S101:       Type names should follow PascalCase (Win32 types use ALL_CAPS convention).
+
+      Win32 / P/Invoke - CsWin32-generated code cannot follow managed conventions:
+        S2346  Flags enums must name zero-value 'None' (Win32 enums do not).
+        S3874  'out'/'ref' parameters discouraged (P/Invoke methods require them).
+        S3881  IDisposable pattern must be sealed/abstract (SafeHandle wrappers trigger).
+        S3265  Non-flags enums should not be used in bitwise ops (Win32 APIs do).
+
+      Compatibility layer - defensive patterns in net30 / net45 dual-target code:
+        S3869  NotSupportedException should not be thrown explicitly (compat shims are correct).
+        S2221  catch(Exception) discouraged (fail-safe paths need it).
+        S2486  Generic exception types should not be thrown (compat shims use what fits).
+        S3717  IDisposable implementation cascade (cross-TFM wrappers do not own resources).
+
+      WPF - framework constraints cause false positives:
+        S2325  Non-instance methods should be static (event handler signatures are fixed).
+        S2955  Generic-typed comparison to null is intentional (detects Nullable<T>/reference types in ICommand).
+        S3459  Unassigned members should be removed (XAML-bindable properties look unused).
+        S3598  async void should be avoided (WPF event handlers require async void).
+
+      Development convenience - intentionally tolerated during active development:
+        S125   Sections of code should not be commented out.
+        S3776  Cognitive complexity of methods should not be too high (interop is complex).
+        S1135  TODO comments should be tracked.
+    -->
+    <NoWarn>$(NoWarn);PInvoke009;S101;S2346;S3874;S3881;S3265;S3869;S2221;S2486;S3717;S2325;S2955;S3459;S3598;S125;S3776;S1135;S2190</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InstallerBuild)' == 'true'">
+    <OutputType>WinExe</OutputType>
     <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <AppConfig>Properties\app.config</AppConfig>
-    <StartupObject>WinCraft.Program</StartupObject>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\Directory.Build.props" Link="Properties\Directory.Build.props" />
-    <None Include="..\..\publish\version.props" Link="Properties\version.props" />
-    <None Include="..\..\assets\app.ico" Link="Properties\app.ico" />
+  <ItemGroup Condition="'$(InstallerBuild)' != 'true'">
+    <Compile Remove="Startup\Program.cs" />
+    <None Include="Startup\Program.cs" />
+  </ItemGroup>
+  <!--
+    App.xaml lives at the project root so the Visual Studio designer can resolve
+    application resources.  It is still in a DLL project, so it cannot be an ApplicationDefinition
+    (MC1002).  EnableDefaultApplicationDefinition is false, but WPF may still
+    auto-detect App.xaml as an ApplicationDefinition when a code-behind file
+    (App.xaml.cs) is present.  Remove it explicitly during normal builds; during
+    design-time builds we let it stay so the VS XAML designer can resolve
+    application-level resources.
+  -->
+  <ItemGroup Condition="'$(DesignTimeBuild)' == 'false'">
+    <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
-    <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Content"
-                      CopyToOutputDirectory="PreserveNewest"
-                      PrivateAssets="all" />
-  </ItemGroup>
-
-  <!-- The overlay needs WinCraft.Lzma.dll in the shared output directory, but
-       the DLL remains owned by the WinCraft.Lzma project for clean/rebuild. -->
-  <Target Name="ExcludeLzmaProjectOutputFromClean"
-          AfterTargets="_CleanGetCurrentAndPriorFileWrites">
-    <ItemGroup>
-      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.dll" />
-      <_WinCraftLzmaProjectOutput Include="$(OutDir)WinCraft.Lzma.pdb" />
-      <_CleanPriorFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
-      <_CleanCurrentFileWrites Remove="@(_WinCraftLzmaProjectOutput)" />
-    </ItemGroup>
+  <!--
+    Quick net30 validation triggered from every net45 build.
+    Net30ValidationBuild guard prevents re-entry when validate.ps1 calls MSBuild.
+  -->
+  <Target Name="ValidateNet30" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true' And '$(BuildingInsideVisualStudio)' != 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)validate.ps1&quot;" />
   </Target>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
+    <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.298">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Theraot.Core" Version="3.2.11" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Runtime.Serialization" />
+  </ItemGroup>
 </Project>

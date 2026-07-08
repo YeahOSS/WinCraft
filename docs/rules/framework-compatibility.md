@@ -18,11 +18,11 @@ attributes).  Both targets need it — the package reference is unconditional.
 
 | Path | Command | Use |
 |------|---------|-----|
-| Quick validation | `src/WinCraft.Core/validate.ps1` | Day-to-day CI |
-| Quick + tests | `src/WinCraft.Core/validate.ps1 -Test` | Pre-commit |
+| Quick validation | `src/WinCraft/validate.ps1` | Day-to-day CI |
+| Quick + tests | `src/WinCraft/validate.ps1 -Test` | Pre-commit |
 | Full publish | `publish/build.ps1 -BuildOnly` | Release readiness |
 
-The post-build event in `WinCraft.Core.csproj` validates net30 automatically
+The post-build event in `WinCraft.csproj` validates net30 automatically
 outside Visual Studio (`Net30ValidationBuild=true` guard prevents re-entrant
 loops).
 

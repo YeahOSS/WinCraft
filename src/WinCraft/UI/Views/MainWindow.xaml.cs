@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace WinCraft.Views
+namespace WinCraft.UI
 {
     public partial class MainWindow : Window
     {

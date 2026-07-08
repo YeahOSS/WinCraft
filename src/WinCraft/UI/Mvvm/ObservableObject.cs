@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
-namespace WinCraft.UI.Mvvm
+namespace WinCraft.UI
 {
     /// <summary>
     /// Lightweight base class for ViewModels with dictionary-backed property storage.

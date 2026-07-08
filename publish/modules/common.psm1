@@ -37,6 +37,17 @@ function Assert-CommandExists {
     }
 }
 
+function Set-ProcessPathEnvironment {
+    # Windows environment blocks can contain both Path and PATH; Roslyn treats that as a duplicate key.
+    $pathValue = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Process)
+    if ([string]::IsNullOrEmpty($pathValue)) {
+        return
+    }
+
+    [System.Environment]::SetEnvironmentVariable("PATH", $null, [System.EnvironmentVariableTarget]::Process)
+    [System.Environment]::SetEnvironmentVariable("Path", $pathValue, [System.EnvironmentVariableTarget]::Process)
+}
+
 function Get-VersionString {
     Assert-PathExists -Path $script:VersionPropsPath -Description "Version props file"
 
@@ -212,13 +223,24 @@ function New-InstallerStaging {
         @{ Source = $standardBuildDir; Destination = $standardDir; Label = "net45" },
         @{ Source = $legacyBuildDir;   Destination = $legacyDir;   Label = "net30" }
     )) {
+        $entryPoint = Join-Path $target.Source "WinCraft.exe"
+        Assert-PathExists -Path $entryPoint -Description "$($target.Label) installer executable"
+
+        $excludedFileNames = @(
+            "WinCraft.dll",
+            "WinCraft.Portable.exe",
+            "WinCraft.Portable.exe.config"
+        )
         $packageFiles = @(Get-ChildItem -LiteralPath $target.Source -File |
-            Where-Object { $_.Extension -in @(".exe", ".dll", ".config") })
+            Where-Object {
+                $_.Extension -in @(".exe", ".dll", ".config") -and
+                $excludedFileNames -notcontains $_.Name
+            })
         if ($packageFiles.Count -eq 0) {
             throw "No .exe, .dll, or .config files found in $($target.Label) build output at $($target.Source). Verify that the project built successfully."
         }
         foreach ($file in $packageFiles) {
-            Copy-Item -LiteralPath $file.FullName -Destination $target.Destination -Force
+            Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $target.Destination $file.Name) -Force
             $fileCount++
         }
     }
@@ -280,5 +302,6 @@ function Test-FileLocked {
 }
 
 Export-ModuleMember -Function Write-Step, Assert-PathExists, Assert-CommandExists,
+                          Set-ProcessPathEnvironment,
                           Get-VersionString, Get-VersionParts, New-LicenseRtf,
                           New-InstallerStaging, Test-FileLocked

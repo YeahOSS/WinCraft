@@ -2,7 +2,7 @@ using System;
 using System.Windows.Input;
 using WinCraft.Compatibility;
 
-namespace WinCraft.UI.Mvvm
+namespace WinCraft.UI
 {
     /// <summary>
     /// An <see cref="ICommand"/> that executes an <see cref="Action"/>.

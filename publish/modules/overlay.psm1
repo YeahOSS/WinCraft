@@ -173,7 +173,7 @@ function New-DependencyContainer {
 }
 
 # Builds a single-file executable by appending a compressed container of
-# dependency DLLs as a PE overlay.  At runtime OverlayAssemblyResolver reads
+# dependency DLLs as a PE overlay.  At runtime AssemblyResolver reads
 # the overlay, decompresses the container, and serves assemblies from memory.
 function New-OverlayExe {
     param(
@@ -187,7 +187,7 @@ function New-OverlayExe {
     Write-Step "Building $BuildLabel single-file executable with dependency overlay"
 
     $buildOutputDirectory = Join-Path $script:SourceRoot "bin\$Configuration\$TargetSubdirectory"
-    $exePath = Join-Path $buildOutputDirectory "WinCraft.exe"
+    $exePath = Join-Path $buildOutputDirectory "WinCraft.Portable.exe"
     $artifactPath = Join-Path $script:OutputPath $ArtifactName
 
     Assert-PathExists -Path $exePath -Description "$BuildLabel executable"

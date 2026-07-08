@@ -1,5 +1,4 @@
 using System;
-using System.Windows;
 using WinCraft.Infrastructure.Diagnostics;
 using WinCraft.Infrastructure.Ipc;
 using WinCraft.Infrastructure.Security;
@@ -7,13 +6,17 @@ using WinCraft.Infrastructure.Shell;
 
 namespace WinCraft.Startup
 {
-    internal static class ProgramHost
+    /// <summary>
+    /// Routes the process entry point to the correct startup mode based on
+    /// command-line arguments and elevation state.
+    /// </summary>
+    public static class ProgramHost
     {
-        public static void Run(
-            string[] args,
-            Func<Application> createApplication,
-            Action<Application> initializeApplication,
-            Func<Window> createMainWindow)
+        /// <summary>
+        /// Initializes platform services, selects the startup mode, and
+        /// dispatches to the appropriate startup path.
+        /// </summary>
+        public static void Run(string[] args)
         {
             Log.Initialize(FileLogger.CreateDefault());
             GlobalExceptionHandler.Register();
@@ -42,9 +45,9 @@ namespace WinCraft.Startup
                 return;
             }
 
-            void RunUserInterface(string[] uiArgs)
+            static void RunUserInterface(string[] uiArgs)
             {
-                UserInterfaceStartup.Run(uiArgs, createApplication, initializeApplication, createMainWindow);
+                UserInterfaceStartup.Run(uiArgs);
             }
 
             if (StartupModeSelector.Select(ProcessElevation.GetCurrentProcessElevationState()) == StartupProcessMode.ElevatedBootstrap)

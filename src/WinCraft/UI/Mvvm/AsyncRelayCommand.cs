@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using WinCraft.Compatibility;
 
-namespace WinCraft.UI.Mvvm
+namespace WinCraft.UI
 {
     /// <summary>
     /// An async-friendly <see cref="ICommand"/> that executes a

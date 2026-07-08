@@ -11,10 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\WinCraft\Properties\AssemblyInfo.Shared.cs" Link="Properties\AssemblyInfo.Shared.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Remove="SonarAnalyzer.CSharp" />
   </ItemGroup>
 
@@ -29,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj" />
-    <ProjectReference Include="..\WinCraft.Core\WinCraft.Core.csproj" />
     <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
   </ItemGroup>
 

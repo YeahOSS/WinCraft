@@ -22,7 +22,7 @@ The portable overlay uses a two-stage container:
 
 ```mermaid
 flowchart TD
-    A[WinCraft.exe starts] --> B[Reads PE overlay footer]
+    A[Portable host starts] --> B[Reads PE overlay footer]
     B --> C[DeflateStream decompresses<br/>outer container]
     C --> D{Outer container entries}
     D --> E[WinCraft.Lzma.dll]
@@ -31,17 +31,37 @@ flowchart TD
     G --> H[Reflection calls<br/>LzmaCodec.Decompress]
     F --> H
     H --> I[LZMA decompresses<br/>inner payload]
-    I --> J[Remaining DLLs<br/>including WinCraft.Core.dll]
+    I --> J[Remaining DLLs<br/>including WinCraft.dll]
 ```
 
 The resolver intentionally invokes `WinCraft.Lzma.LzmaCodec` through reflection
 after loading `WinCraft.Lzma.dll` from bytes.  A direct source reference from
-`WinCraft.exe` to `WinCraft.Lzma` would add a normal assembly reference to the
+`WinCraft.Portable.exe` to `WinCraft.Lzma` would add a normal assembly reference to the
 executable metadata, but the referenced assembly only exists inside the overlay
 at that point in startup.  Reflection keeps the bootstrap order explicit:
 inflate the outer container, load the LZMA assembly, then call its decompressor.
 This exception is limited to the executable overlay resolver.  Product code
 should reference `WinCraft.Lzma` normally.
+
+`WinCraft.Portable.csproj` links `WinCraft`'s `app.config` through
+`AppConfig`.  This is intentional even though the portable artifact embeds
+dependencies in an overlay.  The generated `WinCraft.Portable.exe.config`
+contains:
+
+```xml
+<startup useLegacyV2RuntimeActivationPolicy="true">
+    <supportedRuntime version="v4.0" />
+    <supportedRuntime version="v2.0.50727" />
+</startup>
+```
+
+For the `net30` portable host, removing `AppConfig` removes that CLR activation
+policy.  On a machine with .NET 3.5 installed, the process can then start on
+CLR v2 / WPF 3.x instead of CLR v4.  Visual Studio's Live Visual Tree supports
+WPF 4.0 and later, so the debugger no longer treats that process as a supported
+WPF debug target for XAML diagnostics.  The important part is the
+`supportedRuntime` ordering in the generated `.exe.config`, not the mere
+presence of an arbitrary config file.
 
 ## Container Layout
 
@@ -73,7 +93,7 @@ The inner LZMA payload format is owned by `WinCraft.Lzma.LzmaCodec`:
 [LZMA compressed payload]
 ```
 
-Implementations: `src/WinCraft/Overlay/AssemblyResolver.cs` (runtime loader),
+Implementations: `src/WinCraft.Portable/AssemblyResolver.cs` (runtime loader),
 `publish/modules/overlay.psm1` (build-time packer),
 `src/WinCraft.Lzma/LzmaCodec.cs` (LZMA codec).
 
@@ -98,7 +118,7 @@ Implementations: `src/WinCraft/Overlay/AssemblyResolver.cs` (runtime loader),
 
 - Keep product compression APIs in `WinCraft.Lzma`, not in the executable
   project.
-- Keep `WinCraft.exe` limited to startup bootstrap and overlay assembly
+- Keep the portable executable limited to startup bootstrap and overlay assembly
   resolution.
 - Prefer transparent managed containers over PE packers or IL rewriters.
 - Avoid release outputs that increase antivirus false-positive risk.

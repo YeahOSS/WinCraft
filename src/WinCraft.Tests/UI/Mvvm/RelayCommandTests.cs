@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using WinCraft.UI.Mvvm;
+using WinCraft.UI;
 
 namespace WinCraft.Tests.UI.Mvvm
 {

@@ -31,7 +31,7 @@ Layout:
 Usage in this repository:
 - `src/WinCraft.Lzma/WinCraft.Lzma.csproj` links the SDK sources and exposes
   WinCraft-facing compression and decompression APIs.
-- `src/WinCraft.Core/WinCraft.Core.csproj` references `WinCraft.Lzma` when
+- `src/WinCraft/WinCraft.csproj` references `WinCraft.Lzma` when
   product logic needs LZMA support.
 - The standalone executable overlay uses a two-stage bootstrap whose design is
   documented in [`docs/features/portable-single-file.md`](../../docs/features/portable-single-file.md).
@@ -41,7 +41,7 @@ Update workflow:
 - Download the current official SDK archive from `https://www.7-zip.org/a/lzma2601.7z` or a newer official version from `https://www.7-zip.org/sdk.html`.
 - Replace only the files listed above from the official C# source tree.
 - Keep the local flattened layout; do not restore the upstream `CS/7zip/` wrapper directories.
-- Re-run `src\WinCraft.Core\validate.ps1 -Test` and `powershell -ExecutionPolicy Bypass -File .\publish\build.ps1`.
+- Re-run `src\WinCraft\validate.ps1 -Test` and `powershell -ExecutionPolicy Bypass -File .\publish\build.ps1`.
 
 License:
 - The official 7-Zip SDK page states that LZMA SDK is placed in the public domain.
