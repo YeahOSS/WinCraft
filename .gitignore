@@ -2,3 +2,7 @@
 !index.html
 !assets/
 !assets/*
+!donate/
+!donate/*
+!.nojekyll
+!.gitattributes

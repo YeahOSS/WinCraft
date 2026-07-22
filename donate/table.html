@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script>
+(function(){
+  var lang = localStorage.getItem('lang') || (navigator.language && navigator.language.slice(0,2) === 'zh' ? 'zh' : 'en');
+  var theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.documentElement.classList.add('lang-' + lang);
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0d1117">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://yeahoss.github.io/WinCraft/donate/table">
+<link rel="icon" href="../assets/app.ico">
+<link rel="apple-touch-icon" href="../assets/app.ico">
+<meta name="description" content="WinCraft 捐赠记录 — 每一份支持都让 WinCraft 走得更远。">
+<meta property="og:title" content="WinCraft 💛 捐赠记录">
+<meta property="og:description" content="每一份支持都让 WinCraft 走得更远。谢谢你让开源多一点温度。">
+<meta property="og:image" content="https://yeahoss.github.io/WinCraft/assets/social-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WinCraft 💛 捐赠记录">
+<meta name="twitter:description" content="每一份支持都让 WinCraft 走得更远。谢谢你让开源多一点温度。">
+<meta name="twitter:image" content="https://yeahoss.github.io/WinCraft/assets/social-preview.png">
+<title>WinCraft 💛 捐赠记录</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface-raised: #1c222b;
+    --text: #c9d1d9; --heading: #f0f6fc; --muted: #8b949e; --dim: #6e7681;
+    --border: #30363d; --border-soft: rgba(48,54,61,0.58);
+    --accent: #58a6ff; --accent-deep: #1f6feb; --accent-soft: rgba(88,166,255,0.09);
+    --amount: #79c0ff; --shadow: 0 18px 55px rgba(0,0,0,0.18);
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fa; --surface: #ffffff; --surface-raised: #f6f8fa;
+    --text: #24292f; --heading: #1f2328; --muted: #57606a; --dim: #8c959f;
+    --border: #d0d7de; --border-soft: rgba(208,215,222,0.68);
+    --accent: #0969da; --accent-deep: #0550ae; --accent-soft: rgba(9,105,218,0.07);
+    --amount: #0969da; --shadow: 0 18px 55px rgba(31,35,40,0.08);
+  }
+  * { box-sizing: border-box; }
+  img { user-select: none; -webkit-user-drag: none; }
+  .icon-button, .brand, .platform-option, .donate-qr-close { user-select: none; }
+  html { min-height: 100%; background: var(--bg); transition: background-color 0.25s ease; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text); background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", Roboto, sans-serif;
+    position: relative; isolation: isolate;
+    transition: color 0.25s ease, background-color 0.25s ease;
+  }
+  body::before, body::after {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  body::before { background: radial-gradient(ellipse at 50% 0%, #1a2332 0%, #0d1117 100%); opacity: 1; }
+  body::after {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(186,213,246,0.7) 0%, rgba(246,248,250,0) 48%),
+      linear-gradient(180deg, #eef5ff 0%, #ffffff 46%, #f3f7fb 100%);
+    opacity: 0;
+  }
+  [data-theme="light"] body::before { opacity: 0; }
+  [data-theme="light"] body::after { opacity: 1; }
+  body.modal-open { overflow: hidden; padding-right: var(--modal-scrollbar-width, 0px); }
+  button, input, select { font: inherit; }
+  button, a, input, select { -webkit-tap-highlight-color: transparent; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  .shell { width: min(1080px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 34px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 0.55rem; color: var(--muted); text-decoration: none;
+    font-size: 0.82rem; font-weight: 600; transition: color 0.2s;
+  }
+  .brand:hover { color: var(--heading); }
+  .brand-mark { width: 1.35rem; height: 1.35rem; border-radius: 5px; }
+  .brand-text { color: var(--heading); font-size: 0.9rem; letter-spacing: -0.02em; }
+  .brand-accent {
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .top-actions { display: flex; align-items: center; gap: 0.5rem; }
+  .donate-button {
+    width: 4.8rem; height: 2rem; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 7px; color: var(--muted);
+    background: color-mix(in srgb, var(--surface) 82%, transparent); cursor: pointer;
+    font-size: 0.72rem; font-weight: 600;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .donate-button:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .donate-button-inner { display: inline-flex; align-items: center; gap: 0.32rem; white-space: nowrap; }
+  .donate-button-icon {
+    display: block; width: 0.78rem; height: 0.78rem; background: currentColor;
+    -webkit-mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/qr-code.svg") center/contain no-repeat;
+    mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/qr-code.svg") center/contain no-repeat;
+  }
+  .control-copy [data-lang] { display: none; }
+  html.lang-en .control-copy [data-lang="en"], html.lang-zh .control-copy [data-lang="zh"] { display: inline; }
+  .icon-button {
+    width: 2rem; height: 2rem; padding: 0; display: inline-grid; place-items: center;
+    border: 1px solid var(--border); border-radius: 7px; color: var(--muted); background: color-mix(in srgb, var(--surface) 82%, transparent);
+    cursor: pointer; transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .icon-button:hover { color: var(--heading); border-color: var(--muted); background: var(--surface); }
+  .theme-icon, .search-icon, .select-icon, .empty-icon {
+    display: block; width: 0.95rem; height: 0.95rem; background: currentColor;
+    -webkit-mask-position: center; mask-position: center; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+  .icon-sun { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/sun.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/sun.svg"); }
+  .icon-moon { -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/moon.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/moon.svg"); }
+  [data-theme="dark"] .icon-sun, [data-theme="light"] .icon-moon { display: none; }
+  .language-switch {
+    display: inline-flex; align-items: center; padding: 0.2rem; border: 1px solid var(--border);
+    border-radius: 7px; background: color-mix(in srgb, var(--surface) 82%, transparent);
+  }
+  .language-switch button {
+    height: 1.55rem; min-width: 2.05rem; padding: 0 0.4rem; border: 0; border-radius: 5px;
+    color: var(--dim); background: transparent; cursor: pointer; font-size: 0.7rem; font-weight: 650;
+    transition: color 0.2s, background-color 0.2s;
+  }
+  .language-switch button:hover { color: var(--heading); }
+  .language-switch button.active { color: var(--heading); background: var(--surface-raised); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 2rem; margin-bottom: 24px; }
+  .eyebrow { margin: 0 0 0.45rem; color: var(--accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { margin: 0; color: var(--heading); font-size: clamp(1.75rem, 4vw, 2.4rem); line-height: 1.16; letter-spacing: -0.035em; }
+  .subtitle { max-width: 36rem; margin: 0.65rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+  .summary { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--surface) 88%, transparent); box-shadow: var(--shadow); }
+  .summary-item { min-width: 8.5rem; padding: 0.85rem 1.1rem; }
+  .summary-item + .summary-item { border-left: 1px solid var(--border-soft); }
+  .summary-value { color: var(--heading); font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-label { margin-top: 0.18rem; color: var(--dim); font-size: 0.68rem; }
+
+  .records { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+  .toolbar { display: flex; align-items: center; gap: 0.65rem; padding: 0.8rem; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 95%, var(--bg)); }
+  .field { position: relative; display: flex; align-items: center; }
+  .search-field { min-width: 15rem; flex: 1; }
+  .search-icon { position: absolute; left: 0.72rem; width: 0.88rem; height: 0.88rem; color: var(--dim); -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/search.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/search.svg"); }
+  .field input, .platform-filter-button {
+    width: 100%; height: 2.25rem; border: 1px solid var(--border); border-radius: 7px;
+    color: var(--text); background: var(--bg); outline: none; font-size: 0.78rem;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.25s;
+  }
+  .field input { padding: 0 0.75rem 0 2.15rem; }
+  .field input::placeholder { color: var(--dim); }
+  .field input:focus, .platform-filter-button:focus-visible, .platform-filter.open .platform-filter-button {
+    border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .platform-filter { position: relative; flex: 0 0 9rem; min-width: 0; }
+  .platform-filter-button {
+    position: relative; display: flex; align-items: center; padding: 0 2rem 0 0.75rem;
+    cursor: pointer; text-align: left;
+  }
+  .platform-filter-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .select-icon {
+    position: absolute; right: 0.65rem; width: 0.78rem; height: 0.78rem; color: var(--dim); pointer-events: none;
+    -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/chevron-down.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/chevron-down.svg");
+    transition: transform 0.18s ease;
+  }
+  .platform-filter.open .select-icon { transform: rotate(180deg); }
+  .platform-menu {
+    position: absolute; top: calc(100% + 0.4rem); right: 0; z-index: 12; width: max(100%, 11rem); max-height: 15rem;
+    overflow-y: auto; padding: 0.3rem; border: 1px solid var(--border); border-radius: 9px;
+    background: var(--surface); box-shadow: 0 14px 36px rgba(0,0,0,0.26);
+  }
+  .platform-menu[hidden] { display: none; }
+  .platform-option {
+    width: 100%; min-height: 2rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.42rem 0.55rem;
+    border: 0; border-radius: 6px; color: var(--muted); background: transparent; cursor: pointer;
+    font-size: 0.76rem; text-align: left;
+  }
+  .platform-option:hover, .platform-option:focus-visible { color: var(--heading); background: var(--accent-soft); outline: none; }
+  .platform-option[aria-selected="true"] { color: var(--heading); background: var(--accent-soft); }
+  .platform-option img { flex: 0 0 auto; width: 0.9rem; height: 0.9rem; border-radius: 3px; }
+  .platform-option-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .platform-option::after {
+    content: ""; flex: 0 0 auto; width: 0.78rem; height: 0.78rem; color: var(--accent); background: currentColor; opacity: 0;
+    -webkit-mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/check.svg") center/contain no-repeat;
+    mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/check.svg") center/contain no-repeat;
+  }
+  .platform-option[aria-selected="true"]::after { opacity: 1; }
+  .result-count { min-width: 6.5rem; margin-left: auto; padding: 0 0.35rem; color: var(--dim); font-size: 0.72rem; text-align: right; white-space: nowrap; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; min-width: 760px; table-layout: fixed; border-collapse: collapse; font-size: 0.79rem; }
+  th {
+    padding: 0.72rem 0.85rem; color: var(--muted); background: var(--surface-raised); text-align: left;
+    border-bottom: 1px solid var(--border); font-size: 0.69rem; font-weight: 650; white-space: nowrap;
+  }
+  th[data-sort] { cursor: pointer; user-select: none; }
+  th[data-sort]:hover { color: var(--heading); }
+  .th-content { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .sort-indicator { width: 0.75rem; color: var(--dim); font-size: 0.62rem; text-align: center; }
+  td { padding: 0.72rem 0.85rem; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background-color 0.15s; }
+  tbody tr:hover { background: var(--accent-soft); }
+  .date { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .name { color: var(--heading); font-weight: 550; }
+  .amount { color: var(--amount); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .message { display: block; max-width: 20rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .message:empty::after { content: '—'; color: var(--dim); }
+  .platform { display: inline-flex; align-items: center; gap: 0.42rem; color: var(--muted); white-space: nowrap; }
+  .platform img { width: 0.95rem; height: 0.95rem; border-radius: 3px; }
+  .currency { color: var(--dim); font-size: 0.72rem; }
+  .empty-state { display: none; padding: 3.8rem 1rem; color: var(--muted); text-align: center; }
+  .empty-state.show { display: block; }
+  .empty-icon { width: 1.7rem; height: 1.7rem; margin: 0 auto 0.65rem; color: var(--dim); -webkit-mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/search-x.svg"); mask-image: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/search-x.svg"); }
+  .empty-title { color: var(--heading); font-size: 0.86rem; font-weight: 650; }
+  .empty-copy { margin-top: 0.25rem; font-size: 0.73rem; }
+
+  .pager { display: flex; align-items: center; justify-content: flex-end; gap: 0.32rem; padding: 0.72rem 0.8rem; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 95%, var(--bg)); }
+  .pager button {
+    width: 2rem; height: 2rem; display: inline-grid; place-items: center; padding: 0;
+    border: 1px solid var(--border); border-radius: 6px; color: var(--muted); background: var(--surface);
+    cursor: pointer; transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .pager button:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .pager button:disabled { color: var(--dim); opacity: 0.38; cursor: default; }
+  .pager button svg { width: 0.9rem; height: 0.9rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .page-info { min-width: 6rem; padding: 0 0.55rem; color: var(--muted); text-align: center; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+
+  .donate-qr-overlay {
+    display: none; position: fixed; inset: 0; z-index: 30; align-items: center; justify-content: center;
+    padding: 1rem; background: rgba(1,4,9,0.68); backdrop-filter: blur(8px);
+  }
+  .donate-qr-overlay.show { display: flex; }
+  .donate-qr-dialog {
+    position: relative; width: min(560px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow-y: auto;
+    padding: 1.2rem; border: 1px solid var(--border); border-radius: 14px; color: var(--text);
+    background: var(--surface); box-shadow: 0 24px 70px rgba(0,0,0,0.38);
+  }
+  .donate-qr-header { padding: 0 2.2rem 0.75rem 0; }
+  .donate-qr-title { margin: 0; color: var(--heading); font-size: 1.05rem; line-height: 1.35; }
+  .donate-qr-close {
+    position: absolute; top: 0.8rem; right: 0.8rem; width: 1.9rem; height: 1.9rem;
+    display: grid; place-items: center; padding: 0; border: 1px solid var(--border); border-radius: 7px;
+    color: var(--dim); background: transparent; cursor: pointer; line-height: 0;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+  .donate-qr-close:hover { color: var(--heading); border-color: var(--muted); background: var(--accent-soft); }
+  .donate-qr-close-icon {
+    position: absolute; top: 50%; left: 50%; display: block; width: 0.9rem; height: 0.9rem;
+    background: currentColor; transform: translate(-50%, -50%);
+    -webkit-mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/x.svg") center/contain no-repeat;
+    mask: url("https://cdn.jsdelivr.net/npm/lucide-static@0.468.0/icons/x.svg") center/contain no-repeat;
+  }
+  .donate-qr-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.75rem; }
+  .donate-qr-card { padding: 0.75rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-raised); }
+  .donate-qr-card-head { display: flex; align-items: center; gap: 0.42rem; margin-bottom: 0.6rem; color: var(--heading); font-size: 0.78rem; font-weight: 650; }
+  .donate-qr-card-head img { width: 1rem; height: 1rem; }
+  .donate-qr-image { display: block; width: 100%; height: auto; border-radius: 7px; background: #fff; user-select: none; -webkit-user-drag: none; }
+  [data-theme="light"] .donate-qr-overlay { background: rgba(31,35,40,0.42); }
+
+  [data-lang] { visibility: hidden; }
+  html.lang-en [data-lang="en"], html.lang-zh [data-lang="zh"] { visibility: visible; }
+  .bi { display: inline-grid; vertical-align: middle; }
+  .bi > [data-lang] { grid-area: 1 / 1; }
+  .bi-block { display: grid; }
+  @media (max-width: 760px) {
+    .shell { width: min(100% - 24px, 1080px); padding-top: 16px; }
+    .topbar { margin-bottom: 26px; }
+    .hero { grid-template-columns: 1fr; gap: 1.15rem; }
+    .summary { width: 100%; }
+    .summary-item { flex: 1; min-width: 0; }
+    .toolbar { flex-wrap: wrap; }
+    .search-field { flex-basis: 100%; }
+    .platform-filter { flex: 1; }
+    .message { max-width: 14rem; }
+  }
+  @media (max-width: 640px) {
+    .donate-qr-dialog { width: min(300px, calc(100vw - 2.5rem)); padding: 0.9rem; }
+    .donate-qr-grid { grid-template-columns: 1fr; }
+    .donate-qr-card { padding: 0.65rem; }
+    .donate-qr-card-head { justify-content: center; margin-bottom: 0.5rem; }
+    .donate-qr-image { width: min(190px, 100%); margin: 0 auto; }
+    .table-scroll { overflow: visible; }
+    table { display: block; min-width: 0; table-layout: auto; }
+    colgroup, thead { display: none; }
+    tbody { display: grid; gap: 0.5rem; padding: 0.6rem; }
+    tbody tr {
+      display: grid; grid-template-columns: minmax(0,1fr) auto;
+      grid-template-areas: "name amount" "date platform" "message message";
+      gap: 0.35rem 0.75rem; padding: 0.72rem 0.78rem;
+      border: 1px solid var(--border-soft); border-radius: 8px; background: var(--surface-raised);
+    }
+    tbody tr:hover { background: var(--accent-soft); }
+    tbody td { padding: 0; border: 0; min-width: 0; }
+    tbody .name { grid-area: name; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tbody .amount { grid-area: amount; text-align: right; }
+    tbody .date { grid-area: date; font-size: 0.7rem; }
+    tbody .platform-cell { grid-area: platform; min-width: 6rem; text-align: right; }
+    tbody .platform { justify-content: flex-end; font-size: 0.72rem; }
+    tbody .message-cell { grid-area: message; padding-top: 0.25rem; border-top: 1px solid var(--border-soft); }
+    tbody .message-cell.empty { display: none; }
+    tbody .message { display: -webkit-box; max-width: none; padding-top: 0.35rem; white-space: normal; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    tbody .message:empty { display: none; }
+    tbody .currency { display: none; }
+  }
+  @media (max-width: 520px) {
+    .shell { width: min(100% - 20px, 1080px); padding-bottom: 24px; }
+    .brand-text { display: inline; }
+    .summary-item { padding: 0.72rem 0.8rem; }
+    .summary-item:first-child { flex: 1.3; }
+    .summary-value { font-size: 0.92rem; }
+    .records { border-radius: 10px; }
+    .toolbar { padding: 0.65rem; }
+    .result-count { padding-right: 0.2rem; }
+    .pager { justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" id="backLink" href="../" aria-label="返回 WinCraft">
+      <img class="brand-mark" src="../assets/app.ico" alt="">
+      <span class="brand-text">Win<span class="brand-accent">Craft</span></span>
+    </a>
+    <div class="top-actions">
+      <button class="donate-button" id="donateButton" type="button" onclick="showDonateQR()" aria-haspopup="dialog" aria-controls="donateQrOverlay"><span class="donate-button-inner"><span class="donate-button-icon" aria-hidden="true"></span><span class="control-copy"><span data-lang="en">Donate</span><span data-lang="zh">捐赠</span></span></span></button>
+      <button class="icon-button" id="themeButton" type="button" onclick="toggleTheme()" aria-label="切换主题">
+        <span class="theme-icon icon-sun" aria-hidden="true"></span><span class="theme-icon icon-moon" aria-hidden="true"></span>
+      </button>
+      <div class="language-switch" role="group" aria-label="语言切换">
+        <button id="lang-zh" type="button" onclick="setLanguage('zh')">中</button>
+        <button id="lang-en" type="button" onclick="setLanguage('en')">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="donateQrOverlay" class="donate-qr-overlay" aria-hidden="true" onclick="closeDonateQR(event)">
+    <div class="donate-qr-dialog" role="dialog" aria-modal="true" aria-labelledby="donateQrTitle">
+      <button id="donateQrClose" class="donate-qr-close" type="button" onclick="hideDonateQR()" aria-label="关闭"><span class="donate-qr-close-icon" aria-hidden="true"></span></button>
+      <div class="donate-qr-header"><h2 id="donateQrTitle" class="donate-qr-title bi"><span data-lang="en">Donate</span><span data-lang="zh">捐赠</span></h2></div>
+      <div class="donate-qr-grid">
+        <div class="donate-qr-card">
+          <div class="donate-qr-card-head"><img src="https://cdn.simpleicons.org/wechat/07C160" alt=""><span class="bi"><span data-lang="en">WeChat Pay</span><span data-lang="zh">微信支付</span></span></div>
+          <img class="donate-qr-image" src="wechat-qr.svg" alt="微信收款二维码" width="516" height="516">
+        </div>
+        <div class="donate-qr-card">
+          <div class="donate-qr-card-head"><img src="https://cdn.simpleicons.org/alipay/1677FF" alt=""><span class="bi"><span data-lang="en">Alipay</span><span data-lang="zh">支付宝</span></span></div>
+          <img class="donate-qr-image" src="alipay-qr.svg" alt="支付宝收款二维码" width="468" height="468">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">WinCraft Community</p>
+      <h1 class="bi bi-block"><span data-lang="en">Contribution history</span><span data-lang="zh">捐赠记录</span></h1>
+      <p class="subtitle bi bi-block"><span data-lang="en">Every contribution keeps WinCraft moving forward. Thank you for making open source a little warmer. The supporter list is updated periodically.</span><span data-lang="zh">每一份支持都让 WinCraft 走得更远。谢谢你让开源多一点温度。捐赠名单不定期更新。</span></p>
+    </div>
+    <div class="summary" aria-live="polite">
+      <div class="summary-item"><div class="summary-value" id="totalAmount">—</div><div class="summary-label bi bi-block"><span data-lang="en">Total contributed</span><span data-lang="zh">累计金额</span></div></div>
+      <div class="summary-item"><div class="summary-value" id="totalCount">—</div><div class="summary-label bi bi-block"><span data-lang="en">Contributions</span><span data-lang="zh">捐赠人次</span></div></div>
+    </div>
+  </section>
+
+  <section class="records" id="records" aria-label="捐赠记录">
+    <div class="toolbar">
+      <label class="field search-field">
+        <span class="search-icon" aria-hidden="true"></span>
+        <input type="search" id="search" autocomplete="off" aria-label="搜索支持者或留言">
+      </label>
+      <div class="platform-filter" id="platformFilter">
+        <button class="platform-filter-button" id="platformFilterButton" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="platformMenu" aria-label="按平台筛选">
+          <span class="platform-filter-label" id="platformFilterLabel">全部平台</span>
+          <span class="select-icon" aria-hidden="true"></span>
+        </button>
+        <div class="platform-menu" id="platformMenu" role="listbox" hidden></div>
+      </div>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+    <div class="table-scroll" id="tableScroll">
+      <table>
+        <colgroup><col style="width:122px"><col style="width:180px"><col style="width:100px"><col><col style="width:120px"><col style="width:76px"></colgroup>
+        <thead><tr>
+          <th data-sort="date"><span class="th-content"><span class="bi"><span data-lang="en">Date</span><span data-lang="zh">时间</span></span><span class="sort-indicator"></span></span></th>
+          <th data-sort="name"><span class="th-content"><span class="bi"><span data-lang="en">Supporter</span><span data-lang="zh">支持者</span></span><span class="sort-indicator"></span></span></th>
+          <th data-sort="amount"><span class="th-content"><span class="bi"><span data-lang="en">Amount</span><span data-lang="zh">金额</span></span><span class="sort-indicator"></span></span></th>
+          <th><span class="bi"><span data-lang="en">Message</span><span data-lang="zh">留言</span></span></th>
+          <th data-sort="platform"><span class="th-content"><span class="bi"><span data-lang="en">Platform</span><span data-lang="zh">平台</span></span><span class="sort-indicator"></span></span></th>
+          <th><span class="bi"><span data-lang="en">Currency</span><span data-lang="zh">币种</span></span></th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon" aria-hidden="true"></span>
+      <div class="empty-title bi bi-block"><span data-lang="en">No matching records</span><span data-lang="zh">没有找到匹配记录</span></div>
+      <div class="empty-copy bi bi-block"><span data-lang="en">Try another keyword or platform.</span><span data-lang="zh">可以换个关键词或平台试试。</span></div>
+    </div>
+    <nav class="pager" id="pager" aria-label="分页导航"></nav>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5/papaparse.min.js"></script>
+<script>
+const ICONS = {
+  qq:'https://cdn.simpleicons.org/qq/12B7F5', wechat:'https://cdn.simpleicons.org/wechat/07C160', alipay:'https://cdn.simpleicons.org/alipay/1677FF'
+};
+const PLATFORM_ORDER = ['wechat', 'alipay', 'qq'];
+const PLATFORM_NAMES = {
+  qq:{zh:'QQ',en:'QQ'}, wechat:{zh:'微信',en:'WeChat'}, alipay:{zh:'支付宝',en:'Alipay'}
+};
+const COPY = {
+  zh: { title:'WinCraft 💛 捐赠记录', back:'WinCraft 首页', search:'搜索支持者或留言…', searchLabel:'搜索支持者或留言', platformLabel:'按平台筛选', allPlatforms:'全部平台', results:n => `共 ${n.toLocaleString()} 条`, page:(p,t) => `第 ${p} / ${t} 页`, themeLight:'切换到亮色主题', themeDark:'切换到暗色主题', first:'第一页', previous:'上一页', next:'下一页', last:'最后一页', close:'关闭', anonymous:'匿名支持者', records:'捐赠记录', pagination:'分页导航', language:'语言切换', loadError:'捐赠记录暂时无法加载' },
+  en: { title:'WinCraft 💛 Contribution History', back:'WinCraft home', search:'Search supporters or messages…', searchLabel:'Search supporters or messages', platformLabel:'Filter by platform', allPlatforms:'All platforms', results:n => `${n.toLocaleString()} records`, page:(p,t) => `Page ${p} of ${t}`, themeLight:'Switch to light theme', themeDark:'Switch to dark theme', first:'First page', previous:'Previous page', next:'Next page', last:'Last page', close:'Close', anonymous:'Anonymous', records:'Contribution history', pagination:'Pagination', language:'Language', loadError:'Contribution history is temporarily unavailable' }
+};
+const PAGE_SIZE = 50;
+let allRows = [], filteredRows = [], sortKey = 'date', sortDescending = true, currentPage = 0, loadFailed = false, selectedPlatform = '';
+let donateQrTrigger = null;
+
+function currentLanguage() { return document.documentElement.classList.contains('lang-zh') ? 'zh' : 'en'; }
+function setLanguage(lang) {
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.documentElement.classList.remove('lang-zh', 'lang-en');
+  document.documentElement.classList.add('lang-' + lang);
+  localStorage.setItem('lang', lang);
+  document.querySelectorAll('.language-switch button').forEach(function(button){
+    var active = button.id === 'lang-' + lang;
+    button.classList.toggle('active', active);
+    if (active) button.setAttribute('aria-current', 'true'); else button.removeAttribute('aria-current');
+  });
+  updateCopy();
+  if (allRows.length) populatePlatforms();
+  render();
+}
+function getTheme() { return document.documentElement.getAttribute('data-theme') || 'dark'; }
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'light' ? '#f6f8fa' : '#0d1117');
+  var lang = currentLanguage(), copy = COPY[lang];
+  document.getElementById('themeButton').setAttribute('aria-label', theme === 'light' ? copy.themeDark : copy.themeLight);
+}
+function toggleTheme() {
+  var theme = getTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', theme); applyTheme(theme);
+}
+function showDonateQR() {
+  var overlay = document.getElementById('donateQrOverlay');
+  if (!overlay) return;
+  donateQrTrigger = document.activeElement;
+  var scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  document.body.style.setProperty('--modal-scrollbar-width', scrollbarWidth + 'px');
+  document.body.classList.add('modal-open');
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.getElementById('donateQrClose').focus();
+}
+function hideDonateQR() {
+  var overlay = document.getElementById('donateQrOverlay');
+  if (!overlay || !overlay.classList.contains('show')) return;
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+  document.body.style.removeProperty('--modal-scrollbar-width');
+  if (donateQrTrigger && typeof donateQrTrigger.focus === 'function') donateQrTrigger.focus();
+  donateQrTrigger = null;
+}
+function closeDonateQR(event) { if (event.target === event.currentTarget) hideDonateQR(); }
+function updateCopy() {
+  var lang = currentLanguage(), copy = COPY[lang];
+  document.title = copy.title;
+  document.getElementById('search').placeholder = copy.search;
+  document.getElementById('search').setAttribute('aria-label', copy.searchLabel);
+  document.getElementById('platformFilterButton').setAttribute('aria-label', copy.platformLabel);
+  document.getElementById('backLink').setAttribute('aria-label', copy.back);
+  document.getElementById('donateQrClose').setAttribute('aria-label', copy.close);
+  document.getElementById('records').setAttribute('aria-label', copy.records);
+  document.getElementById('pager').setAttribute('aria-label', copy.pagination);
+  document.querySelector('.language-switch').setAttribute('aria-label', copy.language);
+  if (loadFailed) document.querySelector('.empty-title').textContent = copy.loadError;
+  applyTheme(getTheme());
+}
+function escapeHtml(value) {
+  return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function currencyCode(row) { return String(row.currency || 'CNY').trim().toUpperCase() || 'CNY'; }
+function formatCurrencyValue(amount, currency) {
+  try { return new Intl.NumberFormat('zh-CN', { style:'currency', currency:currency, minimumFractionDigits:2 }).format(amount); }
+  catch (_) { return currency + ' ' + Number(amount).toFixed(2); }
+}
+function formatAmount(row) {
+  return formatCurrencyValue(Number(row.amount), currencyCode(row));
+}
+function formatTotals(rows) {
+  var totals = {};
+  rows.forEach(function(row) {
+    var currency = currencyCode(row);
+    totals[currency] = (totals[currency] || 0) + Number(row.amount);
+  });
+  return Object.keys(totals).sort(function(a,b){ return a === 'CNY' ? -1 : b === 'CNY' ? 1 : a.localeCompare(b); })
+    .map(function(currency){ return formatCurrencyValue(totals[currency], currency); }).join(' · ');
+}
+function parseDonationCsv(csv) {
+  var parsed = Papa.parse(csv.replace(/\r\n?|\n/g, '\n'), {header:true, skipEmptyLines:true});
+  var invalid = parsed.errors.length || parsed.data.some(function(row) {
+    var currency = currencyCode(row);
+    return !row.date || !Number.isFinite(Number(row.amount)) || row.__parsed_extra || !/^[A-Z]{3}$/.test(currency);
+  });
+  if (invalid) throw new Error('Invalid donation CSV');
+  return parsed.data.map(function(row) {
+    row.currency = currencyCode(row);
+    return row;
+  });
+}
+function sortRows() {
+  filteredRows.sort(function(a, b) {
+    var left = a[sortKey] || '', right = b[sortKey] || '';
+    if (sortKey === 'amount') { left = Number(left); right = Number(right); }
+    if (sortKey === 'date') { left = left.replace(/[^\d]/g,''); right = right.replace(/[^\d]/g,''); }
+    var result = left > right ? 1 : left < right ? -1 : 0;
+    return sortDescending ? -result : result;
+  });
+}
+function render() {
+  if (!document.getElementById('tableBody')) return;
+  var lang = currentLanguage(), copy = COPY[lang];
+  var pageCount = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  currentPage = Math.min(currentPage, pageCount - 1);
+  var start = currentPage * PAGE_SIZE;
+  var rows = filteredRows.slice(start, start + PAGE_SIZE);
+  document.getElementById('tableBody').innerHTML = rows.map(function(row) {
+    var platform = escapeHtml(row.platform), message = escapeHtml(row.message), icon = ICONS[row.platform];
+    var platformName = PLATFORM_NAMES[row.platform] ? PLATFORM_NAMES[row.platform][lang] : platform;
+    return '<tr>' +
+      '<td class="date" title="' + escapeHtml(row.date) + '">' + escapeHtml((row.date || '').slice(0,10)) + '</td>' +
+      '<td class="name">' + escapeHtml(row.name || copy.anonymous) + '</td>' +
+      '<td class="amount">' + escapeHtml(formatAmount(row)) + '</td>' +
+      '<td class="message-cell' + (message ? '' : ' empty') + '"><span class="message"' + (message ? ' title="' + message + '"' : '') + '>' + message + '</span></td>' +
+      '<td class="platform-cell"><span class="platform">' + (icon ? '<img src="' + icon + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<span>' + escapeHtml(platformName) + '</span></span></td>' +
+      '<td class="currency">' + escapeHtml(row.currency) + '</td></tr>';
+  }).join('');
+  document.getElementById('tableScroll').hidden = rows.length === 0;
+  document.getElementById('emptyState').classList.toggle('show', rows.length === 0);
+  document.getElementById('resultCount').textContent = copy.results(filteredRows.length);
+  renderPager(pageCount, copy);
+  updateSortIndicators();
+}
+function pagerIcon(kind) {
+  var paths = {
+    first:'<path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>',
+    previous:'<path d="m15 18-6-6 6-6"/>', next:'<path d="m9 18 6-6-6-6"/>',
+    last:'<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>'
+  };
+  return '<svg viewBox="0 0 24 24" aria-hidden="true">' + paths[kind] + '</svg>';
+}
+function renderPager(pageCount, copy) {
+  var atFirst = currentPage === 0, atLast = currentPage >= pageCount - 1;
+  document.getElementById('pager').innerHTML =
+    '<button type="button" aria-label="' + copy.first + '" ' + (atFirst?'disabled':'') + ' onclick="goToPage(0)">' + pagerIcon('first') + '</button>' +
+    '<button type="button" aria-label="' + copy.previous + '" ' + (atFirst?'disabled':'') + ' onclick="goToPage(' + (currentPage-1) + ')">' + pagerIcon('previous') + '</button>' +
+    '<span class="page-info">' + copy.page(currentPage+1, pageCount) + '</span>' +
+    '<button type="button" aria-label="' + copy.next + '" ' + (atLast?'disabled':'') + ' onclick="goToPage(' + (currentPage+1) + ')">' + pagerIcon('next') + '</button>' +
+    '<button type="button" aria-label="' + copy.last + '" ' + (atLast?'disabled':'') + ' onclick="goToPage(' + (pageCount-1) + ')">' + pagerIcon('last') + '</button>';
+}
+function updateSortIndicators() {
+  document.querySelectorAll('th[data-sort]').forEach(function(header) {
+    var active = header.dataset.sort === sortKey;
+    header.setAttribute('aria-sort', active ? (sortDescending ? 'descending' : 'ascending') : 'none');
+    header.querySelector('.sort-indicator').textContent = active ? (sortDescending ? '↓' : '↑') : '';
+  });
+}
+function applyFilters() {
+  var query = document.getElementById('search').value.trim().toLowerCase();
+  filteredRows = allRows.filter(function(row) {
+    return (!query || (row.name || '').toLowerCase().includes(query) || (row.message || '').toLowerCase().includes(query)) && (!selectedPlatform || row.platform === selectedPlatform);
+  });
+  sortRows(); currentPage = 0; render();
+}
+function goToPage(page) { currentPage = page; render(); document.querySelector('.records').scrollIntoView({ behavior:'smooth', block:'start' }); }
+function closePlatformMenu(restoreFocus) {
+  var filter = document.getElementById('platformFilter'), menu = document.getElementById('platformMenu');
+  filter.classList.remove('open'); menu.hidden = true;
+  document.getElementById('platformFilterButton').setAttribute('aria-expanded', 'false');
+  if (restoreFocus) document.getElementById('platformFilterButton').focus();
+}
+function openPlatformMenu() {
+  var filter = document.getElementById('platformFilter'), menu = document.getElementById('platformMenu');
+  filter.classList.add('open'); menu.hidden = false;
+  document.getElementById('platformFilterButton').setAttribute('aria-expanded', 'true');
+}
+function togglePlatformMenu() {
+  if (document.getElementById('platformMenu').hidden) openPlatformMenu(); else closePlatformMenu(false);
+}
+function selectPlatform(value) {
+  selectedPlatform = value;
+  updatePlatformSelection(); closePlatformMenu(true); applyFilters();
+}
+function updatePlatformSelection() {
+  var lang = currentLanguage(), copy = COPY[lang];
+  var name = selectedPlatform && PLATFORM_NAMES[selectedPlatform] ? PLATFORM_NAMES[selectedPlatform][lang] : (selectedPlatform || copy.allPlatforms);
+  document.getElementById('platformFilterLabel').textContent = name;
+  document.querySelectorAll('.platform-option').forEach(function(option) {
+    option.setAttribute('aria-selected', option.dataset.value === selectedPlatform ? 'true' : 'false');
+  });
+}
+function bindEvents() {
+  document.getElementById('search').addEventListener('input', applyFilters);
+  document.getElementById('platformFilterButton').addEventListener('click', togglePlatformMenu);
+  document.getElementById('platformFilterButton').addEventListener('keydown', function(event) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault(); openPlatformMenu();
+    var options = Array.from(document.querySelectorAll('.platform-option'));
+    var selected = options.find(function(option){ return option.dataset.value === selectedPlatform; });
+    (selected || options[0]).focus();
+  });
+  document.getElementById('platformMenu').addEventListener('keydown', function(event) {
+    var options = Array.from(document.querySelectorAll('.platform-option'));
+    var index = options.indexOf(document.activeElement);
+    if (event.key === 'Escape') { event.preventDefault(); closePlatformMenu(true); return; }
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    var next = event.key === 'ArrowDown' ? Math.min(options.length - 1, index + 1) : Math.max(0, index - 1);
+    options[next].focus();
+  });
+  document.addEventListener('click', function(event) {
+    if (!document.getElementById('platformFilter').contains(event.target)) closePlatformMenu(false);
+  });
+  document.querySelectorAll('th[data-sort]').forEach(function(header) {
+    header.addEventListener('click', function() {
+      var key = header.dataset.sort;
+      if (sortKey === key) sortDescending = !sortDescending;
+      else { sortKey = key; sortDescending = key !== 'name'; }
+      sortRows(); currentPage = 0; render();
+    });
+  });
+}
+function populatePlatforms() {
+  var values = Array.from(new Set(allRows.map(function(row){ return row.platform; }).filter(Boolean))).sort(function(a, b) { var ia = PLATFORM_ORDER.indexOf(a), ib = PLATFORM_ORDER.indexOf(b); if (ia === -1 && ib === -1) return a.localeCompare(b); if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib; });
+  if (selectedPlatform && !values.includes(selectedPlatform)) selectedPlatform = '';
+  var menu = document.getElementById('platformMenu'), lang = currentLanguage();
+  menu.textContent = '';
+  [''].concat(values).forEach(function(value) {
+    var option = document.createElement('button');
+    option.type = 'button'; option.className = 'platform-option'; option.dataset.value = value;
+    option.setAttribute('role', 'option'); option.setAttribute('aria-selected', value === selectedPlatform ? 'true' : 'false');
+    if (value && ICONS[value]) {
+      var icon = document.createElement('img'); icon.src = ICONS[value]; icon.alt = ''; icon.loading = 'lazy';
+      icon.addEventListener('error', function(){ icon.remove(); }); option.appendChild(icon);
+    }
+    var label = document.createElement('span'); label.className = 'platform-option-label';
+    label.textContent = value ? (PLATFORM_NAMES[value] ? PLATFORM_NAMES[value][lang] : value) : COPY[lang].allPlatforms;
+    option.appendChild(label); option.addEventListener('click', function(){ selectPlatform(value); }); menu.appendChild(option);
+  });
+  updatePlatformSelection();
+}
+
+fetch('donate.csv', { cache:'no-store' })
+  .then(function(response){ if (!response.ok) throw new Error('Failed to load CSV'); return response.text(); })
+  .then(function(csv) {
+    allRows = parseDonationCsv(csv);
+    filteredRows = allRows.slice(); sortRows(); populatePlatforms();
+    document.getElementById('totalAmount').textContent = formatTotals(allRows);
+    document.getElementById('totalCount').textContent = new Intl.NumberFormat().format(allRows.length);
+    bindEvents(); setLanguage(currentLanguage());
+  })
+  .catch(function(err) {
+    loadFailed = true;
+    document.getElementById('tableScroll').hidden = true;
+    document.getElementById('emptyState').classList.add('show');
+    document.querySelector('.empty-title').textContent = COPY[currentLanguage()].loadError;
+    document.querySelector('.empty-copy').textContent = err.message || err;
+    document.getElementById('pager').hidden = true;
+  });
+
+setLanguage(currentLanguage());
+document.addEventListener('keydown', function(event) {
+  if (event.key !== 'Escape') return;
+  hideDonateQR();
+  if (!document.getElementById('platformMenu').hidden) closePlatformMenu(true);
+});
+</script>
+</body>
+</html>
