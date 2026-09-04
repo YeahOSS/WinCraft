@@ -1,12 +1,20 @@
 using System;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
 
 namespace Windows.Win32
 {
     internal static partial class PInvoke
     {
         private const string Shell32 = "shell32.dll";
+
+        // CsWin32 cannot generate this AnyCPU API (PInvoke005).
+        [DllImport(Shell32, CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool Shell_NotifyIcon(
+            NOTIFY_ICON_MESSAGE dwMessage,
+            ref NOTIFYICONDATA lpData);
 
         /// <summary>
         /// Retrieves the path to the default user profile directory.

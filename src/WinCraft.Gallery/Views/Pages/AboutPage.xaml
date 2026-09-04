@@ -1,0 +1,36 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.AboutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft">
+    <ScrollViewer>
+        <ui:SpacingStackPanel MaxWidth="760"
+                              Padding="{StaticResource PagePadding}"
+                              HorizontalAlignment="Center"
+                              ui:LayoutTokens.Spacing="XLarge">
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="About WinCraft" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="A .NET Framework 3.0 and 4.5 WPF library with modern controls and Windows integration." />
+            </ui:SpacingStackPanel>
+
+            <ui:SuperellipseBorder Padding="{StaticResource CardPadding}"
+                                   Background="{DynamicResource BgSecondary}"
+                                   BorderBrush="{DynamicResource BorderDefault}"
+                                   BorderThickness="{StaticResource BorderThicknessDefault}"
+                                   CornerRadius="{StaticResource CornerRadiusLarge}">
+                <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                    <ui:IconBlock HorizontalAlignment="Left"
+                                  FontSize="32"
+                                  Foreground="{DynamicResource Primary}"
+                                  Icon="Info24" />
+                    <TextBlock Text="This Gallery is the main TabWindow sample. Its protected Home tab stays open while other tabs can be opened, reordered, torn off, or closed." TextWrapping="Wrap" />
+                    <TextBlock ui:Design.VisualRole="Secondary"
+                               Style="{DynamicResource CaptionTextBlockStyle}"
+                               Text="The Features section shares the same single-instance and on-demand elevated-agent lifecycle as the main application."
+                               TextWrapping="Wrap" />
+                </ui:SpacingStackPanel>
+            </ui:SuperellipseBorder>
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

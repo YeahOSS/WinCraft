@@ -1,0 +1,346 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                    xmlns:ui="clr-namespace:WinCraft.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.Common.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <sys:Double x:Key="ProgressBarMinWidth">120</sys:Double>
+    <sys:Double x:Key="ProgressBarHeight">6</sys:Double>
+    <sys:Double x:Key="ProgressBarIndeterminateSegmentLength">48</sys:Double>
+    <sys:Double x:Key="MessageTipMaxWidth">400</sys:Double>
+    <Thickness x:Key="TooltipPadding">10,6</Thickness>
+    <Thickness x:Key="MessageTipPadding">12,8</Thickness>
+    <Thickness x:Key="DialogPadding">28,24,28,20</Thickness>
+
+    <Style BasedOn="{StaticResource RoleForegroundControlStyle}" TargetType="ui:LoadingIndicator">
+        <Setter Property="Width" Value="{StaticResource DialogIconSize}" />
+        <Setter Property="Height" Value="{StaticResource DialogIconSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+        <Setter Property="DotSizeRatio" Value="0.12" />
+        <Setter Property="DotCount" Value="8" />
+    </Style>
+
+    <Style TargetType="ui:MessageBar">
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource Info}" />
+        <Setter Property="Background" Value="{DynamicResource InfoBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="Padding" Value="{StaticResource RowPadding}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="ui:Design.Icon" Value="Info24" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:MessageBar">
+                    <ui:SuperellipseBorder Padding="{TemplateBinding Padding}"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}">
+                        <ui:SpacingGrid ColumnSpacing="{StaticResource SpacingSmall}" Columns="Auto,*,Auto">
+                            <ui:IconBlock x:Name="Icon"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          ui:Design.IsIconFilled="True"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Icon="{TemplateBinding ui:Design.Icon}" />
+                            <ContentPresenter Grid.Column="1"
+                                              VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <ui:IconButton x:Name="CloseButton"
+                                           Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           VerticalAlignment="Center"
+                                           ui:Design.Variant="Ghost"
+                                           Command="{TemplateBinding CloseCommand}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           Icon="Dismiss20"
+                                           IsCircular="True" />
+                        </ui:SpacingGrid>
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ui:Design.Icon" Value="None">
+                            <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsClosable" Value="False">
+                            <Setter TargetName="CloseButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="ui:Design.VisualRole" Value="Success">
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+                <Setter Property="Background" Value="{DynamicResource SuccessBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+                <Setter Property="ui:Design.Icon" Value="CheckmarkCircle24" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Warning">
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+                <Setter Property="Background" Value="{DynamicResource WarningBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+                <Setter Property="ui:Design.Icon" Value="Warning24" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Error">
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+                <Setter Property="Background" Value="{DynamicResource ErrorBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+                <Setter Property="ui:Design.Icon" Value="ErrorCircle24" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="ui:MessageTipControl">
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="Foreground" Value="{DynamicResource Info}" />
+        <Setter Property="Background" Value="{DynamicResource PopupBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="Padding" Value="{StaticResource MessageTipPadding}" />
+        <Setter Property="MaxWidth" Value="{StaticResource MessageTipMaxWidth}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:MessageTipControl">
+                    <ui:SuperellipseBorder Margin="{StaticResource PopupShadowMargin}"
+                                           Padding="{TemplateBinding Padding}"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           Effect="{StaticResource PopupShadowEffect}">
+                        <ui:SpacingGrid ColumnSpacing="{StaticResource SpacingSmall}" Columns="Auto,*">
+                            <ui:IconBlock x:Name="Icon"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          ui:Design.IsIconFilled="True"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Icon="{TemplateBinding ui:Design.Icon}" />
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       Text="{TemplateBinding Message}"
+                                       TextWrapping="Wrap" />
+                        </ui:SpacingGrid>
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="VisualRole" Value="{x:Static ui:VisualRole.Info}">
+                            <Setter Property="Foreground" Value="{DynamicResource Info}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+                        </Trigger>
+                        <Trigger Property="VisualRole" Value="{x:Static ui:VisualRole.Success}">
+                            <Setter Property="Foreground" Value="{DynamicResource Success}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+                        </Trigger>
+                        <Trigger Property="VisualRole" Value="{x:Static ui:VisualRole.Warning}">
+                            <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+                        </Trigger>
+                        <Trigger Property="VisualRole" Value="{x:Static ui:VisualRole.Error}">
+                            <Setter Property="Foreground" Value="{DynamicResource Error}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PopupTipBaseStyle" TargetType="ToolTip">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource TooltipBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="{StaticResource TooltipPadding}" />
+        <Setter Property="MaxWidth" Value="360" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <ui:SuperellipseBorder Margin="{StaticResource PopupShadowMargin}"
+                                           Padding="{TemplateBinding Padding}"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           Effect="{StaticResource PopupShadowEffect}">
+                        <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </ui:SuperellipseBorder>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource PopupTipBaseStyle}" TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource PopupBackground}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="Padding" Value="{StaticResource MessageTipPadding}" />
+        <Style.Triggers>
+            <Trigger Property="ui:Design.VisualRole" Value="Info">
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Success">
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Warning">
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Error">
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style BasedOn="{StaticResource RoleForegroundControlStyle}" TargetType="ProgressBar">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Height" Value="{StaticResource ProgressBarHeight}" />
+        <Setter Property="MinWidth" Value="{StaticResource ProgressBarMinWidth}" />
+        <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+        <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid x:Name="Root"
+                          ClipToBounds="True"
+                          SnapsToDevicePixels="True">
+                        <ui:SuperellipseBorder x:Name="TrackBackground"
+                                               Background="{TemplateBinding Background}"
+                                               BorderBrush="{TemplateBinding BorderBrush}"
+                                               BorderThickness="{TemplateBinding BorderThickness}"
+                                               CornerRadius="{StaticResource CornerRadiusNormal}" />
+                        <Decorator x:Name="PART_Track" />
+                        <Border x:Name="PART_Indicator"
+                                HorizontalAlignment="Left"
+                                ClipToBounds="True">
+                            <ui:SuperellipseBorder Background="{TemplateBinding Foreground}" CornerRadius="{StaticResource CornerRadiusNormal}" />
+                        </Border>
+                        <Canvas x:Name="IndeterminateLayer"
+                                ClipToBounds="True"
+                                Opacity="0">
+                            <ui:SuperellipseBorder x:Name="IndeterminateSegment"
+                                                   Width="{StaticResource ProgressBarIndeterminateSegmentLength}"
+                                                   Height="{Binding ActualHeight, RelativeSource={RelativeSource TemplatedParent}}"
+                                                   Background="{TemplateBinding Foreground}"
+                                                   CornerRadius="{StaticResource CornerRadiusNormal}">
+                                <ui:SuperellipseBorder.RenderTransform>
+                                    <TranslateTransform x:Name="IndeterminateTranslate" X="-56" />
+                                </ui:SuperellipseBorder.RenderTransform>
+                            </ui:SuperellipseBorder>
+                        </Canvas>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="PART_Indicator" Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter TargetName="PART_Indicator" Property="VerticalAlignment" Value="Bottom" />
+                            <Setter TargetName="IndeterminateSegment" Property="Width" Value="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="IndeterminateSegment" Property="Height" Value="{StaticResource ProgressBarIndeterminateSegmentLength}" />
+                        </Trigger>
+                        <Trigger Property="IsIndeterminate" Value="True">
+                            <Setter TargetName="PART_Indicator" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndeterminateLayer" Property="Opacity" Value="1" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="IndeterminateTranslate"
+                                                         Storyboard.TargetProperty="X"
+                                                         From="-56"
+                                                         To="260"
+                                                         Duration="0:0:1.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlDisabledBackground}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="{StaticResource ProgressBarHeight}" />
+                <Setter Property="Height" Value="{StaticResource ProgressBarMinWidth}" />
+                <Setter Property="MinWidth" Value="0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="ui:MessageBoxControl">
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:MessageBoxControl">
+                    <ui:SpacingStackPanel Padding="{StaticResource DialogPadding}" ui:LayoutTokens.Spacing="XLarge">
+                        <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal" Orientation="Horizontal">
+                                <ui:IconBlock Width="{StaticResource DialogIconSize}"
+                                              Height="{StaticResource DialogIconSize}"
+                                              Margin="0,2,0,0"
+                                              VerticalAlignment="Top"
+                                              ui:Design.IsIconFilled="True"
+                                              ui:Design.VisualRole="{TemplateBinding VisualRole}"
+                                              FontSize="{StaticResource DialogIconSize}"
+                                              Icon="{TemplateBinding Icon}"
+                                              Visibility="{Binding IsIconVisible, RelativeSource={RelativeSource TemplatedParent}, Converter={ui:TrueToVisibleCvt}}" />
+                                <ui:SpacingStackPanel MaxWidth="340">
+                                    <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="{TemplateBinding Message}" />
+                                </ui:SpacingStackPanel>
+                            </ui:SpacingStackPanel>
+                            <ContentPresenter Content="{TemplateBinding AdditionalContent}"
+                                              ContentTemplate="{TemplateBinding AdditionalContentTemplate}"
+                                              Visibility="{Binding AdditionalContent, RelativeSource={RelativeSource TemplatedParent}, Converter={ui:NullToCollapsedCvt}}" />
+                            <CheckBox Content="{TemplateBinding CheckBoxText}"
+                                      IsChecked="{Binding IsCheckBoxChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      Visibility="{Binding CheckBoxText, RelativeSource={RelativeSource TemplatedParent}, Converter={ui:NullOrEmptyToCollapsedCvt}}" />
+                        </ui:SpacingStackPanel>
+
+                        <ui:SpacingStackPanel HorizontalAlignment="Right"
+                                              ui:LayoutTokens.Spacing="Small"
+                                              Orientation="Horizontal">
+                            <Button MinWidth="88"
+                                    ui:Design.VisualRole="Primary"
+                                    Command="{TemplateBinding AcceptCommand}"
+                                    Content="{TemplateBinding AcceptText}"
+                                    IsDefault="True" />
+                            <Button MinWidth="88"
+                                    ui:Design.Variant="Outline"
+                                    Command="{TemplateBinding ThirdCommand}"
+                                    Content="{TemplateBinding ThirdText}"
+                                    Visibility="{Binding IsThirdVisible, RelativeSource={RelativeSource TemplatedParent}, Converter={ui:TrueToVisibleCvt}}" />
+                            <Button MinWidth="88"
+                                    ui:Design.Variant="Outline"
+                                    Command="{TemplateBinding CloseCommand}"
+                                    Content="{TemplateBinding CloseText}"
+                                    IsCancel="True"
+                                    Visibility="{Binding IsCloseVisible, RelativeSource={RelativeSource TemplatedParent}, Converter={ui:TrueToVisibleCvt}}" />
+                        </ui:SpacingStackPanel>
+                    </ui:SpacingStackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

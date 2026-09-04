@@ -1,0 +1,175 @@
+<Project>
+  <!--
+    Icon font asset properties, items, and targets.
+
+    Full:    Generate the complete IconGlyph enum + Regular→Filled glyph map
+             and embed the source fonts.
+    Subset:  In Release builds with IconFontSubset=true, scan the configured
+             source closure and subset the enum, map, and both fonts.
+  -->
+
+  <!-- ── Properties ── -->
+
+  <PropertyGroup>
+    <IconFontUseSubset Condition="'$(Configuration)' == 'Release' And '$(IconFontSubset)' == 'true'">true</IconFontUseSubset>
+    <IconFontUseSubset Condition="'$(IconFontUseSubset)' == ''">false</IconFontUseSubset>
+    <IconFontAssetDirectory>$(MSBuildThisFileDirectory)..\..\assets\iconfont</IconFontAssetDirectory>
+    <IconGlyphSourceRoots Condition="'$(IconGlyphExtraScanRoots)' == ''">$(MSBuildProjectDirectory)</IconGlyphSourceRoots>
+    <IconGlyphSourceRoots Condition="'$(IconGlyphExtraScanRoots)' != ''">$(MSBuildProjectDirectory);$(IconGlyphExtraScanRoots)</IconGlyphSourceRoots>
+    <IconFontMetadataPath>$(IconFontAssetDirectory)\FluentSystemIcons-Regular.json</IconFontMetadataPath>
+    <IconFontFilledMetadataPath>$(IconFontAssetDirectory)\FluentSystemIcons-Filled.json</IconFontFilledMetadataPath>
+    <IconFontSourcePath>$(IconFontAssetDirectory)\FluentSystemIcons-Regular.ttf</IconFontSourcePath>
+    <IconFontFilledSourcePath>$(IconFontAssetDirectory)\FluentSystemIcons-Filled.ttf</IconFontFilledSourcePath>
+    <IconFontManifestPath>$(IconFontAssetDirectory)\manifest.json</IconFontManifestPath>
+    <IconFontIntermediateDirectory>$(BaseIntermediateOutputPath)$(Configuration)\IconFont</IconFontIntermediateDirectory>
+    <IconFontOutputPath>$(IconFontIntermediateDirectory)\iconfont.ttf</IconFontOutputPath>
+    <IconFontFilledOutputPath>$(IconFontIntermediateDirectory)\iconfont-filled.ttf</IconFontFilledOutputPath>
+    <IconFontVerificationStamp>$(IconFontIntermediateDirectory)\verified.stamp</IconFontVerificationStamp>
+    <IconFontScanConfigurationPath>$(IconFontIntermediateDirectory)\scan-roots.txt</IconFontScanConfigurationPath>
+    <IconFontToolProjectPath>$(MSBuildThisFileDirectory)..\..\tools\IconFontTool\IconFontTool.csproj</IconFontToolProjectPath>
+    <IconFontToolPath>$(MSBuildThisFileDirectory)..\..\tools\IconFontTool\bin\Release\iconfont.exe</IconFontToolPath>
+    <IconGlyphFullEnumPath>$(MSBuildProjectDirectory)\UI\IconGlyph.g.cs</IconGlyphFullEnumPath>
+    <IconGlyphGeneratedEnumPath>$(IconFontIntermediateDirectory)\IconGlyph.g.cs</IconGlyphGeneratedEnumPath>
+    <IconGlyphFullMapPath>$(MSBuildProjectDirectory)\UI\IconGlyphMap.g.cs</IconGlyphFullMapPath>
+    <IconGlyphGeneratedMapPath>$(IconFontIntermediateDirectory)\IconGlyphMap.g.cs</IconGlyphGeneratedMapPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);UI\IconGlyph.g.cs;UI\IconGlyphMap.g.cs</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <!-- ── Source scanning (Release only) ── -->
+
+  <ItemGroup Condition="'$(IconFontUseSubset)' == 'true'">
+    <IconGlyphScanRoot Include="$(MSBuildProjectDirectory)" />
+    <IconGlyphScanRoot Include="$(IconGlyphExtraScanRoots)" Condition="'$(IconGlyphExtraScanRoots)' != ''" />
+    <IconGlyphSource Include="@(IconGlyphScanRoot->'%(Identity)\**\*.cs');@(IconGlyphScanRoot->'%(Identity)\**\*.xaml')"
+                     Exclude="@(IconGlyphScanRoot->'%(Identity)\bin\**');@(IconGlyphScanRoot->'%(Identity)\obj\**');$(IconGlyphFullEnumPath);$(IconGlyphFullMapPath)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <IconFontToolSource Include="$(MSBuildThisFileDirectory)..\..\tools\IconFontTool\*.cs;$(IconFontToolProjectPath)" />
+  </ItemGroup>
+
+  <!-- ── Generated files + font resources ── -->
+
+  <!-- Full fonts, non-installer: embed as Resource -->
+  <ItemGroup Condition="'$(IconFontUseSubset)' != 'true' And '$(InstallerBuild)' != 'true'">
+    <Compile Include="$(IconGlyphFullEnumPath)" AutoGen="true" Visible="false" />
+    <Compile Include="$(IconGlyphFullMapPath)" AutoGen="true" Visible="false" />
+    <Resource Include="$(IconFontSourcePath)">
+      <Link>UI\Assets\iconfont.ttf</Link>
+    </Resource>
+    <Resource Include="$(IconFontFilledSourcePath)">
+      <Link>UI\Assets\iconfont-filled.ttf</Link>
+    </Resource>
+  </ItemGroup>
+
+  <!-- Full fonts, installer: deploy as Content sidecars -->
+  <ItemGroup Condition="'$(IconFontUseSubset)' != 'true' And '$(InstallerBuild)' == 'true'">
+    <Compile Include="$(IconGlyphFullEnumPath)" AutoGen="true" Visible="false" />
+    <Compile Include="$(IconGlyphFullMapPath)" AutoGen="true" Visible="false" />
+    <Content Include="$(IconFontSourcePath)" Link="iconfont.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(IconFontFilledSourcePath)" Link="iconfont-filled.ttf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Subset fonts, non-installer: embed generated fonts as Resource -->
+  <ItemGroup Condition="'$(IconFontUseSubset)' == 'true' And '$(InstallerBuild)' != 'true'">
+    <Compile Include="$(IconGlyphGeneratedEnumPath)" AutoGen="true" Visible="false" />
+    <Compile Include="$(IconGlyphGeneratedMapPath)" AutoGen="true" Visible="false" />
+    <Resource Include="$(IconFontOutputPath)">
+      <Link>UI\Assets\iconfont.ttf</Link>
+    </Resource>
+    <Resource Include="$(IconFontFilledOutputPath)">
+      <Link>UI\Assets\iconfont-filled.ttf</Link>
+    </Resource>
+  </ItemGroup>
+
+  <!-- Subset fonts, installer: deploy generated fonts as Content sidecars -->
+  <ItemGroup Condition="'$(IconFontUseSubset)' == 'true' And '$(InstallerBuild)' == 'true'">
+    <Compile Include="$(IconGlyphGeneratedEnumPath)" AutoGen="true" Visible="false" />
+    <Compile Include="$(IconGlyphGeneratedMapPath)" AutoGen="true" Visible="false" />
+    <Content Include="$(IconFontOutputPath)" Link="iconfont.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(IconFontFilledOutputPath)" Link="iconfont-filled.ttf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- ── Targets ── -->
+
+  <Target Name="BuildIconFontTool"
+          Inputs="@(IconFontToolSource)"
+          Outputs="$(IconFontToolPath)"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(IconFontToolProjectPath)"
+             Targets="Restore;Build"
+             Properties="Configuration=Release"
+             RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;SelfContained;OutputPath"
+             BuildInParallel="false" />
+  </Target>
+
+  <Target Name="VerifyIconFontAssets"
+          DependsOnTargets="BuildIconFontTool"
+          Inputs="$(IconFontManifestPath);$(IconFontMetadataPath);$(IconFontFilledMetadataPath);$(IconFontSourcePath);$(IconFontFilledSourcePath);@(IconFontToolSource)"
+          Outputs="$(IconFontVerificationStamp)"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <MakeDir Directories="$(IconFontIntermediateDirectory)" />
+    <Exec Command="&quot;$(IconFontToolPath)&quot; verify --manifest &quot;$(IconFontManifestPath)&quot; --regular-metadata &quot;$(IconFontMetadataPath)&quot; --filled-metadata &quot;$(IconFontFilledMetadataPath)&quot; --regular-font &quot;$(IconFontSourcePath)&quot; --filled-font &quot;$(IconFontFilledSourcePath)&quot;" />
+    <Touch Files="$(IconFontVerificationStamp)" AlwaysCreate="true" />
+    <ItemGroup>
+      <FileWrites Include="$(IconFontVerificationStamp)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WriteIconFontScanConfiguration"
+          Condition="'$(IconFontUseSubset)' == 'true' And '$(DesignTimeBuild)' != 'true'">
+    <MakeDir Directories="$(IconFontIntermediateDirectory)" />
+    <WriteLinesToFile File="$(IconFontScanConfigurationPath)"
+                      Lines="$(IconGlyphSourceRoots)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <FileWrites Include="$(IconFontScanConfigurationPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Full-font build: generate the complete IconGlyph enum + glyph map once. -->
+  <Target Name="GenerateFullIconGlyphEnum"
+          DependsOnTargets="VerifyIconFontAssets"
+          Inputs="$(MSBuildProjectFullPath);$(IconFontMetadataPath);$(IconFontFilledMetadataPath);@(IconFontToolSource)"
+          Outputs="$(IconGlyphFullEnumPath);$(IconGlyphFullMapPath)"
+          Condition="'$(IconFontUseSubset)' != 'true' And '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="&quot;$(IconFontToolPath)&quot; generate --regular-metadata &quot;$(IconFontMetadataPath)&quot; --filled-metadata &quot;$(IconFontFilledMetadataPath)&quot; --mode full --enum-output &quot;$(IconGlyphFullEnumPath)&quot; --map-output &quot;$(IconGlyphFullMapPath)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(IconGlyphFullEnumPath);$(IconGlyphFullMapPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateFullIconGlyphEnumForCrossTargetingBuild"
+          BeforeTargets="DispatchToInnerBuilds"
+          DependsOnTargets="GenerateFullIconGlyphEnum"
+          Condition="'$(IconFontUseSubset)' != 'true' And '$(IsCrossTargetingBuild)' == 'true' And '$(DesignTimeBuild)' != 'true'" />
+
+  <Target Name="GenerateFullIconGlyphEnumForSingleTargetBuild"
+          BeforeTargets="MarkupCompilePass1;CoreCompile"
+          DependsOnTargets="GenerateFullIconGlyphEnum"
+          Condition="'$(IconFontUseSubset)' != 'true' And '$(IsCrossTargetingBuild)' != 'true' And '$(DesignTimeBuild)' != 'true'" />
+
+  <!-- Subset build: scan sources and generate the used enum, map, and fonts. -->
+  <Target Name="GenerateIconFontAssets"
+          DependsOnTargets="VerifyIconFontAssets;WriteIconFontScanConfiguration"
+          Inputs="$(MSBuildProjectFullPath);$(IconFontMetadataPath);$(IconFontFilledMetadataPath);$(IconFontSourcePath);$(IconFontFilledSourcePath);$(IconFontScanConfigurationPath);@(IconFontToolSource);@(IconGlyphSource)"
+          Outputs="$(IconFontOutputPath);$(IconFontFilledOutputPath);$(IconGlyphGeneratedEnumPath);$(IconGlyphGeneratedMapPath)"
+          Condition="'$(IconFontUseSubset)' == 'true' And '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="&quot;$(IconFontToolPath)&quot; generate --regular-metadata &quot;$(IconFontMetadataPath)&quot; --filled-metadata &quot;$(IconFontFilledMetadataPath)&quot; --mode used --source-roots &quot;$(IconGlyphSourceRoots)&quot; --excluded-source &quot;$(IconGlyphFullEnumPath);$(IconGlyphFullMapPath)&quot; --enum-output &quot;$(IconGlyphGeneratedEnumPath)&quot; --map-output &quot;$(IconGlyphGeneratedMapPath)&quot; --regular-font &quot;$(IconFontSourcePath)&quot; --regular-font-output &quot;$(IconFontOutputPath)&quot; --filled-font &quot;$(IconFontFilledSourcePath)&quot; --filled-font-output &quot;$(IconFontFilledOutputPath)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(IconFontOutputPath);$(IconFontFilledOutputPath);$(IconGlyphGeneratedEnumPath);$(IconGlyphGeneratedMapPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateIconFontAssetsForCrossTargetingBuild"
+          BeforeTargets="DispatchToInnerBuilds"
+          DependsOnTargets="GenerateIconFontAssets"
+          Condition="'$(IconFontUseSubset)' == 'true' And '$(IsCrossTargetingBuild)' == 'true' And '$(DesignTimeBuild)' != 'true'" />
+
+  <Target Name="GenerateIconFontAssetsForSingleTargetBuild"
+          BeforeTargets="PrepareResources;MarkupCompilePass1;CoreCompile"
+          DependsOnTargets="GenerateIconFontAssets"
+          Condition="'$(IconFontUseSubset)' == 'true' And '$(IsCrossTargetingBuild)' != 'true' And '$(DesignTimeBuild)' != 'true'" />
+
+</Project>

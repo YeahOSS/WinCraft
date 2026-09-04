@@ -8,6 +8,10 @@ namespace Windows.Win32
     {
         private const string Ole32 = "ole32.dll";
 
+        [DllImport(Ole32)]
+        internal static extern int OleSetClipboard(
+            [MarshalAs(UnmanagedType.Interface)] IDataObject dataObject);
+
         /// <summary>
         /// Creates a COM IStream over a global memory block.
         /// CsWin32 generates IStream/ISequentialStream COM wrappers that fail on net30.

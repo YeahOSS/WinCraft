@@ -77,6 +77,7 @@ WinCraft builds on the work of these open-source projects:
 - [7-Zip LZMA SDK](https://www.7-zip.org/sdk.html) — Igor Pavlov (public domain) — efficient LZMA compression
 - [Theraot](https://github.com/theraot/Theraot) — backfills missing .NET APIs for `net30` compatibility
 - [CsWin32](https://github.com/microsoft/CsWin32) — Microsoft — source-generated Win32 P/Invoke
+- [HarfBuzz](https://github.com/harfbuzz/harfbuzz) — HarfBuzz contributors — icon-font subsetter design informed by studying HarfBuzz's approach
 - [NSIS](https://nsis.sourceforge.io/) — Nullsoft — flexible Windows installer
 - [WiX Toolset](https://wixtoolset.org/) — .NET Foundation — Windows Installer XML (MSI) packaging
 

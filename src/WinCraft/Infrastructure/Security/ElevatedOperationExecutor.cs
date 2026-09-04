@@ -28,18 +28,8 @@ namespace WinCraft.Infrastructure.Security
             { ElevatedOperations.FileRename, ExecuteFileRename },
             { ElevatedOperations.FileSetAttributes, ExecuteFileSetAttributes },
         };
-        public static CommandResult Execute(ElevatedCommandRequest request)
-        {
-            return Execute(
-                request,
-                SystemPrivilegeBridge.Execute,
-                TrustedInstallerBridge.Execute);
-        }
 
-        internal static CommandResult Execute(
-            ElevatedCommandRequest request,
-            Func<ElevatedCommandRequest, CommandResult> systemExecutor,
-            Func<ElevatedCommandRequest, CommandResult> trustedInstallerExecutor)
+        public static CommandResult Execute(ElevatedCommandRequest request)
         {
             if (string.IsNullOrEmpty(request?.OperationName))
             {
@@ -52,8 +42,8 @@ namespace WinCraft.Infrastructure.Security
             return request.PrivilegeLevel switch
             {
                 PrivilegeLevel.Administrator => ExecuteLocal(request),
-                PrivilegeLevel.System => systemExecutor(request),
-                PrivilegeLevel.TrustedInstaller => trustedInstallerExecutor(request),
+                PrivilegeLevel.System => SystemPrivilegeBridge.Execute(request),
+                PrivilegeLevel.TrustedInstaller => TrustedInstallerBridge.Execute(request),
                 _ => CommandResult.Failure(
                     PrivilegeErrorCodes.PrivilegeLevelRequired,
                     "The privileged host cannot execute a standard-level request.",

@@ -24,12 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\tools\IconFontTool\IconFontTool.csproj" />
     <ProjectReference Include="..\WinCraft.Lzma\WinCraft.Lzma.csproj" />
     <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <ExcludeFromBuild>true</ExcludeFromBuild>
-  </PropertyGroup>
 
 </Project>

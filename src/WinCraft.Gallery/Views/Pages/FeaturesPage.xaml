@@ -1,0 +1,84 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.FeaturesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft"
+             xmlns:vm="clr-namespace:WinCraft.Gallery.ViewModels.Pages">
+    <UserControl.DataContext>
+        <vm:FeaturesViewModel />
+    </UserControl.DataContext>
+
+    <ScrollViewer>
+        <ui:SpacingStackPanel MaxWidth="900"
+                              Padding="{StaticResource PagePadding}"
+                              HorizontalAlignment="Center"
+                              ui:LayoutTokens.Spacing="XLarge">
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Features" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Try UI features that need real application services rather than a static control sample." />
+            </ui:SpacingStackPanel>
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Image drag and drop" />
+                <ui:SuperellipseBorder x:Name="ImageDropTarget"
+                                       MinHeight="260"
+                                       Padding="{StaticResource CardPadding}"
+                                       AllowDrop="True"
+                                       Background="{DynamicResource BgSecondary}"
+                                       BorderBrush="{DynamicResource BorderDefault}"
+                                       BorderThickness="{StaticResource BorderThicknessDefault}"
+                                       CornerRadius="{StaticResource CornerRadiusLarge}"
+                                       DragOver="ImageDropTarget_DragOver"
+                                       Drop="ImageDropTarget_Drop">
+                    <Grid>
+                        <ui:SpacingStackPanel HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              ui:LayoutTokens.Spacing="Small">
+                            <ui:IconBlock HorizontalAlignment="Center"
+                                          FontSize="32"
+                                          Foreground="{DynamicResource Primary}"
+                                          Icon="ArrowUpload24" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       Text="Drop an image file or bitmap here"
+                                       TextAlignment="Center" />
+                            <TextBlock HorizontalAlignment="Center"
+                                       ui:Design.VisualRole="Secondary"
+                                       Style="{DynamicResource CaptionTextBlockStyle}"
+                                       Text="{Binding ImageStatus}"
+                                       TextAlignment="Center" />
+                        </ui:SpacingStackPanel>
+                        <Image MaxHeight="300"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Source="{Binding DroppedImage}"
+                               Stretch="Uniform" />
+                    </Grid>
+                </ui:SuperellipseBorder>
+            </ui:SpacingStackPanel>
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Administrator agent" />
+                <ui:SuperellipseBorder Padding="{StaticResource CardPadding}"
+                                       Background="{DynamicResource BgSecondary}"
+                                       BorderBrush="{DynamicResource BorderDefault}"
+                                       BorderThickness="{StaticResource BorderThicknessDefault}"
+                                       CornerRadius="{StaticResource CornerRadiusLarge}">
+                    <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                        <TextBlock Text="Request an on-demand administrator agent and verify the IPC connection. The request does not change system state." TextWrapping="Wrap" />
+                        <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small" Orientation="Horizontal">
+                            <Button ui:Design.VisualRole="Primary"
+                                    Command="{Binding RequestElevationCommand}"
+                                    Content="Request administrator agent" />
+                            <TextBlock VerticalAlignment="Center"
+                                       ui:Design.VisualRole="Secondary"
+                                       Style="{DynamicResource CaptionTextBlockStyle}"
+                                       Text="{Binding ElevationStatus}"
+                                       TextWrapping="Wrap" />
+                        </ui:SpacingStackPanel>
+                    </ui:SpacingStackPanel>
+                </ui:SuperellipseBorder>
+            </ui:SpacingStackPanel>
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

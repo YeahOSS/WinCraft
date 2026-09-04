@@ -270,6 +270,7 @@ function Invoke-ProjectBuild {
     )
     if ($Configuration -eq "Release") {
         $buildProperties += "/p:ContinuousIntegrationBuild=true"
+        $buildProperties += "/p:IconFontSubset=true"
     }
     $buildProperties += $ExtraBuildProperties
 
@@ -465,7 +466,11 @@ Clear-BuildOutputDirectories
 New-Item -ItemType Directory -Path $script:PublishOutputPath -Force | Out-Null
 New-Item -ItemType Directory -Path $script:PublishStagingPath -Force | Out-Null
 
-Invoke-ProjectBuild -Builder $builder -ProjectPath $projects.StandaloneProjectPath -ProjectLabel "standalone executable"
+Invoke-ProjectBuild `
+    -Builder $builder `
+    -ProjectPath $projects.StandaloneProjectPath `
+    -ProjectLabel "standalone executable" `
+    -ExtraBuildProperties @("/p:IconGlyphExtraScanRoots=$($projects.StandaloneProjectRoot)")
 
 if ($BuildOnly) {
     Invoke-InstallerExecutableBuild -Builder $builder -Projects $projects

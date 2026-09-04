@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Storyboard x:Key="ChevronExpand" x:Shared="False">
+        <DoubleAnimation Storyboard.TargetName="ChevronRotate"
+                         Storyboard.TargetProperty="Angle"
+                         To="90"
+                         Duration="0:0:0.12" />
+    </Storyboard>
+
+    <Storyboard x:Key="ChevronCollapse" x:Shared="False">
+        <DoubleAnimation Storyboard.TargetName="ChevronRotate"
+                         Storyboard.TargetProperty="Angle"
+                         To="0"
+                         Duration="0:0:0.1" />
+    </Storyboard>
+
+</ResourceDictionary>

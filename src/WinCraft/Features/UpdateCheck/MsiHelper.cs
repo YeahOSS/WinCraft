@@ -10,9 +10,7 @@ namespace WinCraft.Features.UpdateCheck
 
         public static unsafe bool IsProductInstalled(string productName, string publisher)
         {
-#pragma warning disable S1994 // Exit condition is MsiEnumProductsEx result, not index
-            for (uint index = 0; ; index++)
-#pragma warning restore S1994
+            for (uint index = 0; index < uint.MaxValue; index++)
             {
                 var productCodeBuffer = new char[ProductCodeBufferLength];
                 var context = MSIINSTALLCONTEXT.MSIINSTALLCONTEXT_NONE;
@@ -37,6 +35,8 @@ namespace WinCraft.Features.UpdateCheck
                 if (Matches(productCode, context, productName, publisher))
                     return true;
             }
+
+            return false;
         }
 
         private static unsafe bool Matches(

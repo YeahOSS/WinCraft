@@ -1,0 +1,113 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.SelectionPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft">
+    <ScrollViewer>
+        <ui:SpacingStackPanel Padding="{StaticResource PagePadding}" ui:LayoutTokens.Spacing="XLarge">
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Selection" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="CheckBox, RadioButton, Switch, ListBox, and ListView controls." />
+            </ui:SpacingStackPanel>
+
+            <Separator />
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="CheckBox &amp; RadioButton" />
+                <ui:SpacingStackPanel HorizontalAlignment="Center"
+                                      ui:LayoutTokens.Spacing="Small"
+                                      Orientation="Horizontal">
+                    <CheckBox Content="CheckBox" IsChecked="True" />
+                    <CheckBox Content="CheckBox (indeterminate)"
+                              IsChecked="{x:Null}"
+                              IsThreeState="True" />
+                </ui:SpacingStackPanel>
+                <ui:SpacingStackPanel HorizontalAlignment="Center"
+                                      ui:LayoutTokens.Spacing="Small"
+                                      Orientation="Horizontal">
+                    <RadioButton Content="Radio option A"
+                                 GroupName="demo"
+                                 IsChecked="True" />
+                    <RadioButton Content="Radio option B" GroupName="demo" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Switch" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Binary toggle. Pair with labels for context since Switch is content-less." />
+                <ui:SpacingWrapPanel HorizontalAlignment="Center"
+                                     ui:LayoutTokens.Spacing="Normal"
+                                     Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="Off" />
+                    <ui:Switch VerticalAlignment="Center" />
+                    <TextBlock VerticalAlignment="Center" Text="On" />
+                    <ui:Switch VerticalAlignment="Center" IsChecked="True" />
+                </ui:SpacingWrapPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="ListBox" />
+                <ListBox Height="120"
+                         MaxWidth="400"
+                         SelectedIndex="1">
+                    <ListBoxItem ui:Design.Icon="Document16" Content="List item one" />
+                    <ListBoxItem ui:Design.Icon="Document16" Content="List item two" />
+                    <ListBoxItem ui:Design.Icon="Document16" Content="List item three" />
+                </ListBox>
+            </ui:SpacingStackPanel>
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="ListView" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Multi-column GridView with icon, status badge, and custom cell templates." />
+                <ListView x:Name="SampleListView"
+                          Height="180"
+                          MaxWidth="560">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="36">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ui:IconBlock Width="16" Height="16"
+                                                      VerticalAlignment="Center"
+                                                      Icon="{Binding Icon}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="240">
+                                <GridViewColumn.Header> Name </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="90">
+                                <GridViewColumn.Header> Status </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ui:SpacingStackPanel Orientation="Horizontal" ui:LayoutTokens.Spacing="Small">
+                                            <Border Width="8" Height="8"
+                                                    VerticalAlignment="Center"
+                                                    Background="{Binding StatusBrush}"
+                                                    CornerRadius="4" />
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Status}" />
+                                        </ui:SpacingStackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="100"
+                                            DisplayMemberBinding="{Binding Modified}"
+                                            Header="Modified" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </ui:SpacingStackPanel>
+
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

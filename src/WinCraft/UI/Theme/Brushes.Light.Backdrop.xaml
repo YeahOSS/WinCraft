@@ -1,0 +1,41 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="BgDefault" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="BgSecondary" Color="#99F9F9FB" />
+    <SolidColorBrush x:Key="BgTertiary" Color="#99F4F4F7" />
+
+    <SolidColorBrush x:Key="SecondaryHover" Color="#A6ECEDF1" />
+    <SolidColorBrush x:Key="SecondaryPressed" Color="#A6E3E5EA" />
+
+    <SolidColorBrush x:Key="ControlInputBackground" Color="#CCFFFFFF" />
+    <SolidColorBrush x:Key="ControlInputHoverBackground" Color="#CCF9F9FB" />
+
+    <SolidColorBrush x:Key="ControlFillBackground" Color="#050B0B0C" />
+    <SolidColorBrush x:Key="ControlHoverBackground" Color="#110B0B0C" />
+    <SolidColorBrush x:Key="ControlSelectedBackground" Color="#260B0B0C" />
+    <SolidColorBrush x:Key="ControlDragBackground" Color="#E8F0FE" />
+    <SolidColorBrush x:Key="ControlPressedBackground" Color="#200B0B0C" />
+    <SolidColorBrush x:Key="ControlDisabledBackground" Color="#080B0B0C" />
+    <SolidColorBrush x:Key="ItemDisabledBackground" Color="#040B0B0C" />
+    <SolidColorBrush x:Key="ControlCheckedDisabledBackground" Color="#190B0B0C" />
+    <SolidColorBrush x:Key="ControlCheckedDisabledGlyph" Color="#190B0B0C" />
+
+    <SolidColorBrush x:Key="PrimaryBg" Color="#090D6BDD" />
+    <SolidColorBrush x:Key="InfoBg" Color="#090D6BDD" />
+    <SolidColorBrush x:Key="SuccessBg" Color="#09087F43" />
+    <SolidColorBrush x:Key="WarningBg" Color="#09B34E12" />
+    <SolidColorBrush x:Key="ErrorBg" Color="#09CC243F" />
+
+    <SolidColorBrush x:Key="PrimaryHover" Color="#D90E6FDE" />
+
+    <SolidColorBrush x:Key="ScrollThumb" Color="#200B0B0C" />
+    <SolidColorBrush x:Key="ScrollThumbHover" Color="#360B0B0C" />
+    <SolidColorBrush x:Key="BorderDefault" Color="#0E0B0B0C" />
+    <SolidColorBrush x:Key="BorderHover" Color="#190B0B0C" />
+    <SolidColorBrush x:Key="BorderDisabled" Color="#0C0B0B0C" />
+    <SolidColorBrush x:Key="BorderStrong" Color="#850B0B0C" />
+    <SolidColorBrush x:Key="Separator" Color="#140B0B0C" />
+    <SolidColorBrush x:Key="SeparatorStrong" Color="#2B0B0B0C" />
+    <SolidColorBrush x:Key="SeparatorWeak" Color="#050B0B0C" />
+    <SolidColorBrush x:Key="AccentSelectionBackground" Color="#300D6BDD" />
+    <SolidColorBrush x:Key="BgOverlay" Color="#990B0B0C" />
+</ResourceDictionary>

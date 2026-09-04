@@ -76,6 +76,7 @@ WinCraft 建立在以下开源项目的基础之上：
 - [7-Zip LZMA SDK](https://www.7-zip.org/sdk.html) — Igor Pavlov（公共领域）— 高效的 LZMA 压缩算法
 - [Theraot](https://github.com/theraot/Theraot) — 为 `net30` 回填缺失的 .NET API
 - [CsWin32](https://github.com/microsoft/CsWin32) — Microsoft — 源码生成的 Win32 P/Invoke
+- [HarfBuzz](https://github.com/harfbuzz/harfbuzz) — HarfBuzz 贡献者 — TrueType 子集化工具的设计参考了 HarfBuzz 的实现思路
 - [NSIS](https://nsis.sourceforge.io/) — Nullsoft — 灵活的 Windows 安装器
 - [WiX Toolset](https://wixtoolset.org/) — .NET Foundation — Windows Installer XML (MSI) 打包
 

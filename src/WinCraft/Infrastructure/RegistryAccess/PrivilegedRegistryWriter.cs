@@ -11,11 +11,6 @@ namespace WinCraft.Infrastructure.RegistryAccess
     /// </summary>
     internal sealed class PrivilegedRegistryWriter
     {
-        internal delegate PrivilegeExecutionResult RegistryOperationAttempt(
-            RegistryValueWriteRequest request,
-            string operationName,
-            PrivilegeLevel privilegeLevel);
-
         private static readonly PrivilegeLevel[] CurrentOnlyLevels =
         [
             PrivilegeLevel.Standard
@@ -37,19 +32,10 @@ namespace WinCraft.Infrastructure.RegistryAccess
         ];
 
         private readonly IPrivilegeBroker _privilegeBroker;
-        private readonly RegistryOperationAttempt _operationAttempt;
 
         public PrivilegedRegistryWriter(IPrivilegeBroker privilegeBroker)
-            : this(privilegeBroker, null)
-        {
-        }
-
-        internal PrivilegedRegistryWriter(
-            IPrivilegeBroker privilegeBroker,
-            RegistryOperationAttempt operationAttempt)
         {
             _privilegeBroker = privilegeBroker;
-            _operationAttempt = operationAttempt ?? ExecuteAttempt;
         }
 
         public PrivilegeExecutionResult WriteString(
@@ -194,7 +180,7 @@ namespace WinCraft.Infrastructure.RegistryAccess
             foreach (var privilegeLevel in levels)
             {
                 attemptedLevels.Add(privilegeLevel);
-                lastResult = _operationAttempt(request, operationName, privilegeLevel);
+                lastResult = ExecuteAttempt(request, operationName, privilegeLevel);
                 if (lastResult == null)
                 {
                     lastResult = PrivilegeExecutionResult.Failure(

@@ -233,7 +233,7 @@ function New-InstallerStaging {
         )
         $packageFiles = @(Get-ChildItem -LiteralPath $target.Source -File |
             Where-Object {
-                $_.Extension -in @(".exe", ".dll", ".config") -and
+                $_.Extension -in @(".exe", ".dll", ".config", ".ttf") -and
                 $excludedFileNames -notcontains $_.Name
             })
         if ($packageFiles.Count -eq 0) {

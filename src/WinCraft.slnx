@@ -1,6 +1,10 @@
 <Solution>
+  <Project Path="../tools/IconFontTool/IconFontTool.csproj" />
   <Project Path="WinCraft.Portable/WinCraft.Portable.csproj" Id="c69d3289-ac09-48ba-a4cb-761e3b6d9fec" />
   <Project Path="WinCraft/WinCraft.csproj" Id="d8bb4f32-f9cf-4c0c-89af-34cb1238238f" />
+  <Project Path="WinCraft.Gallery/WinCraft.Gallery.csproj" Id="e1f2a3b4-c5d6-7890-abcd-ef1234567891" />
   <Project Path="WinCraft.Lzma/WinCraft.Lzma.csproj" Id="c4031f47-9c26-4646-8b04-a76db8a8bc02" />
-  <Project Path="WinCraft.Tests/WinCraft.Tests.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+  <Project Path="WinCraft.Tests/WinCraft.Tests.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
+    <Build Solution="Release|*" Project="false" />
+  </Project>
 </Solution>

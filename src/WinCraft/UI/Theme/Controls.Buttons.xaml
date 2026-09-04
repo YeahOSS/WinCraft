@@ -1,0 +1,863 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:WinCraft.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.Common.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        Button
+        Variant: Solid (default) | Outline | Ghost
+        VisualRole (supported): Base (default) | Primary
+        ════════════════════════════════════════════════════════════════
+    -->
+
+    <Style TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="Padding" Value="{StaticResource ControlPadding}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ui:SuperellipseBorder x:Name="Border"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           SnapsToDevicePixels="True">
+                        <Grid>
+                            <ui:SpacingGrid x:Name="NormalLayout"
+                                            Margin="{TemplateBinding Padding}"
+                                            ColumnSpacing="{StaticResource SpacingSmall}"
+                                            Columns="Auto,*">
+                                <ui:IconBlock x:Name="IconInNormal"
+                                              Width="{StaticResource FontSizeIconNormal}"
+                                              Height="{StaticResource FontSizeIconNormal}"
+                                              FontSize="{StaticResource FontSizeIconNormal}"
+                                              Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                              Icon="{TemplateBinding ui:Design.Icon}" />
+                                <ContentPresenter x:Name="ContentInNormal"
+                                                  Grid.Column="1"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                  RecognizesAccessKey="True"
+                                                  TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                                  TextElement.FontSize="{TemplateBinding FontSize}"
+                                                  TextElement.Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ContentPresenter.Resources>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                        </Style>
+                                        <Style TargetType="AccessText">
+                                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                        </Style>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
+                            </ui:SpacingGrid>
+                        </Grid>
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ui:Design.Icon" Value="None">
+                            <Setter TargetName="IconInNormal" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!-- ── Variant overrides ── -->
+            <Trigger Property="ui:Design.Variant" Value="Outline">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}" />
+            </Trigger>
+            <Trigger Property="ui:Design.Variant" Value="Ghost">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </Trigger>
+
+            <!-- ── Primary role ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+
+            <!-- ── Semantic roles: Outline ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Info" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Success" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Warning" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Error" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </MultiTrigger>
+
+            <!-- ── Semantic roles: Ghost ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Info" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Success" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Warning" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Error" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Base (non-Primary, all variants) ── -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+
+            <!-- ── Interaction: Ghost border fix (keep transparent) ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Solid + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidPressed}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidPressed}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Outline + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimaryBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}" />
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryHover}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimaryBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Ghost + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryHover}" />
+            </MultiTrigger>
+
+            <!-- ── Disabled ── -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                <Setter Property="Background" Value="{DynamicResource ControlDisabledBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDisabled}" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        ToggleButton
+        Unchecked  → Base (secondary look)
+        Checked    → Primary (accent look)
+        ════════════════════════════════════════════════════════════════
+    -->
+
+    <Style TargetType="ToggleButton">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="Padding" Value="{StaticResource ControlPadding}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <ui:SuperellipseBorder x:Name="Border"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           SnapsToDevicePixels="True">
+                        <ui:SpacingGrid x:Name="NormalLayout"
+                                        Margin="{TemplateBinding Padding}"
+                                        ColumnSpacing="{StaticResource SpacingSmall}"
+                                        Columns="Auto,*">
+                            <ui:IconBlock x:Name="IconInNormal"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Icon="{TemplateBinding ui:Design.Icon}" />
+                            <ui:IconBlock x:Name="CheckedIconInNormal"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Icon="{TemplateBinding ui:Design.CheckedIcon}"
+                                          Visibility="Collapsed" />
+                            <ContentPresenter x:Name="ContentInNormal"
+                                              Grid.Column="1"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                              RecognizesAccessKey="True"
+                                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                              TextElement.FontSize="{TemplateBinding FontSize}"
+                                              TextElement.Foreground="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                                    </Style>
+                                    <Style TargetType="AccessText">
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </ui:SpacingGrid>
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ui:Design.Icon" Value="None">
+                            <Setter TargetName="IconInNormal" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!-- ── CheckedIcon swap ── -->
+                        <Trigger Property="ui:Design.HasCheckedIconSwap" Value="True">
+                            <Setter TargetName="IconInNormal" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="CheckedIconInNormal" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <!-- ── IsFilledOnChecked: switch to filled glyph when checked ── -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="ui:Design.IsFilledOnChecked" Value="True" />
+                                <Condition Property="ui:Design.CheckedIcon" Value="None" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IconInNormal" Property="ui:Design.IsIconFilled" Value="True" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!-- ── Outline variant (unchecked state only; checked overrides below) ── -->
+            <Trigger Property="ui:Design.Variant" Value="Outline">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}" />
+            </Trigger>
+
+            <!-- ── Checked → Primary ── -->
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </Trigger>
+
+            <!-- ── Checked icon: signal template to swap (when CheckedIcon is set AND checked) ── -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding Path=(ui:Design.CheckedIcon), RelativeSource={RelativeSource Self}, Converter={ui:IconGlyphNoneToBoolCvt}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ui:Design.HasCheckedIconSwap" Value="True" />
+            </MultiDataTrigger>
+
+            <!-- ── Unchecked (Base) interactions ── -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+
+            <!-- ── Checked + interactions ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsChecked" Value="True" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsChecked" Value="True" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidPressed}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidPressed}" />
+            </MultiTrigger>
+
+            <!-- ── Disabled ── -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                <Setter Property="Background" Value="{DynamicResource ControlDisabledBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDisabled}" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        IconButton
+        ════════════════════════════════════════════════════════════════
+    -->
+
+    <Style TargetType="{x:Type ui:IconButton}">
+        <Setter Property="Width" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:IconButton}">
+                    <ui:SuperellipseBorder x:Name="Border"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           Exponent="4"
+                                           SnapsToDevicePixels="True">
+                        <ui:IconBlock Width="{StaticResource FontSizeIconNormal}"
+                                      Height="{StaticResource FontSizeIconNormal}"
+                                      FontSize="{StaticResource FontSizeIconNormal}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      Icon="{TemplateBinding Icon}" />
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsCircular" Value="True">
+                            <Setter TargetName="Border" Property="Exponent" Value="2" />
+                            <Setter TargetName="Border" Property="CornerRadius" Value="9999" />
+                            <Setter Property="ui:FocusVisual.OutlineShape" Value="Ellipse" />
+                        </Trigger>
+                        <Trigger Property="Icon" Value="None">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!-- ── Small ── -->
+            <Trigger Property="IsSmall" Value="True">
+                <Setter Property="Width" Value="24" />
+                <Setter Property="Height" Value="24" />
+            </Trigger>
+
+            <!-- ── Variant overrides ── -->
+            <Trigger Property="ui:Design.Variant" Value="Solid">
+                <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </Trigger>
+            <Trigger Property="ui:Design.Variant" Value="Outline">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}" />
+            </Trigger>
+            <Trigger Property="ui:Design.Variant" Value="Ghost">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </Trigger>
+
+            <!-- ── Primary role ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+
+            <!-- ── Semantic roles: Outline ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Info" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Success" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Warning" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Error" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </MultiTrigger>
+
+            <!-- ── Semantic roles: Ghost ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Info" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Success" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Warning" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Error" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </MultiTrigger>
+
+            <!-- ── Generic interactions ── -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlPressedBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderHover}" />
+            </Trigger>
+
+            <!-- ── Ghost border fix (keep transparent) ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Solid + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Solid" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidPressed}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidPressed}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Outline + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimaryBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Outline" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimaryBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+            </MultiTrigger>
+
+            <!-- ── Interaction: Ghost + Primary ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimaryBg}" />
+            </MultiTrigger>
+
+            <!-- ── Disabled ── -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
+        ════════════════════════════════════════════════════════════════
+        IconToggleButton
+        ════════════════════════════════════════════════════════════════
+    -->
+
+    <Style TargetType="{x:Type ui:IconToggleButton}">
+        <Setter Property="Width" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="Height" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:IconToggleButton}">
+                    <ui:SuperellipseBorder x:Name="Border"
+                                           Background="{TemplateBinding Background}"
+                                           BorderBrush="{TemplateBinding BorderBrush}"
+                                           BorderThickness="{TemplateBinding BorderThickness}"
+                                           CornerRadius="{TemplateBinding ui:Design.CornerRadius}"
+                                           Exponent="4"
+                                           SnapsToDevicePixels="True">
+                        <Grid>
+                            <ui:IconBlock x:Name="UncheckedIcon"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Icon="{TemplateBinding Icon}" />
+                            <ui:IconBlock x:Name="CheckedIcon"
+                                          Width="{StaticResource FontSizeIconNormal}"
+                                          Height="{StaticResource FontSizeIconNormal}"
+                                          FontSize="{StaticResource FontSizeIconNormal}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Icon="{TemplateBinding CheckedIcon}"
+                                          Visibility="Collapsed" />
+                        </Grid>
+                    </ui:SuperellipseBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsCircular" Value="True">
+                            <Setter TargetName="Border" Property="Exponent" Value="2" />
+                            <Setter TargetName="Border" Property="CornerRadius" Value="9999" />
+                            <Setter Property="ui:FocusVisual.OutlineShape" Value="Ellipse" />
+                        </Trigger>
+                        <Trigger Property="Icon" Value="None">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ui:Design.HasCheckedIconSwap" Value="True">
+                            <Setter TargetName="UncheckedIcon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="CheckedIcon" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!-- ── Small ── -->
+            <Trigger Property="IsSmall" Value="True">
+                <Setter Property="Width" Value="24" />
+                <Setter Property="Height" Value="24" />
+            </Trigger>
+
+            <!-- ── Variant overrides ── -->
+            <Trigger Property="ui:Design.Variant" Value="Solid">
+                <Setter Property="Background" Value="{DynamicResource ControlFillBackground}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+            </Trigger>
+            <Trigger Property="ui:Design.Variant" Value="Outline">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}" />
+            </Trigger>
+            <Trigger Property="ui:Design.Variant" Value="Ghost">
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            </Trigger>
+
+            <!-- ── Generic unchecked interactions ── -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlPressedBackground}" />
+            </Trigger>
+
+            <!-- ── Ghost: keep transparent background, shift foreground on hover/press ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+            </MultiTrigger>
+
+            <!-- ── Ghost + Primary: use Primary palette for hover/press ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryHover}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:Design.Variant" Value="Ghost" />
+                    <Condition Property="ui:Design.VisualRole" Value="Primary" />
+                    <Condition Property="IsPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Foreground" Value="{DynamicResource PrimarySolidPressed}" />
+            </MultiTrigger>
+
+            <!-- ── Checked → PrimarySolid (non-Ghost only; Ghost toggles icon only) ── -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding Path=(ui:Design.Variant), RelativeSource={RelativeSource Self}, Converter={ui:VariantGhostToBoolCvt}}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolid}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiDataTrigger>
+
+            <!-- ── Checked + interactions (non-Ghost only, override generic) ── -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding Path=(ui:Design.Variant), RelativeSource={RelativeSource Self}, Converter={ui:VariantGhostToBoolCvt}}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidHover}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnPrimarySolid}" />
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding Path=(ui:Design.Variant), RelativeSource={RelativeSource Self}, Converter={ui:VariantGhostToBoolCvt}}" Value="False" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource PrimarySolidPressed}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimarySolidPressed}" />
+            </MultiDataTrigger>
+
+            <!-- ── Checked icon: Filled variant (all variants) ── -->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsChecked" Value="True" />
+                    <Condition Property="CheckedIcon" Value="None" />
+                    <Condition Property="IsFilledOnChecked" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="ui:Design.IsIconFilled" Value="True" />
+            </MultiTrigger>
+
+            <!-- ── Checked icon: signal template to swap (when CheckedIcon is set AND checked) ── -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource Self}}" Value="True" />
+                    <Condition Binding="{Binding CheckedIcon, RelativeSource={RelativeSource Self}, Converter={ui:IconGlyphNoneToBoolCvt}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ui:Design.HasCheckedIconSwap" Value="True" />
+            </MultiDataTrigger>
+
+            <!-- ── Disabled ── -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

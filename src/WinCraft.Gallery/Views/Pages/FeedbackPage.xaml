@@ -1,0 +1,92 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.FeedbackPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft"
+             xmlns:vm="clr-namespace:WinCraft.Gallery.ViewModels.Pages">
+    <UserControl.DataContext>
+        <vm:FeedbackViewModel />
+    </UserControl.DataContext>
+    <ScrollViewer>
+        <ui:SpacingStackPanel Padding="{StaticResource PagePadding}" ui:LayoutTokens.Spacing="XLarge">
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Feedback" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="MessageBar, MessageTip (toast), MessageBox (dialog), LoadingIndicator, and ProgressBar." />
+            </ui:SpacingStackPanel>
+
+            <Separator />
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="MessageBar" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Inline banners with optional close button and custom icon." />
+                <ui:SpacingStackPanel MaxWidth="480" ui:LayoutTokens.Spacing="Small">
+                    <ui:MessageBar ui:Design.VisualRole="Info" Content="Info message (closable by default)" />
+                    <ui:MessageBar ui:Design.VisualRole="Success" Content="Success message" />
+                    <ui:MessageBar ui:Design.VisualRole="Warning" Content="Warning message" />
+                    <ui:MessageBar ui:Design.VisualRole="Error" Content="Error message" />
+                    <ui:MessageBar ui:Design.VisualRole="Info"
+                                   Content="Non-closable — the close button is hidden."
+                                   IsClosable="False" />
+                    <ui:MessageBar ui:Design.Icon="CheckmarkCircle16"
+                                   ui:Design.VisualRole="Success"
+                                   Content="Custom icon override" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="MessageTip (Toast)" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Non-modal, auto-dismiss notifications. Click a button to show:" />
+                <ui:SpacingUniformGrid ui:LayoutTokens.Spacing="Small"
+                                       Columns="4"
+                                       Rows="1">
+                    <Button Command="{Binding ShowInfoToastCommand}" Content="Info toast" />
+                    <Button Command="{Binding ShowSuccessToastCommand}" Content="Success toast" />
+                    <Button Command="{Binding ShowWarningToastCommand}" Content="Warning toast" />
+                    <Button ui:Design.Variant="Outline"
+                            Command="{Binding ShowErrorToastCommand}"
+                            Content="Error toast" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="MessageBox (Modal Dialog)" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Themed modal dialogs that block the window until dismissed." />
+                <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small" Orientation="Horizontal">
+                    <Button Command="{Binding ShowInfoDialogCommand}" Content="Info dialog" />
+                    <Button Command="{Binding ShowConfirmDialogCommand}" Content="Confirm (Yes/No)" />
+                    <Button Command="{Binding ShowRememberChoiceDialogCommand}" Content="Remembered choice" />
+                    <Button ui:Design.Variant="Outline"
+                            Command="{Binding ResetRememberChoiceCommand}"
+                            Content="Reset choice" />
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Primary"
+                            Command="{Binding ShowErrorDialogCommand}"
+                            Content="Error dialog" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Progress Indicators" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="LoadingIndicator with custom dot count and size; ProgressBar determinate and indeterminate." />
+                <ui:SpacingWrapPanel VerticalAlignment="Center" ui:LayoutTokens.Spacing="Small">
+                    <ui:LoadingIndicator VerticalAlignment="Center" />
+                    <ui:LoadingIndicator Width="32"
+                                         Height="32"
+                                         VerticalAlignment="Center"
+                                         DotCount="12"
+                                         DotSizeRatio="0.1" />
+                    <ui:LoadingIndicator Width="32"
+                                         Height="32"
+                                         VerticalAlignment="Center"
+                                         DotCount="6"
+                                         DotSizeRatio="0.18" />
+                    <ProgressBar Width="180"
+                                 VerticalAlignment="Center"
+                                 Value="64" />
+                    <ProgressBar Width="120"
+                                 VerticalAlignment="Center"
+                                 IsIndeterminate="True" />
+                </ui:SpacingWrapPanel>
+            </ui:SpacingStackPanel>
+
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

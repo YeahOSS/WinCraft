@@ -1,8 +1,6 @@
-using System.Windows;
-
 namespace WinCraft.UI
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {

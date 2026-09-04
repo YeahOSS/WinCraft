@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <Import Project="..\..\publish\version.props" />
 
   <PropertyGroup>
@@ -36,7 +36,12 @@
         S3776  Cognitive complexity of methods should not be too high (interop is complex).
         S1135  TODO comments should be tracked.
     -->
-    <NoWarn>$(NoWarn);PInvoke009;S101;S2346;S3874;S3881;S3265;S3869;S2221;S2486;S3717;S2325;S2955;S3459;S3598;S125;S3776;S1135;S2190</NoWarn>
+    <NoWarn>$(NoWarn);PInvoke009;S101;S2344;S2346;S3874;S3881;S3265;S3869;S2221;S2486;S3717;S2325;S2955;S3459;S3598;S125;S3776;S1133;S1135;S2190</NoWarn>
+    <!--
+      S2344  Flags enums must name zero-value 'None' (Win32 enums triggered by NativeMethods.txt).
+      S1133  Obsolete attribute should include text explanation (not always needed for compat markers).
+      S2190  Recursive type should not be marked [Serializable] (Win32-generated types may need it).
+    -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(InstallerBuild)' == 'true'">
@@ -63,12 +68,14 @@
     <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
 
+  <Import Project="IconFont.targets" />
+
   <!--
     Quick net30 validation triggered from every net45 build.
-    Net30ValidationBuild guard prevents re-entry when validate.ps1 calls MSBuild.
+    Net30ValidationBuild guard prevents re-entry when the inner build calls MSBuild.
   -->
   <Target Name="ValidateNet30" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true' And '$(BuildingInsideVisualStudio)' != 'true'">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)validate.ps1&quot;" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Import-Module '$(MSBuildThisFileDirectory)..\..\tools\net30-validate.psm1'; Invoke-Net30Build -ProjectPath 'src\WinCraft\WinCraft.csproj' -Configuration $(Configuration)&quot;" />
   </Target>
 
   <ItemGroup>
@@ -83,8 +90,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>

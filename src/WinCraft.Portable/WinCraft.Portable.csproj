@@ -35,6 +35,6 @@
   </Target>
 
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="System.Runtime.Remoting" />
   </ItemGroup>
 </Project>

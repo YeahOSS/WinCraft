@@ -4,6 +4,7 @@
 
 Tests under `src/WinCraft.Tests/`, target `net45`, use NUnitLite as a WPF-enabled console EXE.
 Internal access via `InternalsVisibleTo` (guarded by `#if DEBUG`).
+The solution excludes the test project from Release builds; build and run tests in Debug.
 
 ```powershell
 dotnet build -f net45 src/WinCraft.Tests/WinCraft.Tests.csproj

@@ -1,0 +1,63 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:WinCraft.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.Common.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <Style TargetType="ui:Form">
+        <Setter Property="ui:LayoutTokens.Spacing" Value="Small" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:Form">
+                    <ItemsPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ui:FormItem">
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ui:FormItem">
+                    <ui:SpacingGrid ColumnSpacing="{StaticResource SpacingNormal}" Columns="Auto,*">
+                        <ui:SpacingStackPanel x:Name="HeaderArea"
+                                              Width="{Binding Path=(ui:Form.LabelWidth), RelativeSource={RelativeSource Self}}"
+                                              MinWidth="0"
+                                              VerticalAlignment="Center"
+                                              ui:LayoutTokens.Spacing="None"
+                                              Orientation="Horizontal">
+                            <TextBlock x:Name="HeaderText"
+                                       Width="{Binding Path=(ui:Form.LabelWidth), RelativeSource={RelativeSource Self}}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       Text="{TemplateBinding Header}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock x:Name="RequiredMark"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Error}"
+                                       Text="*"
+                                       Visibility="Collapsed" />
+                        </ui:SpacingStackPanel>
+                        <ContentPresenter Grid.Column="1"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center" />
+                    </ui:SpacingGrid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsRequired" Value="True">
+                            <Setter TargetName="RequiredMark" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="HeaderText" Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

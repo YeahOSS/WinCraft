@@ -1,0 +1,56 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.UiCatalogPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft"
+             DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <ui:SpacingStackPanel MaxWidth="900"
+                              Padding="{StaticResource PagePadding}"
+                              HorizontalAlignment="Center"
+                              ui:LayoutTokens.Spacing="XLarge">
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="UI" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Click a gallery page to open its live example in a tab." />
+            </ui:SpacingStackPanel>
+
+            <ItemsControl ItemsSource="{Binding UiPages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Normal"
+                                             ItemHeight="{StaticResource GalleryTileSize}"
+                                             ItemWidth="{StaticResource GalleryTileSize}" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:SuperellipseBorder Padding="{StaticResource CompactCardPadding}"
+                                               BorderThickness="{StaticResource BorderThicknessDefault}"
+                                               CornerRadius="{StaticResource CornerRadiusNormal}"
+                                               Cursor="Hand"
+                                               Style="{StaticResource GalleryCardStyle}">
+                            <ui:SuperellipseBorder.InputBindings>
+                                <MouseBinding Command="{Binding DataContext.OpenPageCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                              CommandParameter="{Binding}"
+                                              MouseAction="LeftClick" />
+                            </ui:SuperellipseBorder.InputBindings>
+                            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                                <ui:IconBlock FontSize="28"
+                                              Foreground="{DynamicResource Primary}"
+                                              Icon="{Binding Icon}" />
+                                <TextBlock FontWeight="SemiBold"
+                                           Text="{Binding Name}"
+                                           TextWrapping="Wrap" />
+                                <TextBlock ui:Design.VisualRole="Secondary"
+                                           Style="{DynamicResource CaptionTextBlockStyle}"
+                                           Text="{Binding Description}"
+                                           TextWrapping="Wrap" />
+                            </ui:SpacingStackPanel>
+                        </ui:SuperellipseBorder>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

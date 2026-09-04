@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Kills every development or release WinCraft host before Build and Clean:
+    the shared output directory means a running instance can lock WinCraft.dll
+    or WinCraft.Lzma.dll before its dependent project builds.
+  -->
+  <PropertyGroup>
+    <KillAppScript>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\kill-app.ps1'))</KillAppScript>
+  </PropertyGroup>
+
+  <Target Name="KillRunningAppInstance" BeforeTargets="BeforeBuild;BeforeClean" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="powershell -NoProfile -Command &quot;&amp; '$(KillAppScript)' 'WinCraft.Portable','WinCraft.Gallery','WinCraft-Standard','WinCraft-Legacy','WinCraft'&quot;" />
+  </Target>
+</Project>

@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <Import Project="..\..\publish\version.props" />
+  <PropertyGroup>
+    <TargetFrameworks>net30;net45</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <OutputType>WinExe</OutputType>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>..\WinCraft\Properties\app.manifest</ApplicationManifest>
+    <AppConfig>..\WinCraft\Properties\app.config</AppConfig>
+    <StartupObject>WinCraft.Gallery.Program</StartupObject>
+    <!-- WinCraft.Gallery is a pure WPF consumer of the WinCraft UI library. -->
+    <NoWarn>$(NoWarn);S125;S2325;S3776;S1135</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\WinCraft\Properties\AssemblyInfo.Shared.cs" Link="Properties\AssemblyInfo.Shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinCraft\WinCraft.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Theraot.Core" Version="3.2.11" />
+  </ItemGroup>
+
+  <Target Name="ValidateGalleryIconFontMode" BeforeTargets="PrepareForBuild" Condition="'$(IconFontSubset)' == 'true'">
+    <Error Text="WinCraft.Gallery requires the complete icon fonts. Build it without IconFontSubset=true." />
+  </Target>
+
+  <!--
+    Quick net30 validation triggered from every net45 build.
+    Net30ValidationBuild guard prevents re-entry when the inner build calls MSBuild.
+  -->
+  <Target Name="ValidateNet30" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net45' And '$(Net30ValidationBuild)' != 'true' And '$(BuildingInsideVisualStudio)' != 'true'">
+    <!--
+      -SkipProjectReferences: WinCraft and Lzma were already validated by
+      WinCraft's own ValidateNet30 target (which runs as a dependency of
+      Gallery's net45 build).  Building them again here is duplicate work.
+    -->
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Import-Module '$(MSBuildThisFileDirectory)..\..\tools\net30-validate.psm1'; Invoke-Net30Build -ProjectPath 'src\WinCraft.Gallery\WinCraft.Gallery.csproj' -Configuration $(Configuration) -SkipProjectReferences&quot;" />
+  </Target>
+</Project>

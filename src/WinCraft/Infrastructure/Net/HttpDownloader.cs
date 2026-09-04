@@ -42,8 +42,7 @@ namespace WinCraft.Infrastructure.Net
         {
             var tcs = new TaskCompletionSource<string>();
 
-            DownloadStringCompletedEventHandler handler = null;
-            handler = (sender, e) =>
+            void handler(object sender, DownloadStringCompletedEventArgs e)
             {
                 DownloadStringCompleted -= handler;
 
@@ -53,7 +52,7 @@ namespace WinCraft.Infrastructure.Net
                     tcs.TrySetException(e.Error);
                 else
                     tcs.TrySetResult(e.Result);
-            };
+            }
 
             DownloadStringCompleted += handler;
 

@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Controls.Common.xaml" />
+        <ResourceDictionary Source="Controls.Buttons.xaml" />
+        <ResourceDictionary Source="Controls.Input.xaml" />
+        <ResourceDictionary Source="Controls.ColorPicker.xaml" />
+        <ResourceDictionary Source="Controls.Selection.xaml" />
+        <ResourceDictionary Source="Controls.Navigation.xaml" />
+        <ResourceDictionary Source="Controls.Menus.xaml" />
+        <ResourceDictionary Source="Controls.Feedback.xaml" />
+        <ResourceDictionary Source="Controls.Form.xaml" />
+        <ResourceDictionary Source="Controls.Scrolling.xaml" />
+        <ResourceDictionary Source="Controls.Window.xaml" />
+        <ResourceDictionary Source="Controls.Extended.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

@@ -1,0 +1,260 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:WinCraft.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Tokens.xaml" />
+        <ResourceDictionary Source="Controls.Animations.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Thickness x:Key="MenuSeparatorLineMargin">8,4</Thickness>
+
+    <DropShadowEffect x:Key="PopupShadowEffect"
+                      x:Shared="False"
+                      BlurRadius="12"
+                      Direction="270"
+                      Opacity="{DynamicResource PopupShadowOpacity}"
+                      ShadowDepth="2"
+                      Color="{DynamicResource PopupShadowColor}" />
+
+    <Style TargetType="Separator">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource Separator}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Background="{TemplateBinding Background}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="ui:SeparatorLayout.Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="MinHeight" Value="{StaticResource SeparatorThickness}" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Trigger>
+            <Trigger Property="ui:SeparatorLayout.Orientation" Value="Vertical">
+                <Setter Property="MinWidth" Value="{StaticResource SeparatorThickness}" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="Background" Value="{DynamicResource SeparatorStrong}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <ContextMenu x:Key="TextBoxContextMenu" x:Shared="False">
+        <MenuItem ui:Design.Icon="ArrowUndo16"
+                  Command="{x:Static ApplicationCommands.Undo}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <MenuItem ui:Design.Icon="ArrowRedo16"
+                  Command="{x:Static ApplicationCommands.Redo}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <Separator Style="{DynamicResource MenuSeparatorStyle}" />
+        <MenuItem ui:Design.Icon="Cut16"
+                  Command="{x:Static ApplicationCommands.Cut}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <MenuItem ui:Design.Icon="Copy16"
+                  Command="{x:Static ApplicationCommands.Copy}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <MenuItem ui:Design.Icon="ClipboardPaste16"
+                  Command="{x:Static ApplicationCommands.Paste}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <Separator Style="{DynamicResource MenuSeparatorStyle}" />
+        <MenuItem ui:Design.Icon="SelectAllOff16"
+                  Command="{x:Static ApplicationCommands.SelectAll}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="PasswordBoxContextMenu" x:Shared="False">
+        <MenuItem ui:Design.Icon="ClipboardPaste16"
+                  Command="{x:Static ApplicationCommands.Paste}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <Separator Style="{DynamicResource MenuSeparatorStyle}" />
+        <MenuItem ui:Design.Icon="SelectAllOff16"
+                  Command="{x:Static ApplicationCommands.SelectAll}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="CopyTextBlockContextMenu" x:Shared="False">
+        <MenuItem ui:Design.Icon="Copy16"
+                  Command="{x:Static ApplicationCommands.Copy}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+        <Separator Style="{DynamicResource MenuSeparatorStyle}" />
+        <MenuItem ui:Design.Icon="SelectAllOff16"
+                  Command="{x:Static ApplicationCommands.SelectAll}"
+                  CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <Style x:Key="MenuSeparatorStyle"
+           BasedOn="{StaticResource {x:Type Separator}}"
+           TargetType="Separator">
+        <Setter Property="ui:SeparatorLayout.Orientation" Value="Horizontal" />
+        <Setter Property="Margin" Value="{StaticResource MenuSeparatorLineMargin}" />
+    </Style>
+
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}"
+           BasedOn="{StaticResource MenuSeparatorStyle}"
+           TargetType="Separator" />
+
+    <Style x:Key="RoleForegroundControlStyle" TargetType="Control">
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Style.Triggers>
+            <Trigger Property="ui:Design.VisualRole" Value="Secondary">
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Primary">
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Info">
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Success">
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Warning">
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Error">
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Ghost">
+                <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="RowControlStyle"
+           BasedOn="{StaticResource RoleForegroundControlStyle}"
+           TargetType="Control">
+        <Setter Property="Padding" Value="{StaticResource RowPadding}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="InputControlStyle" TargetType="Control">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ui:Design.CornerRadius" Value="{StaticResource CornerRadiusNormal}" />
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Background" Value="{DynamicResource ControlInputBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDefault}" />
+        <Setter Property="BorderThickness" Value="{StaticResource BorderThicknessDefault}" />
+        <Setter Property="Padding" Value="{StaticResource InputPadding}" />
+        <Setter Property="MinWidth" Value="{StaticResource InputMinWidthNormal}" />
+        <Setter Property="MinHeight" Value="{StaticResource ControlHeightNormal}" />
+        <Style.Triggers>
+            <Trigger Property="ui:Design.VisualRole" Value="Secondary">
+                <Setter Property="BorderBrush" Value="{DynamicResource TextSecondary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Primary">
+                <Setter Property="BorderBrush" Value="{DynamicResource Primary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Info">
+                <Setter Property="BorderBrush" Value="{DynamicResource Info}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Success">
+                <Setter Property="BorderBrush" Value="{DynamicResource Success}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Warning">
+                <Setter Property="BorderBrush" Value="{DynamicResource Warning}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Error">
+                <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Ghost">
+                <Setter Property="BorderBrush" Value="{DynamicResource TextTertiary}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="RoleForegroundTextStyle" TargetType="TextBlock">
+        <Style.Triggers>
+            <Trigger Property="ui:Design.VisualRole" Value="Secondary">
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Primary">
+                <Setter Property="Foreground" Value="{DynamicResource Primary}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Info">
+                <Setter Property="Foreground" Value="{DynamicResource Info}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Success">
+                <Setter Property="Foreground" Value="{DynamicResource Success}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Warning">
+                <Setter Property="Foreground" Value="{DynamicResource Warning}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Error">
+                <Setter Property="Foreground" Value="{DynamicResource Error}" />
+            </Trigger>
+            <Trigger Property="ui:Design.VisualRole" Value="Ghost">
+                <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style BasedOn="{StaticResource RoleForegroundTextStyle}" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource TextFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SliderTrackButtonStyle" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="{DynamicResource TransparentBrush}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TitleTextBlockStyle"
+           BasedOn="{StaticResource {x:Type TextBlock}}"
+           TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="SectionHeaderTextBlockStyle"
+           BasedOn="{StaticResource {x:Type TextBlock}}"
+           TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="CaptionTextBlockStyle"
+           BasedOn="{StaticResource {x:Type TextBlock}}"
+           TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="ui:IconBlock">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform Y="{StaticResource IconOpticalOffsetY}" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

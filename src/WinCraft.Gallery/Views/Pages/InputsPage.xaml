@@ -1,0 +1,112 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.InputsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft">
+    <ScrollViewer>
+        <ui:SpacingStackPanel Padding="{StaticResource PagePadding}" ui:LayoutTokens.Spacing="XLarge">
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Inputs" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="TextBox, RichTextBox, PasswordBox, ComboBox, NumericBox, Slider, and ColorPicker controls." />
+            </ui:SpacingStackPanel>
+
+            <Separator />
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="TextBox" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Leading icon, clear button, multi-line, and triple-click select-all styles." />
+                <ui:SpacingStackPanel MaxWidth="400" ui:LayoutTokens.Spacing="Small">
+                    <TextBox ui:Design.Icon="Search16" ui:TextInput.Watermark="Search" />
+                    <TextBox ui:TextInput.IsClearButtonEnabled="True" Text="Clearable text" />
+                    <TextBox Height="80"
+                             ui:TextInput.Watermark="Multi-line text input"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap" />
+                    <ui:CopyTextBlock Text="Read-only selectable text — click to select and copy." />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="RichTextBox" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Watermark and formatted content. Triple-click selects the paragraph." />
+                <ui:SpacingStackPanel MaxWidth="400" ui:LayoutTokens.Spacing="Small">
+                    <RichTextBox Height="80" ui:TextInput.Watermark="Type rich text here" />
+                    <RichTextBox Height="80">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run FontWeight="Bold" Text="Bold" />
+                                <Run Text=", " />
+                                <Run FontStyle="Italic" Text="italic" />
+                                <Run Text=", and " />
+                                <Run Foreground="{DynamicResource Primary}" Text="colored" />
+                                <Run Text=" text." />
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="PasswordBox" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Password reveal toggle and clear button support." />
+                <ui:SpacingStackPanel MaxWidth="400" ui:LayoutTokens.Spacing="Small">
+                    <PasswordBox ui:PasswordReveal.IsEnabled="True" ui:TextInput.Watermark="Password" />
+                    <PasswordBox ui:PasswordReveal.IsEnabled="True"
+                                 ui:TextInput.IsClearButtonEnabled="True"
+                                 ui:TextInput.Watermark="Password with clear button"
+                                 Password="secret" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="ComboBox" />
+                <ui:SpacingStackPanel MaxWidth="400" ui:LayoutTokens.Spacing="Small">
+                    <ComboBox ui:TextInput.Watermark="Choose an item" SelectedIndex="-1">
+                        <ComboBoxItem Content="ComboBox item A" />
+                        <ComboBoxItem Content="ComboBox item B" />
+                        <ComboBoxItem Content="ComboBox item C" />
+                    </ComboBox>
+                    <ComboBox ui:TextInput.Watermark="Choose or enter an item"
+                              IsEditable="True"
+                              SelectedIndex="-1">
+                        <ComboBoxItem Content="ComboBox item A" />
+                        <ComboBoxItem Content="ComboBox item B" />
+                        <ComboBoxItem Content="ComboBox item C" />
+                    </ComboBox>
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="NumericBox" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Integer and decimal input. Focus the box and use ↑/↓ keys or mouse wheel to adjust." />
+                <ui:SpacingStackPanel HorizontalAlignment="Center"
+                                      ui:LayoutTokens.Spacing="Small"
+                                      Orientation="Horizontal">
+                    <ui:NumericBox Maximum="999"
+                                   Minimum="0"
+                                   Step="1"
+                                   Value="42" />
+                    <ui:NumericBox DecimalPlaces="1"
+                                   InputType="Decimal"
+                                   Maximum="100"
+                                   Minimum="-100"
+                                   Step="0.5"
+                                   Value="12.5" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Slider" />
+                <Slider MaxWidth="400" Value="42" />
+            </ui:SpacingStackPanel>
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="ColorPicker" />
+                <ui:SpacingStackPanel HorizontalAlignment="Center"
+                                      ui:LayoutTokens.Spacing="Small"
+                                      Orientation="Horizontal">
+                    <ui:ColorPicker Width="200" Color="#B41474F2" />
+                    <ui:ColorPicker Width="200"
+                                    IsAlphaEnabled="False"
+                                    Color="#1474F2" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingStackPanel>
+
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

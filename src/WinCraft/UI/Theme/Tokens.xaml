@@ -1,0 +1,66 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- ===== Font families ===== -->
+    <FontFamily x:Key="TextFontFamily">Segoe UI, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="IconFontFamily">pack://application:,,,/WinCraft;component/UI/Assets/iconfont.ttf#FluentSystemIcons-Regular</FontFamily>
+    <FontFamily x:Key="IconFontFamilyFilled">pack://application:,,,/WinCraft;component/UI/Assets/iconfont-filled.ttf#FluentSystemIcons-Filled</FontFamily>
+
+    <!-- ===== Font sizes ===== -->
+    <sys:Double x:Key="FontSizeSmall">12</sys:Double>
+    <sys:Double x:Key="FontSizeCaption">13</sys:Double>
+    <sys:Double x:Key="FontSizeNormal">14</sys:Double>
+    <sys:Double x:Key="FontSizeLarge">15</sys:Double>
+    <sys:Double x:Key="FontSizeIconSmall">12</sys:Double>
+    <sys:Double x:Key="FontSizeIconNormal">16</sys:Double>
+    <sys:Double x:Key="FontSizeIconLarge">20</sys:Double>
+    <sys:Double x:Key="FontSizeTitle">24</sys:Double>
+
+    <!-- ===== Spacing ===== -->
+    <sys:Double x:Key="SpacingXSmall">4</sys:Double>
+    <sys:Double x:Key="SpacingSmall">8</sys:Double>
+    <sys:Double x:Key="SpacingNormal">12</sys:Double>
+    <sys:Double x:Key="SpacingLarge">16</sys:Double>
+    <sys:Double x:Key="SpacingXLarge">24</sys:Double>
+
+    <!-- ===== Control dimensions ===== -->
+    <sys:Double x:Key="ControlHeightNormal">32</sys:Double>
+    <sys:Double x:Key="InputMinWidthNormal">96</sys:Double>
+
+    <!-- ===== Paddings ===== -->
+    <Thickness x:Key="PaddingSmall">4</Thickness>
+    <Thickness x:Key="PaddingNormal">12</Thickness>
+    <Thickness x:Key="PaddingLarge">24</Thickness>
+    <Thickness x:Key="ControlPadding">12,4</Thickness>
+    <Thickness x:Key="BorderThicknessDefault">1</Thickness>
+    <Thickness x:Key="InputPadding">6,4</Thickness>
+    <Thickness x:Key="CompactInputPadding">4,2</Thickness>
+    <Thickness x:Key="RowPadding">12,6</Thickness>
+
+    <!-- ===== Corner radii ===== -->
+    <CornerRadius x:Key="CornerRadiusXSmall">4</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusTiny">2</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusSmall">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusSmallTop">8,8,0,0</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusSmallBottom">0,0,8,8</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusNormal">10</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusNormalTop">10,10,0,0</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusNormalBottom">0,0,10,10</CornerRadius>
+    <CornerRadius x:Key="CornerRadiusLarge">12</CornerRadius>
+
+    <!-- ===== Tab chrome (WindowTabItem only) ===== -->
+    <sys:Double x:Key="TabShoulderHeight">12</sys:Double>
+    <sys:Double x:Key="TabShoulderWidth">20</sys:Double>
+    <sys:Double x:Key="TabTopRadius">8</sys:Double>
+    <Thickness x:Key="TabHeaderPadding">2,2,4,0</Thickness>
+
+    <!-- ===== Popup & overlay (shared across multiple controls) ===== -->
+    <Thickness x:Key="PopupOffsetMargin">0,4,0,0</Thickness>
+    <Thickness x:Key="PopupShadowMargin">10,10,10,12</Thickness>
+
+    <!-- ===== Misc shared ===== -->
+    <sys:Double x:Key="DialogIconSize">24</sys:Double>
+    <sys:Double x:Key="IconOpticalOffsetY">1</sys:Double>
+    <sys:Double x:Key="SeparatorThickness">1</sys:Double>
+    <Thickness x:Key="IconTrailingMargin">0,0,8,0</Thickness>
+</ResourceDictionary>

@@ -50,4 +50,4 @@ All C# files under `UI/` use namespace `WinCraft.UI`; subdirectories are physica
 | MVVM primitives | `UI/Mvvm/` |
 | Converters | `UI/Converters/` |
 | Business-neutral controls | `UI/Controls/` |
-| Business-neutral styles, brushes, theme colors | `UI/Styles/` |
+| Theme, design tokens, brushes | `UI/Theme/` |

@@ -1,0 +1,357 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.ButtonsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft">
+    <ScrollViewer>
+        <ui:SpacingStackPanel Padding="{StaticResource PagePadding}" ui:LayoutTokens.Spacing="XLarge">
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Buttons" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Button, ToggleButton, IconButton, and IconToggleButton with variant and role support." />
+            </ui:SpacingStackPanel>
+
+            <Separator />
+
+            <!-- ── Button Variants ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Button" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Solid | Outline | Ghost × Base | Primary" />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="2">
+                    <Button Content="Solid" />
+                    <Button ui:Design.VisualRole="Primary" Content="Solid Primary" />
+                    <Button ui:Design.Variant="Outline" Content="Outline" />
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Primary"
+                            Content="Outline Primary" />
+                    <Button ui:Design.Variant="Ghost" Content="Ghost" />
+                    <Button ui:Design.Variant="Ghost"
+                            ui:Design.VisualRole="Primary"
+                            Content="Ghost Primary" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+
+            <!-- ── Button Features ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Button Features" />
+                <!-- With Icons -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="With Icons" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <Button ui:Design.Icon="Add16" Content="Add" />
+                    <Button ui:Design.Icon="Save16" Content="Save" />
+                    <Button ui:Design.Icon="Settings16"
+                            ui:Design.Variant="Outline"
+                            Content="Settings" />
+                </ui:SpacingWrapPanel>
+                <!-- Semantic Roles · Outline -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Semantic Roles · Outline" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Info"
+                            Content="Info" />
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Success"
+                            Content="Success" />
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Warning"
+                            Content="Warning" />
+                    <Button ui:Design.Variant="Outline"
+                            ui:Design.VisualRole="Error"
+                            Content="Error" />
+                </ui:SpacingWrapPanel>
+                <!-- Semantic Roles · Ghost -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Semantic Roles · Ghost" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <Button ui:Design.Variant="Ghost"
+                            ui:Design.VisualRole="Info"
+                            Content="Info" />
+                    <Button ui:Design.Variant="Ghost"
+                            ui:Design.VisualRole="Success"
+                            Content="Success" />
+                    <Button ui:Design.Variant="Ghost"
+                            ui:Design.VisualRole="Warning"
+                            Content="Warning" />
+                    <Button ui:Design.Variant="Ghost"
+                            ui:Design.VisualRole="Error"
+                            Content="Error" />
+                </ui:SpacingWrapPanel>
+            </ui:SpacingStackPanel>
+
+            <!-- ── ToggleButton ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="ToggleButton" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Toggles between unchecked and checked appearance. Supports Outline variant, CheckedIcon swap, and IsFilledOnChecked." />
+                <!-- Basic -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Basic" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <ToggleButton Content="Toggle me" />
+                    <ToggleButton Content="Checked" IsChecked="True" />
+                </ui:SpacingWrapPanel>
+                <!-- Outline -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Outline" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <ToggleButton ui:Design.Variant="Outline" Content="Outline" />
+                    <ToggleButton ui:Design.Variant="Outline"
+                                  Content="Outline Checked"
+                                  IsChecked="True" />
+                </ui:SpacingWrapPanel>
+                <!-- IsFilledOnChecked -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="IsFilledOnChecked" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <ToggleButton ui:Design.Icon="Heart16" Content="Favorite" />
+                    <ToggleButton ui:Design.Icon="Heart16"
+                                  Content="Favorite"
+                                  IsChecked="True" />
+                    <ToggleButton ui:Design.Icon="Star16"
+                                  ui:Design.IsFilledOnChecked="False"
+                                  Content="Star" />
+                    <ToggleButton ui:Design.Icon="Star16"
+                                  ui:Design.IsFilledOnChecked="False"
+                                  Content="Star"
+                                  IsChecked="True" />
+                </ui:SpacingWrapPanel>
+                <!-- CheckedIcon swap -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="CheckedIcon swap" />
+                <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                    <ToggleButton ui:Design.CheckedIcon="HeartOff16"
+                                  ui:Design.Icon="Bookmark16"
+                                  Content="Bookmark" />
+                    <ToggleButton ui:Design.CheckedIcon="HeartOff16"
+                                  ui:Design.Icon="Bookmark16"
+                                  Content="Bookmark"
+                                  IsChecked="True" />
+                </ui:SpacingWrapPanel>
+            </ui:SpacingStackPanel>
+
+            <!-- ── IconButton ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="IconButton" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Ghost | Solid | Outline × square, circular, and small shapes. Aligned with Button variants." />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="3">
+                    <!-- Row 1: Square -->
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Settings16"
+                                   ToolTip="Ghost square" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Settings16"
+                                   ToolTip="Solid square" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Settings16"
+                                   ToolTip="Outline square" />
+                    <!-- Row 2: Circular -->
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Heart16"
+                                   IsCircular="True"
+                                   ToolTip="Ghost circular" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Heart16"
+                                   IsCircular="True"
+                                   ToolTip="Solid circular" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Heart16"
+                                   IsCircular="True"
+                                   ToolTip="Outline circular" />
+                    <!-- Row 3: Small circular -->
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Add16"
+                                   IsCircular="True"
+                                   IsSmall="True"
+                                   ToolTip="Ghost small" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Add16"
+                                   IsCircular="True"
+                                   IsSmall="True"
+                                   ToolTip="Solid small" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Add16"
+                                   IsCircular="True"
+                                   IsSmall="True"
+                                   ToolTip="Outline small" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+
+            <!-- ── IconToggleButton ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="IconToggleButton" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="Icon-only toggle. Ghost toggles icon appearance; Solid and Outline use PrimarySolid background when checked." />
+                <!-- Ghost -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Ghost" />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="2"
+                                       Rows="3">
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         Icon="Star16"
+                                         ToolTip="Star" />
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         Icon="Star16"
+                                         IsChecked="True"
+                                         ToolTip="Star checked" />
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         Icon="Heart16"
+                                         ToolTip="Heart" />
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         Icon="Heart16"
+                                         IsChecked="True"
+                                         ToolTip="Heart checked" />
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         CheckedIcon="HeartOff16"
+                                         Icon="Bookmark16"
+                                         ToolTip="Bookmark" />
+                    <ui:IconToggleButton ui:Design.Variant="Ghost"
+                                         CheckedIcon="HeartOff16"
+                                         Icon="Bookmark16"
+                                         IsChecked="True"
+                                         ToolTip="Bookmark checked" />
+                </ui:SpacingUniformGrid>
+                <!-- Solid: background color indicates checked, icon stays the same -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Solid" />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="1">
+                    <ui:IconToggleButton Icon="Star16" ToolTip="Unchecked" />
+                    <ui:IconToggleButton Icon="Star16"
+                                         IsChecked="True"
+                                         ToolTip="Checked (PrimarySolid bg)" />
+                    <ui:IconToggleButton Icon="Star16"
+                                         IsChecked="True"
+                                         IsCircular="True"
+                                         ToolTip="Checked circular" />
+                </ui:SpacingUniformGrid>
+                <!-- Outline: background color indicates checked, icon stays the same -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Outline" />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="1">
+                    <ui:IconToggleButton ui:Design.Variant="Outline"
+                                         Icon="Heart16"
+                                         ToolTip="Unchecked" />
+                    <ui:IconToggleButton ui:Design.Variant="Outline"
+                                         Icon="Heart16"
+                                         IsChecked="True"
+                                         ToolTip="Checked (PrimarySolid bg)" />
+                    <ui:IconToggleButton ui:Design.Variant="Outline"
+                                         Icon="Heart16"
+                                         IsChecked="True"
+                                         IsCircular="True"
+                                         ToolTip="Checked circular" />
+                </ui:SpacingUniformGrid>
+                <!-- CheckedIcon swap also works for non-Ghost -->
+                <TextBlock Foreground="{DynamicResource TextSecondary}"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="CheckedIcon swap" />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="1">
+                    <ui:IconToggleButton CheckedIcon="HeartOff16"
+                                         Icon="Bookmark16"
+                                         ToolTip="Solid unchecked" />
+                    <ui:IconToggleButton CheckedIcon="HeartOff16"
+                                         Icon="Bookmark16"
+                                         IsChecked="True"
+                                         ToolTip="Solid swap checked" />
+                    <ui:IconToggleButton ui:Design.Variant="Outline"
+                                         CheckedIcon="HeartOff16"
+                                         Icon="Bookmark16"
+                                         IsChecked="True"
+                                         ToolTip="Outline swap checked" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+
+            <!-- ── IconButton Circular Comparison ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="IconButton · Square vs Circular" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="IsCircular switches from superellipse to perfect circle shape." />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="2">
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Settings16"
+                                   ToolTip="Ghost square" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Settings16"
+                                   ToolTip="Solid square" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Settings16"
+                                   ToolTip="Outline square" />
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Settings16"
+                                   IsCircular="True"
+                                   ToolTip="Ghost circular" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Settings16"
+                                   IsCircular="True"
+                                   ToolTip="Solid circular" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Settings16"
+                                   IsCircular="True"
+                                   ToolTip="Outline circular" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+
+            <!-- ── IconButton Size Comparison ── -->
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Normal">
+                <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="IconButton · Sizes" />
+                <TextBlock Style="{DynamicResource CaptionTextBlockStyle}" Text="IsSmall shrinks from 32×32 to 24×24." />
+                <ui:SpacingUniformGrid HorizontalAlignment="Left"
+                                       ui:LayoutTokens.Spacing="Small"
+                                       Columns="3"
+                                       Rows="2">
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Settings16"
+                                   ToolTip="Ghost 32×32" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Settings16"
+                                   ToolTip="Solid 32×32" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Settings16"
+                                   ToolTip="Outline 32×32" />
+                    <ui:IconButton ui:Design.Variant="Ghost"
+                                   Icon="Settings16"
+                                   IsSmall="True"
+                                   ToolTip="Ghost 24×24" />
+                    <ui:IconButton ui:Design.Variant="Solid"
+                                   Icon="Settings16"
+                                   IsSmall="True"
+                                   ToolTip="Solid 24×24" />
+                    <ui:IconButton ui:Design.Variant="Outline"
+                                   Icon="Settings16"
+                                   IsSmall="True"
+                                   ToolTip="Outline 24×24" />
+                </ui:SpacingUniformGrid>
+            </ui:SpacingStackPanel>
+
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>

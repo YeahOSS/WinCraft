@@ -1,0 +1,424 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:WinCraft.UI">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style TargetType="{x:Type ui:TitleBarButton}">
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:TitleBarButton}">
+                    <Border Background="{TemplateBinding Background}">
+                        <ui:IconBlock FontFamily="{StaticResource IconFontFamily}"
+                                      FontSize="{StaticResource FontSizeIconNormal}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      Icon="{TemplateBinding Icon}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsWindowActive, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+            </DataTrigger>
+            <Trigger Property="ui:ChromeWindow.IsNonClientHovered" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+            </Trigger>
+            <Trigger Property="ui:ChromeWindow.IsNonClientPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlPressedBackground}" />
+            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:ChromeWindow.HitTestRole" Value="Close" />
+                    <Condition Property="ui:ChromeWindow.IsNonClientHovered" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource ErrorSolid}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="ui:ChromeWindow.HitTestRole" Value="Close" />
+                    <Condition Property="ui:ChromeWindow.IsNonClientPressed" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource ErrorSolidPressed}" />
+                <Setter Property="Opacity" Value="0.8" />
+                <Setter Property="Foreground" Value="{DynamicResource TextOnColor}" />
+            </MultiTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type ui:TitleBar}">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="ui:ChromeWindow.HitTestRole" Value="Caption" />
+        <Setter Property="Background" Value="{DynamicResource BgSecondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:TitleBar}">
+                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                        <ui:TitleBarPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Image Width="{StaticResource FontSizeIconNormal}"
+                                       Height="{StaticResource FontSizeIconNormal}"
+                                       Margin="{StaticResource IconTrailingMargin}"
+                                       VerticalAlignment="Center"
+                                       Source="{Binding EffectiveIcon, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}">
+                                    <Image.Style>
+                                        <Style TargetType="{x:Type Image}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShowIcon, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <TextBlock x:Name="DefaultTitle"
+                                           Grid.Column="1"
+                                           VerticalAlignment="Center"
+                                           FontSize="{StaticResource FontSizeSmall}"
+                                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}"
+                                           Visibility="Collapsed" />
+                                <ContentPresenter Grid.Column="2"
+                                                  VerticalAlignment="Center"
+                                                  ui:ChromeWindow.HitTestRole="Client"
+                                                  Content="{TemplateBinding Header}" />
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center"
+                                              ui:ChromeWindow.HitTestRole="Client"
+                                              Content="{TemplateBinding Content}" />
+                            <StackPanel Orientation="Horizontal">
+                                <ContentPresenter VerticalAlignment="Center"
+                                                  ui:ChromeWindow.HitTestRole="Client"
+                                                  Content="{TemplateBinding Footer}" />
+                                <ui:TitleBarButton x:Name="HelpButton"
+                                                   ui:ChromeWindow.HitTestRole="Help"
+                                                   Icon="QuestionCircle28"
+                                                   Visibility="Collapsed" />
+                                <ui:TitleBarButton x:Name="MinimizeButton"
+                                                   ui:ChromeWindow.HitTestRole="Minimize"
+                                                   Command="{Binding MinimizeCommand, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}"
+                                                   Icon="LineHorizontal116" />
+                                <ui:TitleBarButton x:Name="MaximizeButton"
+                                                   ui:ChromeWindow.HitTestRole="Maximize"
+                                                   Command="{Binding MaximizeRestoreCommand, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}"
+                                                   Icon="Maximize16" />
+                                <ui:TitleBarButton x:Name="CloseButton"
+                                                   ui:ChromeWindow.HitTestRole="Close"
+                                                   Command="{Binding CloseCommand, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}"
+                                                   Icon="Dismiss20" />
+                            </StackPanel>
+                        </ui:TitleBarPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Header" Value="{x:Null}">
+                            <Setter TargetName="DefaultTitle" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding ShowHelp, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="True">
+                            <Setter TargetName="HelpButton" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowMinimize, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                            <Setter TargetName="MinimizeButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowMaximize, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                            <Setter TargetName="MaximizeButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowClose, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                            <Setter TargetName="CloseButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ResizeMode, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="NoResize">
+                            <Setter TargetName="MinimizeButton" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="MaximizeButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ResizeMode, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="CanMinimize">
+                            <Setter TargetName="MaximizeButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowInTaskbar, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="False">
+                            <Setter TargetName="MinimizeButton" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type ui:ChromeWindow}}}" Value="Maximized">
+                            <Setter TargetName="MaximizeButton" Property="Icon" Value="SquareMultiple16" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ui:WindowTabItem}">
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Margin" Value="1,3,1,0" />
+        <Setter Property="Padding" Value="12,0,8,0" />
+        <Setter Property="ui:ChromeWindow.HitTestRole" Value="Client" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:WindowTabItem}">
+                    <Grid Background="{DynamicResource TransparentBrush}" ClipToBounds="False">
+                        <ui:TabShoulderShape x:Name="SelectedBackground"
+                                             Margin="-20,0,-20,-1"
+                                             Fill="{DynamicResource ControlSelectedBackground}"
+                                             IsHitTestVisible="False"
+                                             ShoulderHeight="{StaticResource TabShoulderHeight}"
+                                             ShoulderWidth="{StaticResource TabShoulderWidth}"
+                                             TopRadius="{StaticResource TabTopRadius}"
+                                             Visibility="Collapsed" />
+                        <Border x:Name="HoverBackground"
+                                Margin="2,1"
+                                Background="{DynamicResource TransparentBrush}"
+                                CornerRadius="{StaticResource CornerRadiusSmall}" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HoverBackground" Property="Background" Value="{DynamicResource ControlHoverBackground}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Panel.ZIndex" Value="1" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+                            <Setter TargetName="SelectedBackground" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="HoverBackground" Property="Background" Value="{DynamicResource TransparentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter Property="Panel.ZIndex" Value="10" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+                            <Setter TargetName="SelectedBackground" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="SelectedBackground" Property="Fill" Value="{DynamicResource ControlDragBackground}" />
+                            <Setter TargetName="SelectedBackground" Property="Stroke" Value="{DynamicResource BorderActive}" />
+                            <Setter TargetName="SelectedBackground" Property="StrokeThickness" Value="1" />
+                            <Setter TargetName="HoverBackground" Property="Background" Value="{DynamicResource TransparentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsCompact" Value="True">
+                            <Setter Property="Padding" Value="4,0" />
+                        </Trigger>
+                        <Trigger Property="IsHomeTab" Value="True">
+                            <Setter Property="Padding" Value="4,0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ui:WindowTabStrip}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ui:ChromeWindow.HitTestRole" Value="Caption" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <ui:WindowTabPanel />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:WindowTabStrip}">
+                    <Grid Background="{TemplateBinding Background}" ClipToBounds="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:IconButton x:Name="PART_ScrollBackButton"
+                                       Grid.Column="0"
+                                       Margin="2,0"
+                                       VerticalAlignment="Center"
+                                       ui:ChromeWindow.HitTestRole="Client"
+                                       AutomationProperties.Name="Scroll tabs left"
+                                       Focusable="False"
+                                       Icon="ChevronLeft16"
+                                       IsCircular="True"
+                                       IsSmall="True"
+                                       ToolTip="Scroll tabs left"
+                                       Visibility="Collapsed" />
+                        <ScrollViewer x:Name="PART_TabScrollViewer"
+                                      Grid.Column="1"
+                                      CanContentScroll="False"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                        <ui:IconButton x:Name="PART_ScrollForwardButton"
+                                       Grid.Column="2"
+                                       Margin="2,0"
+                                       VerticalAlignment="Center"
+                                       ui:ChromeWindow.HitTestRole="Client"
+                                       AutomationProperties.Name="Scroll tabs right"
+                                       Focusable="False"
+                                       Icon="ChevronRight16"
+                                       IsCircular="True"
+                                       IsSmall="True"
+                                       ToolTip="Scroll tabs right"
+                                       Visibility="Collapsed" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ui:SystemWindow}">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="DwmUseDarkMode" Value="{DynamicResource WindowDwmUseDarkMode}" />
+        <Setter Property="DwmCaptionColorMode" Value="Custom" />
+        <Setter Property="DwmCaptionColor" Value="{DynamicResource WindowDwmCaptionColor}" />
+        <Setter Property="DwmTextColorMode" Value="Custom" />
+        <Setter Property="DwmTextColor" Value="{DynamicResource WindowDwmTextColor}" />
+        <Setter Property="AcrylicGradientColor" Value="{DynamicResource WindowAcrylicGradientColor}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:SystemWindow}">
+                    <Border x:Name="RootBorder" Background="{TemplateBinding Background}">
+                        <ui:BackdropThemeScope IsActive="{TemplateBinding IsBackdropActive}">
+                            <AdornerDecorator>
+                                <ContentPresenter />
+                            </AdornerDecorator>
+                        </ui:BackdropThemeScope>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsBackdropActive" Value="True">
+                            <Setter TargetName="RootBorder" Property="Background" Value="Transparent" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ui:ChromeWindow}">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="DwmUseDarkMode" Value="{DynamicResource WindowDwmUseDarkMode}" />
+        <Setter Property="AcrylicGradientColor" Value="{DynamicResource WindowAcrylicGradientColor}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:ChromeWindow}">
+                    <Border x:Name="RootBorder" Background="{TemplateBinding Background}">
+                        <ui:BackdropThemeScope IsActive="{TemplateBinding IsBackdropActive}">
+                            <AdornerDecorator>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <ui:TitleBar Grid.Row="0" Padding="10,0,0,0" />
+                                    <ContentPresenter Grid.Row="1" />
+                                </Grid>
+                            </AdornerDecorator>
+                        </ui:BackdropThemeScope>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsBackdropActive" Value="True">
+                            <Setter TargetName="RootBorder" Property="Background" Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsWindowActive" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type ui:TabWindow}">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDefault}" />
+        <Setter Property="DwmUseDarkMode" Value="{DynamicResource WindowDwmUseDarkMode}" />
+        <Setter Property="AcrylicGradientColor" Value="{DynamicResource WindowAcrylicGradientColor}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:TabWindow}">
+                    <Border x:Name="RootBorder" Background="{TemplateBinding Background}">
+                        <ui:BackdropThemeScope IsActive="{TemplateBinding IsBackdropActive}">
+                            <AdornerDecorator>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <ui:TitleBar Grid.Row="0"
+                                                 Height="40"
+                                                 Padding="8,0,0,0">
+                                        <ui:TitleBar.Header>
+                                            <ui:WindowTabStrip MinWidth="0"
+                                                               VerticalAlignment="Stretch"
+                                                               ItemTemplate="{Binding TabHeaderTemplate, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}"
+                                                               ItemsSource="{Binding Tabs, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}"
+                                                               SelectedItem="{Binding SelectedTab, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}"
+                                                               TabMaxWidth="{Binding TabMaxWidth, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}"
+                                                               TabMinWidth="{Binding TabMinWidth, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}" />
+                                        </ui:TitleBar.Header>
+                                        <ui:TitleBar.Footer>
+                                            <StackPanel Orientation="Horizontal">
+                                                <ContentPresenter Content="{TemplateBinding TitleBarFooter}" />
+                                                <ui:IconButton x:Name="NewTabButton"
+                                                               Margin="2,0"
+                                                               VerticalAlignment="Center"
+                                                               Command="{Binding NewTabCommand, RelativeSource={RelativeSource AncestorType={x:Type ui:TabWindow}}}"
+                                                               Icon="Add16"
+                                                               IsCircular="True"
+                                                               IsSmall="True"
+                                                               ToolTip="New tab" />
+                                            </StackPanel>
+                                        </ui:TitleBar.Footer>
+                                    </ui:TitleBar>
+                                    <ContentPresenter Grid.Row="1"
+                                                      Content="{TemplateBinding SelectedTab}"
+                                                      ContentTemplate="{TemplateBinding TabContentTemplate}" />
+                                </Grid>
+                            </AdornerDecorator>
+                        </ui:BackdropThemeScope>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="NewTabCommand" Value="{x:Null}">
+                            <Setter TargetName="NewTabButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ShowNewTabButton" Value="False">
+                            <Setter TargetName="NewTabButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsBackdropActive" Value="True">
+                            <Setter TargetName="RootBorder" Property="Background" Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsWindowActive" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextDisabled}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

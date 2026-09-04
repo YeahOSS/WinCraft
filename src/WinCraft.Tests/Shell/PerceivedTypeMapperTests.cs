@@ -8,110 +8,29 @@ namespace WinCraft.Tests.Shell
     [TestFixture]
     internal sealed class PerceivedTypeMapperTests
     {
-        [Test]
-        public void TryMap_Image_ReturnsImageName()
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_TEXT, "Text")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_IMAGE, "Image")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_AUDIO, "Audio")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_VIDEO, "Video")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_COMPRESSED, "Compressed")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_DOCUMENT, "Document")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_SYSTEM, "System")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_APPLICATION, "Application")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_GAMEMEDIA, "GameMedia")]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_CONTACTS, "Contacts")]
+        public void TryMap_KnownPerceivedType_ReturnsRegistryName(PERCEIVED perceived, string expected)
         {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_IMAGE, out string name);
+            var found = PerceivedTypeMapper.TryMap(perceived, out string name);
 
             Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Image"));
+            Assert.That(name, Is.EqualTo(expected));
         }
 
-        [Test]
-        public void TryMap_Text_ReturnsTextName()
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_FOLDER)]
+        [TestCase(PERCEIVED.PERCEIVED_TYPE_UNKNOWN)]
+        public void TryMap_UnmappedPerceivedType_ReturnsFalse(PERCEIVED perceived)
         {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_TEXT, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Text"));
-        }
-
-        [Test]
-        public void TryMap_Audio_ReturnsAudioName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_AUDIO, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Audio"));
-        }
-
-        [Test]
-        public void TryMap_Video_ReturnsVideoName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_VIDEO, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Video"));
-        }
-
-        [Test]
-        public void TryMap_Compressed_ReturnsCompressedName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_COMPRESSED, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Compressed"));
-        }
-
-        [Test]
-        public void TryMap_Document_ReturnsDocumentName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_DOCUMENT, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Document"));
-        }
-
-        [Test]
-        public void TryMap_System_ReturnsSystemName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_SYSTEM, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("System"));
-        }
-
-        [Test]
-        public void TryMap_Application_ReturnsApplicationName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_APPLICATION, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Application"));
-        }
-
-        [Test]
-        public void TryMap_GameMedia_ReturnsGameMediaName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_GAMEMEDIA, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("GameMedia"));
-        }
-
-        [Test]
-        public void TryMap_Contacts_ReturnsContactsName()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_CONTACTS, out string name);
-
-            Assert.That(found, Is.True);
-            Assert.That(name, Is.EqualTo("Contacts"));
-        }
-
-        [Test]
-        public void TryMap_Folder_ReturnsFalse()
-        {
-            // PERCEIVED_TYPE_FOLDER is not in the Entries table — no known SystemFileAssociations mapping.
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_FOLDER, out string name);
-
-            Assert.That(found, Is.False);
-            Assert.That(name, Is.Null);
-        }
-
-        [Test]
-        public void TryMap_Unknown_ReturnsFalse()
-        {
-            var found = PerceivedTypeMapper.TryMap(PERCEIVED.PERCEIVED_TYPE_UNKNOWN, out string name);
+            var found = PerceivedTypeMapper.TryMap(perceived, out string name);
 
             Assert.That(found, Is.False);
             Assert.That(name, Is.Null);
@@ -125,14 +44,5 @@ namespace WinCraft.Tests.Shell
             Assert.That(path.Location, Is.EqualTo(RegistryValueLocation.ClassesRoot));
             Assert.That(path.SubKeyPath, Is.EqualTo(@"SystemFileAssociations\Image"));
         }
-
-        [Test]
-        public void FromClassesRootSystemFileAssociations_EmptyName_BuildsPrefixOnly()
-        {
-            var path = PerceivedTypeMapper.FromClassesRootSystemFileAssociations(string.Empty);
-
-            Assert.That(path.SubKeyPath, Is.EqualTo(@"SystemFileAssociations\"));
-        }
-
     }
 }

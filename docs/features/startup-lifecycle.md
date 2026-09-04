@@ -43,12 +43,17 @@ grows beyond startup composition.
 `App.xaml` exists at the project root to define the WPF `Application` type and hold application
 resources. It is not the startup driver.
 
-`UserInterfaceStartup` creates `App` and `MainWindow` directly and owns the
-full startup composition: it initializes application resources, registers
-dispatcher exception handling, sets the main window, initializes application
-services, and runs the dispatcher through the single-instance host. This keeps
-startup decisions in ordinary C# code where command-line mode checks, elevation
-routing, and service setup can be ordered explicitly.
+`WpfApplicationInitializer.ConfigureRuntime()` applies process-wide WPF
+settings before application construction. `WpfApplicationInitializer.Initialize()`
+initializes WPF services after application resources are loaded. Both `WinCraft` and
+`WinCraft.Gallery` use these entry points.
+
+`UserInterfaceStartup` owns the primary application's startup composition,
+including its tray behavior. `WinCraft.Gallery` supplies its own `App` and
+`MainWindow` factories to `WpfApplicationHost` after `ProgramHost` has routed
+the process mode. The reusable host gives Gallery the same dispatcher exception
+registration, application services, elevated-agent attachment, and
+single-instance lifecycle as the primary application.
 
 `App.xaml.cs` should be lightweight. Add code-behind logic only when the
 application needs real WPF application-level event handling or shared

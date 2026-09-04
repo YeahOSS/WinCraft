@@ -1,0 +1,100 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.IconsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:WinCraft.Gallery.Views.Pages"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft"
+             xmlns:vm="clr-namespace:WinCraft.Gallery.ViewModels.Pages">
+    <UserControl.DataContext>
+        <vm:IconsViewModel />
+    </UserControl.DataContext>
+    <ui:SpacingGrid Padding="32,32,32,0" Rows="Auto,Auto,*">
+        <ui:SpacingStackPanel Margin="0,0,0,12" ui:LayoutTokens.Spacing="Small">
+            <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Icons" />
+            <TextBlock ui:Design.VisualRole="Secondary"
+                       Style="{DynamicResource CaptionTextBlockStyle}"
+                       Text="{Binding GlyphSummary}" />
+        </ui:SpacingStackPanel>
+        <Border Grid.Row="1"
+                Margin="0,0,0,8"
+                Padding="0,0,0,12"
+                BorderBrush="{DynamicResource Separator}"
+                BorderThickness="0,0,0,1">
+            <ui:SpacingDockPanel ui:LayoutTokens.Spacing="Small" LastChildFill="False">
+                <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="Filled:" />
+                    <ui:Switch IsChecked="{Binding IsFilled}" />
+                </ui:SpacingStackPanel>
+                <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small"
+                                      ui:SpacingDockPanel.Dock="Right"
+                                      Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="Size:" />
+                    <ComboBox Width="72"
+                              DisplayMemberPath="DisplayText"
+                              ItemsSource="{Binding SizeOptions}"
+                              SelectedItem="{Binding SelectedSizeOption, Mode=TwoWay}" />
+                    <TextBox Width="200"
+                             ui:Design.Icon="Search16"
+                             ui:TextInput.Watermark="Search icons..."
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                </ui:SpacingStackPanel>
+            </ui:SpacingDockPanel>
+        </Border>
+        <ListBox Grid.Row="2"
+                 Margin="0,0,4,0"
+                 ItemsSource="{Binding Glyphs}"
+                 ScrollViewer.CanContentScroll="True"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ui:VirtualizingUniformGrid Columns="8" ItemHeight="128" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <ui:SpacingGrid Margin="2"
+                                    Padding="6"
+                                    Background="{DynamicResource ControlFillBackground}"
+                                    BorderBrush="{DynamicResource BorderDefault}"
+                                    BorderThickness="{StaticResource BorderThicknessDefault}"
+                                    CornerRadius="{StaticResource CornerRadiusSmall}"
+                                    Rows="*,Auto,Auto">
+                        <ui:IconBlock Height="64"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      ui:Design.IsIconFilled="{Binding DataContext.IsFilled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      FontSize="36"
+                                      Foreground="{DynamicResource TextDefault}"
+                                      Icon="{Binding Glyph}" />
+                        <TextBlock Grid.Row="1"
+                                   Height="16"
+                                   HorizontalAlignment="Center"
+                                   FontSize="9"
+                                   Foreground="{DynamicResource TextTertiary}"
+                                   Text="{Binding CodePointText}"
+                                   ToolTip="Code point" />
+                        <Button Grid.Row="2"
+                                Height="18"
+                                HorizontalContentAlignment="Center"
+                                ui:Design.Variant="Ghost"
+                                Command="{Binding DataContext.CopyNameCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                CommandParameter="{Binding}">
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="10"
+                                       Text="{Binding DisplayName}"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Name}" />
+                        </Button>
+                    </ui:SpacingGrid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </ui:SpacingGrid>
+</UserControl>

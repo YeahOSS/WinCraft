@@ -1,0 +1,139 @@
+<UserControl x:Class="WinCraft.Gallery.Views.Pages.WindowChromePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:WinCraft.UI;assembly=WinCraft"
+             xmlns:vm="clr-namespace:WinCraft.Gallery.ViewModels.Pages">
+    <UserControl.DataContext>
+        <vm:WindowChromeViewModel />
+    </UserControl.DataContext>
+    <ScrollViewer>
+        <ui:SpacingStackPanel Padding="{StaticResource PagePadding}" ui:LayoutTokens.Spacing="Large">
+
+            <ui:SpacingStackPanel ui:LayoutTokens.Spacing="Small" Visibility="{Binding ShowIntro, Converter={ui:TrueToVisibleCvt}}">
+                <TextBlock Style="{DynamicResource TitleTextBlockStyle}" Text="Window Chrome" />
+                <TextBlock ui:Design.VisualRole="Secondary"
+                           Style="{DynamicResource CaptionTextBlockStyle}"
+                           Text="Customize this window, or open a new demo window with its own controls." />
+            </ui:SpacingStackPanel>
+
+            <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small" Visibility="{Binding ShowIntro, Converter={ui:TrueToVisibleCvt}}">
+                <Button ui:Design.VisualRole="Primary"
+                        Command="{Binding OpenChromeDemoCommand}"
+                        Content="Open ChromeWindow" />
+                <Button Command="{Binding OpenSystemDemoCommand}" Content="Open SystemWindow" />
+            </ui:SpacingWrapPanel>
+
+            <Separator Visibility="{Binding ShowIntro, Converter={ui:TrueToVisibleCvt}}" />
+
+            <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="This Window" />
+
+            <ui:Form ui:LayoutTokens.Spacing="Small" LabelWidth="{StaticResource FormLabelWidth}">
+                <ui:FormItem Header="Backdrop">
+                    <ComboBox Width="130"
+                              VerticalAlignment="Center"
+                              SelectedItem="{Binding BackdropType, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}">
+                        <ui:WindowBackdropType>Auto</ui:WindowBackdropType>
+                        <ui:WindowBackdropType>None</ui:WindowBackdropType>
+                        <ui:WindowBackdropType>Mica</ui:WindowBackdropType>
+                        <ui:WindowBackdropType>MicaAlt</ui:WindowBackdropType>
+                        <ui:WindowBackdropType>Acrylic</ui:WindowBackdropType>
+                    </ComboBox>
+                </ui:FormItem>
+
+                <ui:FormItem Header="Corner (Win11+)">
+                    <ComboBox Width="130"
+                              VerticalAlignment="Center"
+                              SelectedItem="{Binding DwmCornerPreference, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}">
+                        <ui:DwmCornerPreference>Default</ui:DwmCornerPreference>
+                        <ui:DwmCornerPreference>DoNotRound</ui:DwmCornerPreference>
+                        <ui:DwmCornerPreference>Round</ui:DwmCornerPreference>
+                        <ui:DwmCornerPreference>RoundSmall</ui:DwmCornerPreference>
+                    </ComboBox>
+                </ui:FormItem>
+
+                <ui:FormItem Header="Border (Win11+)">
+                    <ui:SpacingStackPanel ui:LayoutTokens.Spacing="XSmall" Orientation="Horizontal">
+                        <ComboBox Width="80"
+                                  VerticalAlignment="Center"
+                                  SelectedItem="{Binding DwmBorderColorMode, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}">
+                            <ui:DwmColorMode>Default</ui:DwmColorMode>
+                            <ui:DwmColorMode>None</ui:DwmColorMode>
+                            <ui:DwmColorMode>Custom</ui:DwmColorMode>
+                        </ComboBox>
+                        <ui:ColorPicker IsAlphaEnabled="False" Color="{Binding DwmBorderColor, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}">
+                            <ui:ColorPicker.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:ColorPicker}}" TargetType="{x:Type ui:ColorPicker}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DwmBorderColorMode, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" Value="{x:Static ui:DwmColorMode.Custom}">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:ColorPicker.Style>
+                        </ui:ColorPicker>
+                    </ui:SpacingStackPanel>
+                </ui:FormItem>
+
+                <ui:FormItem Header="Caption (Win11+)" Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}, Converter={ui:NullToCollapsedCvt}, FallbackValue=Collapsed}">
+                    <ui:SpacingStackPanel ui:LayoutTokens.Spacing="XSmall" Orientation="Horizontal">
+                        <ComboBox Width="80"
+                                  VerticalAlignment="Center"
+                                  SelectedItem="{Binding DwmCaptionColorMode, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}">
+                            <ui:DwmColorMode>Default</ui:DwmColorMode>
+                            <ui:DwmColorMode>None</ui:DwmColorMode>
+                            <ui:DwmColorMode>Custom</ui:DwmColorMode>
+                        </ComboBox>
+                        <ui:ColorPicker IsAlphaEnabled="False" Color="{Binding DwmCaptionColor, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}">
+                            <ui:ColorPicker.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:ColorPicker}}" TargetType="{x:Type ui:ColorPicker}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DwmCaptionColorMode, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}" Value="{x:Static ui:DwmColorMode.Custom}">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:ColorPicker.Style>
+                        </ui:ColorPicker>
+                    </ui:SpacingStackPanel>
+                </ui:FormItem>
+
+                <ui:FormItem Header="Text (Win11+)" Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}, Converter={ui:NullToCollapsedCvt}, FallbackValue=Collapsed}">
+                    <ui:SpacingStackPanel ui:LayoutTokens.Spacing="XSmall" Orientation="Horizontal">
+                        <ComboBox Width="80"
+                                  VerticalAlignment="Center"
+                                  SelectedItem="{Binding DwmTextColorMode, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}">
+                            <ui:DwmColorMode>Default</ui:DwmColorMode>
+                            <ui:DwmColorMode>Custom</ui:DwmColorMode>
+                        </ComboBox>
+                        <ui:ColorPicker IsAlphaEnabled="False" Color="{Binding DwmTextColor, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}">
+                            <ui:ColorPicker.Style>
+                                <Style BasedOn="{StaticResource {x:Type ui:ColorPicker}}" TargetType="{x:Type ui:ColorPicker}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding DwmTextColorMode, RelativeSource={RelativeSource AncestorType={x:Type ui:SystemWindow}}}" Value="{x:Static ui:DwmColorMode.Custom}">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:ColorPicker.Style>
+                        </ui:ColorPicker>
+                    </ui:SpacingStackPanel>
+                </ui:FormItem>
+            </ui:Form>
+
+            <CheckBox Content="KeepActiveVisuals" IsChecked="{Binding KeepActiveVisuals, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+            <CheckBox Content="DwmUseDarkMode" IsChecked="{Binding DwmUseDarkMode, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+
+            <TextBlock Style="{DynamicResource SectionHeaderTextBlockStyle}" Text="Title Bar Buttons" />
+            <ui:SpacingWrapPanel ui:LayoutTokens.Spacing="Small">
+                <CheckBox Content="Minimize" IsChecked="{Binding ShowMinimize, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+                <CheckBox Content="Maximize" IsChecked="{Binding ShowMaximize, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+                <CheckBox Content="Close" IsChecked="{Binding ShowClose, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+                <CheckBox Content="Help" IsChecked="{Binding ShowHelp, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+            </ui:SpacingWrapPanel>
+            <CheckBox Content="ShowIcon" IsChecked="{Binding ShowIcon, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type ui:WindowBase}}}" />
+        </ui:SpacingStackPanel>
+    </ScrollViewer>
+</UserControl>
